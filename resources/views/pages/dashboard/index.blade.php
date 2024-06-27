@@ -21,48 +21,6 @@ middleware(['auth', 'verified']);
 
 new class extends Component {
     #[Computed]
-    public function lastRotation(): Model
-    {
-        return Rotation::query()->select('odometer', 'rotated_on')->where('user_id', auth()->id())->latest()->first();
-    }
-
-    #[Computed]
-    public function lastOdometer(): int
-    {
-        return $this->lastRotation->odometer;
-    }
-
-    #[Computed]
-    public function lastRotatedOn(): Carbon
-    {
-        return $this->lastRotation->rotated_on;
-    }
-
-    #[Computed]
-    public function rotationTires(): Collection
-    {
-        return RotationTire::select([
-            'tin', 'tread', 'position', 'rotated_on', 'odometer', 'rotation_id', 'tire_id', 'label',
-            DB::raw('lag(tread) over (partition by position order by odometer) as prior_tread'),
-            DB::raw('lag(tread) over (partition by position order by odometer)-tread as tread_diff'),
-            DB::raw('(odometer - lag(odometer) over (partition by position order by odometer)) / (lag(tread) over (partition by position order by odometer)-tread) as milesPerOne32ndloss'),
-            DB::raw('lag(tin) over (partition by position order by odometer) as prior_tire'),
-            DB::raw('lag(tread, 2) over (partition by position order by odometer) as prior_tread_2'),
-            DB::raw('lag(tin, 2) over (partition by position order by odometer) as prior_tire_2'),
-            DB::raw('lag(tread, 2) over (partition by position order by odometer)-tread as tread_diff_2'),
-            DB::raw('odometer - lag(odometer) over (partition by position order by odometer) as miles_since_prior_rotation'),
-        ])
-            ->join('rotations', 'rotation_tire.rotation_id', '=', 'rotations.id')
-            ->join('tires', 'rotation_tire.tire_id', '=', 'tires.id')
-            ->where('tires.status', TireStatus::Installed)
-            ->where('tires.user_id', auth()->id())
-            ->where('rotations.user_id', auth()->id())
-            ->orderBy('position', 'asc')
-            ->orderBy('rotated_on', 'desc')
-            ->get();
-    }
-
-    #[Computed]
     public function currentRotation(): Rotation
     {
         return Rotation::query()
@@ -74,7 +32,6 @@ new class extends Component {
             ->latest('rotated_on')
             ->first();
     }
-
 
     #[Computed]
     public function positionHistory(TirePosition $position): Collection
@@ -122,90 +79,37 @@ new class extends Component {
                         </div>
 
                         <div class="grid grid-cols-3 grid-rows-4 gap-4">
-                            <div class="">
-                                @php($frontLTires = $this->rotationTires()->where('position', TirePosition::FrontLeft))
-                                <h2 class="font-bold text-xl">{{ TirePosition::FrontLeft->label() }}</h2>
-                                <div class="text-gray-700">
-                                    Tire Label: {{ $frontLTires->first()->label }}
-                                </div>
-                                <div class="text-gray-700">
-                                    Tread Depth: {{ $frontLTires->first()->tread }}<span class="text-xs text-gray-500">/32"</span>
-                                </div>
+                            <div class="...">
+                                <x-tire-position-details
+                                    :position="TirePosition::FrontLeft"
+                                    :currentRotation="$this->currentRotation->tiresByPosition(TirePosition::FrontLeft)->first()"
+                                    :positionHistory="$this->positionHistory(TirePosition::FrontLeft)"/>
                             </div>
                             <div class="row-span-2">Body</div>
-                            <div class="..."><h2 class="font-bold text-xl">{{ TirePosition::FrontRight->label() }}</h2>
+                            <div class="...">
+                                <x-tire-position-details
+                                    :position="TirePosition::FrontRight"
+                                    :currentRotation="$this->currentRotation->tiresByPosition(TirePosition::FrontRight)->first()"
+                                    :positionHistory="$this->positionHistory(TirePosition::FrontRight)"/>
                             </div>
-                            <div class="..."><h2 class="font-bold text-xl">{{ TirePosition::RearLeft->label() }}</h2>
+                            <div class="...">
+                                <x-tire-position-details
+                                    :position="TirePosition::RearLeft"
+                                    :currentRotation="$this->currentRotation->tiresByPosition(TirePosition::RearLeft)->first()"
+                                    :positionHistory="$this->positionHistory(TirePosition::RearLeft)"/>
                             </div>
-                            <div class="..."><h2 class="font-bold text-xl">{{ TirePosition::RearRight->label() }}</h2>
+                            <div class="...">
+                                <x-tire-position-details
+                                    :position="TirePosition::RearRight"
+                                    :currentRotation="$this->currentRotation->tiresByPosition(TirePosition::RearRight)->first()"
+                                    :positionHistory="$this->positionHistory(TirePosition::RearRight)"/>
+
                             </div>
                             <div class="col-start-2 ">
-                                <h2 class="font-bold text-xl flex flex-nowrap align-center">
-                                    <span class="self-center">
-                                        {{ TirePosition::Spare->label() }}
-                                    </span>
-
-                                    <!-- Details Popover -->
-                                    <div x-data="{ showPopover: false }">
-                                        <button
-                                            @click="showPopover = !showPopover"
-                                            class="ml-2 hover:bg-gray-200 font-bold p-1 rounded transition-colors duration-300">
-                                            <x-phosphor-list-magnifying-glass class="w-6"/>
-                                        </button>
-
-                                        <div x-show="showPopover"
-                                             x-transition:enter="transition ease-out duration-300"
-                                             x-transition:enter-start="opacity-0 transform scale-95"
-                                             x-transition:enter-end="opacity-100 transform scale-100"
-                                             x-transition:leave="transition ease-in duration-200"
-                                             x-transition:leave-start="opacity-100 transform scale-100"
-                                             x-transition:leave-end="opacity-0 transform scale-95"
-                                             class="-translate-x-1/2 font-normal text-sm z-10 absolute bg-gray-100 border shadow-md mt-1 px-4rounded">
-
-                                            <h3 class="text-lg font-extralight px-3">Spare Position History</h3>
-                                            <table>
-                                                <thead>
-                                                <tr class="font-bold text-xs bg-gray-200 border-y border-gray-600">
-                                                    <td class="px-3">Odometer</td>
-                                                    <td class="px-3">Tire</td>
-                                                    <td class="px-3">Starting Depth (1/32")
-                                                    </td>
-                                                    <td class="px-3">Ending Depth (1/32")
-                                                    </td>
-                                                    <td class="px-3">Wear (1/32")</td>
-                                                    <td class="px-3">Miles per 1/32"</td>
-                                                </tr>
-                                                </thead>
-                                                <tbody>
-                                                @foreach($this->positionHistory(TirePosition::Spare) as $rotationTire)
-                                                    <tr class="odd:bg-white">
-                                                        <td class="px-3 text-nowrap">{{ number_format($rotationTire->odometer) }}</td>
-                                                        <td class="px-3 text-nowrap">{{ $rotationTire->label }}
-                                                            <small class="text-sm text-gray-500">( {{ $rotationTire->tin }}
-                                                                                                 ) </small></td>
-                                                        <td class="px-3 text-nowrap">{{ $rotationTire->tread }}</td>
-                                                        <td class="px-3 text-nowrap">{{ $rotationTire->ending_tread }}</td>
-                                                        <td class="px-3 text-nowrap">{{ treadDiff($rotationTire->tread, $rotationTire->ending_tread) }}</td>
-                                                        <td class="px-3 text-nowrap">{{ milesPerOne32ndLoss($rotationTire->tread, $rotationTire->ending_tread, $rotationTire->odometer, $rotationTire->ending_odometer) }}</td>
-                                                    </tr>
-                                                @endforeach
-                                                </tbody>
-                                            </table>
-                                        </div>
-                                    </div>
-                                </h2>
-
-                                <div>
-                                    <div class="text-gray-700">
-                                        Tire
-                                        Label: {{ $this->currentRotation->tiresByPosition(TirePosition::Spare)->first()->label }}
-                                    </div>
-                                    <div class="text-gray-700">
-                                        Tread
-                                        Depth: {{ $this->currentRotation->tiresByPosition(TirePosition::Spare)->first()->tireDetails->tread }}
-                                        <span class="text-xs text-gray-500">/32"</span>
-                                    </div>
-                                </div>
+                                <x-tire-position-details
+                                    :position="TirePosition::Spare"
+                                    :currentRotation="$this->currentRotation->tiresByPosition(TirePosition::Spare)->first()"
+                                    :positionHistory="$this->positionHistory(TirePosition::Spare)"/>
                             </div>
                         </div>
 
