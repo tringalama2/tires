@@ -149,7 +149,7 @@ new class extends Component {
                                     <div x-data="{ showPopover: false }">
                                         <button
                                             @click="showPopover = !showPopover"
-                                            class="ml-2 text-gray-800 hover:bg-gray-200 font-bold p-1 rounded transition-colors duration-300">
+                                            class="ml-2 hover:bg-gray-200 font-bold p-1 rounded transition-colors duration-300">
                                             <x-phosphor-list-magnifying-glass class="w-6"/>
                                         </button>
 
@@ -160,31 +160,33 @@ new class extends Component {
                                              x-transition:leave="transition ease-in duration-200"
                                              x-transition:leave-start="opacity-100 transform scale-100"
                                              x-transition:leave-end="opacity-0 transform scale-95"
-                                             class="font-normal text-sm z-10 absolute bg-gray-100 border shadow-md mt-2 px-4 py-2 rounded">
+                                             class="-translate-x-1/2 font-normal text-sm z-10 absolute bg-gray-100 border shadow-md mt-1 px-4rounded">
 
-                                            <h3 class="text-lg font-extralight">Spare Tire Position History</h3>
+                                            <h3 class="text-lg font-extralight px-3">Spare Position History</h3>
                                             <table>
                                                 <thead>
-                                                <tr class="font-bold text-xs">
-                                                    <td class="pe-3 text-nowrap">Odometer</td>
-                                                    <td class="px-3 text-nowrap">Tire</td>
-                                                    <td class="px-3 text-nowrap">Starting Depth (1/32")</td>
-                                                    <td class="px-3 text-nowrap">Ending Depth (1/32")</td>
-                                                    <td class="px-3 text-nowrap">Wear (1/32")</td>
-                                                    <td class="ps-3 text-nowrap">Miles per 1/32" loss</td>
+                                                <tr class="font-bold text-xs bg-gray-200 border-y border-gray-600">
+                                                    <td class="px-3">Odometer</td>
+                                                    <td class="px-3">Tire</td>
+                                                    <td class="px-3">Starting Depth (1/32")
+                                                    </td>
+                                                    <td class="px-3">Ending Depth (1/32")
+                                                    </td>
+                                                    <td class="px-3">Wear (1/32")</td>
+                                                    <td class="px-3">Miles per 1/32"</td>
                                                 </tr>
                                                 </thead>
                                                 <tbody>
                                                 @foreach($this->positionHistory(TirePosition::Spare) as $rotationTire)
-                                                    <tr>
-                                                        <td class="pe-3 text-nowrap">{{ number_format($rotationTire->odometer) }}</td>
+                                                    <tr class="odd:bg-white">
+                                                        <td class="px-3 text-nowrap">{{ number_format($rotationTire->odometer) }}</td>
                                                         <td class="px-3 text-nowrap">{{ $rotationTire->label }}
                                                             <small class="text-sm text-gray-500">( {{ $rotationTire->tin }}
                                                                                                  ) </small></td>
                                                         <td class="px-3 text-nowrap">{{ $rotationTire->tread }}</td>
                                                         <td class="px-3 text-nowrap">{{ $rotationTire->ending_tread }}</td>
                                                         <td class="px-3 text-nowrap">{{ treadDiff($rotationTire->tread, $rotationTire->ending_tread) }}</td>
-                                                        <td class="ps-3 text-nowrap">{{ milesPerOne32ndLoss($rotationTire->tread, $rotationTire->ending_tread, $rotationTire->odometer, $rotationTire->ending_odometer) }}</td>
+                                                        <td class="px-3 text-nowrap">{{ milesPerOne32ndLoss($rotationTire->tread, $rotationTire->ending_tread, $rotationTire->odometer, $rotationTire->ending_odometer) }}</td>
                                                     </tr>
                                                 @endforeach
                                                 </tbody>
@@ -211,8 +213,6 @@ new class extends Component {
                 </div>
             </div>
         </div>
-
-
-        </table>
+    </div>
     @endvolt
 </x-layouts.app>
