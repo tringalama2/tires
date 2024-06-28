@@ -78,34 +78,36 @@ new class extends Component {
                             miles.
                         </div>
 
-                        <div class="grid grid-cols-3 grid-rows-4 gap-4">
-                            <div class="...">
+                        <div class="grid grid-cols-3 grid-rows-3 gap-4">
+                            <div class="justify-self-center">
                                 <x-tire-position-details
                                     :position="TirePosition::FrontLeft"
                                     :currentRotation="$this->currentRotation->tiresByPosition(TirePosition::FrontLeft)->first()"
                                     :positionHistory="$this->positionHistory(TirePosition::FrontLeft)"/>
                             </div>
-                            <div class="row-span-2">Body</div>
-                            <div class="...">
+                            <div class="row-span-2 justify-self-center">
+                                <x-ui.img.car-top-view class="w-64"/>
+                            </div>
+                            <div class="justify-self-center">
                                 <x-tire-position-details
                                     :position="TirePosition::FrontRight"
                                     :currentRotation="$this->currentRotation->tiresByPosition(TirePosition::FrontRight)->first()"
                                     :positionHistory="$this->positionHistory(TirePosition::FrontRight)"/>
                             </div>
-                            <div class="...">
+                            <div class="justify-self-center">
                                 <x-tire-position-details
                                     :position="TirePosition::RearLeft"
                                     :currentRotation="$this->currentRotation->tiresByPosition(TirePosition::RearLeft)->first()"
                                     :positionHistory="$this->positionHistory(TirePosition::RearLeft)"/>
                             </div>
-                            <div class="...">
+                            <div class="justify-self-center">
                                 <x-tire-position-details
                                     :position="TirePosition::RearRight"
                                     :currentRotation="$this->currentRotation->tiresByPosition(TirePosition::RearRight)->first()"
                                     :positionHistory="$this->positionHistory(TirePosition::RearRight)"/>
 
                             </div>
-                            <div class="col-start-2 ">
+                            <div class="col-start-2 justify-self-center">
                                 <x-tire-position-details
                                     :position="TirePosition::Spare"
                                     :currentRotation="$this->currentRotation->tiresByPosition(TirePosition::Spare)->first()"
