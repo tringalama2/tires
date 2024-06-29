@@ -1,5 +1,7 @@
 <?php
 
+use Illuminate\Support\Carbon;
+
 if (! function_exists('treadDiff')) {
     function treadDiff($starting_tread, $ending_tread): int|string
     {
@@ -39,5 +41,12 @@ if (! function_exists('milesPerOne32ndLoss')) {
         }
 
         return intval(($ending_odometer - $starting_odometer) / ($starting_tread - $ending_tread));
+    }
+}
+
+if (! function_exists('date_from_db_format')) {
+    function date_from_db_format($date): Carbon
+    {
+        return Carbon::createFromFormat('Y-m-d', $date);
     }
 }

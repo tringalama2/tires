@@ -4,6 +4,7 @@ use App\Enums\TireStatus;
 use App\Enums\TirePosition;
 use App\Models\Rotation;
 use App\Models\RotationTire;
+use App\Models\Tire;
 use Illuminate\Contracts\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Database\Eloquent\Model;
@@ -52,6 +53,20 @@ new class extends Component {
             ->orderBy('odometer', 'desc')
             ->get();
     }
+
+    #[Computed]
+    public function tireHistory(Tire $tire): Collection
+    {
+        return RotationTire::select([
+            'rotated_on', 'odometer', 'position',
+        ])
+            ->join('rotations', 'rotation_tire.rotation_id', '=', 'rotations.id')
+            ->join('tires', 'rotation_tire.tire_id', '=', 'tires.id')
+            ->where('tires.user_id', auth()->id())
+            ->where('tires.id', $tire->id)
+            ->orderBy('odometer', 'desc')
+            ->get();
+    }
 };
 ?>
 
@@ -79,12 +94,14 @@ new class extends Component {
                             miles.
                         </div>
 
+
                         <div class="grid grid-cols-3 grid-rows-3 gap-4">
                             <div class="justify-self-center">
                                 <x-tire-position-details
                                     :position="TirePosition::FrontLeft"
                                     :currentRotation="$this->currentRotation->tiresByPosition(TirePosition::FrontLeft)->first()"
-                                    :positionHistory="$this->positionHistory(TirePosition::FrontLeft)"/>
+                                    :positionHistory="$this->positionHistory(TirePosition::FrontLeft)"
+                                    :tireHistory="$this->tireHistory($this->currentRotation->tiresByPosition(TirePosition::FrontRight)->first())"/>
                             </div>
                             <div class="row-span-2 justify-self-center">
                                 <x-ui.img.car-top-view class="w-64"/>
@@ -93,26 +110,29 @@ new class extends Component {
                                 <x-tire-position-details
                                     :position="TirePosition::FrontRight"
                                     :currentRotation="$this->currentRotation->tiresByPosition(TirePosition::FrontRight)->first()"
-                                    :positionHistory="$this->positionHistory(TirePosition::FrontRight)"/>
+                                    :positionHistory="$this->positionHistory(TirePosition::FrontRight)"
+                                    :tireHistory="$this->tireHistory($this->currentRotation->tiresByPosition(TirePosition::FrontRight)->first())"/>
                             </div>
                             <div class="justify-self-center">
                                 <x-tire-position-details
                                     :position="TirePosition::RearLeft"
                                     :currentRotation="$this->currentRotation->tiresByPosition(TirePosition::RearLeft)->first()"
-                                    :positionHistory="$this->positionHistory(TirePosition::RearLeft)"/>
+                                    :positionHistory="$this->positionHistory(TirePosition::RearLeft)"
+                                    :tireHistory="$this->tireHistory($this->currentRotation->tiresByPosition(TirePosition::FrontRight)->first())"/>
                             </div>
                             <div class="justify-self-center">
                                 <x-tire-position-details
                                     :position="TirePosition::RearRight"
                                     :currentRotation="$this->currentRotation->tiresByPosition(TirePosition::RearRight)->first()"
-                                    :positionHistory="$this->positionHistory(TirePosition::RearRight)"/>
-
+                                    :positionHistory="$this->positionHistory(TirePosition::RearRight)"
+                                    :tireHistory="$this->tireHistory($this->currentRotation->tiresByPosition(TirePosition::FrontRight)->first())"/>
                             </div>
                             <div class="col-start-2 justify-self-center">
                                 <x-tire-position-details
                                     :position="TirePosition::Spare"
                                     :currentRotation="$this->currentRotation->tiresByPosition(TirePosition::Spare)->first()"
-                                    :positionHistory="$this->positionHistory(TirePosition::Spare)"/>
+                                    :positionHistory="$this->positionHistory(TirePosition::Spare)"
+                                    :tireHistory="$this->tireHistory($this->currentRotation->tiresByPosition(TirePosition::FrontRight)->first())"/>
                             </div>
                         </div>
 
