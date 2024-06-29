@@ -87,14 +87,11 @@ new class extends Component {
                             <x-ui.logo class="block w-auto h-7 text-gray-800 fill-current dark:text-gray-200"/>
                             <span>Rotation Tracker</span>
                         </div>
-
                         <div class="text-blue-600 text-3xl mb-4">
                             Last Rotated on {{ $this->currentRotation->rotated_on->format('M j, Y') }}
                             @ {{ number_format($this->currentRotation->odometer) }}
                             miles.
                         </div>
-
-
                         <div class="grid grid-cols-3 grid-rows-3 gap-4">
                             <div class="justify-self-center">
                                 <x-tire-position-details

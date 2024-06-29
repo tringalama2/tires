@@ -19,7 +19,7 @@
                  x-transition:leave="transition ease-in duration-200"
                  x-transition:leave-start="opacity-100 transform scale-100"
                  x-transition:leave-end="opacity-0 transform scale-95"
-                 class="-translate-x-1/2 font-normal text-sm z-10 absolute bg-gray-100 border shadow-md mt-1 px-4rounded">
+                 class="@if($position->side() == 'Right') -translate-x-full @endif font-normal text-sm z-10 absolute bg-gray-100 border shadow-md mt-1 px-4rounded">
 
                 <h3 class="text-lg font-extralight px-3">{{ $position->label() }} Position History</h3>
                 <table>
@@ -59,8 +59,8 @@
     <div>
         <div class="text-gray-700 flex flex-nowrap">
             <div>Current Tire: {{ $currentRotation->label }}
-            <small class="text-sm text-gray-500">( {{ $currentRotation->tin }}
-                                                 )</small></div>
+                <small class="text-sm text-gray-500">( {{ $currentRotation->tin }}
+                                                     )</small></div>
             <div x-data="{ showPopover: false }">
                 <button
                     @mouseover="showPopover = true"
@@ -78,7 +78,8 @@
                      x-transition:leave-end="opacity-0 transform scale-95"
                      class="-translate-x-1/2 font-normal text-sm z-10 absolute bg-gray-100 border shadow-md mt-1 px-4rounded">
 
-                    <h3 class="text-lg font-extralight px-3">Tire <i class="italic">{{ $currentRotation->label }}</i> History</h3>
+                    <h3 class="text-lg font-extralight px-3">Tire <i class="italic">{{ $currentRotation->label }}</i>
+                                                             History</h3>
                     <table>
                         <thead>
                         <tr class="font-bold text-xs bg-gray-200 border-y border-gray-600">
