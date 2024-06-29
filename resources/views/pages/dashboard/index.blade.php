@@ -29,6 +29,7 @@ new class extends Component {
                     $query->where('status', TireStatus::Installed);
                 }
             ])
+            ->where('user_id', auth()->id())
             ->latest('rotated_on')
             ->first();
     }

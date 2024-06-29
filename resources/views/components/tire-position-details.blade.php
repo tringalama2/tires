@@ -56,7 +56,9 @@
 
     <div>
         <div class="text-gray-700">
-            Tire Label: {{ $currentRotation->label }}
+            Current Tire: {{ $currentRotation->label }}
+            <small class="text-sm text-gray-500">( {{ $currentRotation->tin }}
+                                                 ) </small>
         </div>
         <div class="text-gray-700">
             Tread Depth: {{ $currentRotation->tireDetails->tread }}
