@@ -12,6 +12,11 @@ enum TirePosition: int
     case RearRight = 4;
     case Spare = 5;
 
+    public function side(): string
+    {
+        return substr(self::label(), strrpos(self::label(), ' ') + 1);
+    }
+
     public function label(): string
     {
         return match ($this) {
