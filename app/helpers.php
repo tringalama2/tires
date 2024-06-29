@@ -34,6 +34,10 @@ if (! function_exists('milesPerOne32ndLoss')) {
             return '';
         }
 
+        if ($starting_tread - $ending_tread <= 0) {
+            return 'No tread loss to calculate.';
+        }
+
         return intval(($ending_odometer - $starting_odometer) / ($starting_tread - $ending_tread));
     }
 }
