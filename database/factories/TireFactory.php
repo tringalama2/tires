@@ -4,7 +4,7 @@ namespace Database\Factories;
 
 use App\Enums\TireStatus;
 use App\Models\Tire;
-use App\Models\User;
+use App\Models\Vehicle;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
 
@@ -15,7 +15,7 @@ class TireFactory extends Factory
     public function definition(): array
     {
         return [
-            'user_id' => User::factory(),
+            'vehicle_id' => Vehicle::factory(),
             'tin' => $this->faker->unique()->text(12),
             'label' => $this->faker->word(),
             'desc' => $this->faker->optional(20)->sentence(),

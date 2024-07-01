@@ -8,6 +8,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Znck\Eloquent\Relations\BelongsToThrough;
 
 class Tire extends Model
 {
@@ -23,9 +24,14 @@ class Tire extends Model
         ];
     }
 
-    public function user(): BelongsTo
+    public function user(): BelongsToThrough
     {
-        return $this->belongsTo(User::class);
+        return $this->belongsToThrough(User::class, Vehicle::class);
+    }
+
+    public function vehicle(): BelongsTo
+    {
+        return $this->belongsTo(Vehicle::class);
     }
 
     public function rotations(): BelongsToMany

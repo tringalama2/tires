@@ -3,7 +3,7 @@
 namespace Database\Factories;
 
 use App\Models\Rotation;
-use App\Models\User;
+use App\Models\Vehicle;
 use Illuminate\Database\Eloquent\Factories\Factory;
 use Illuminate\Support\Carbon;
 
@@ -14,7 +14,7 @@ class RotationFactory extends Factory
     public function definition(): array
     {
         return [
-            'user_id' => User::factory(),
+            'vehicle_id' => Vehicle::factory(),
             'rotated_on' => $this->faker->date(),
             'odometer' => $this->faker->numberBetween(1, 999999),
             'created_at' => Carbon::now(),

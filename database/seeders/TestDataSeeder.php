@@ -5,6 +5,7 @@ namespace Database\Seeders;
 use App\Models\Rotation;
 use App\Models\Tire;
 use App\Models\User;
+use App\Models\Vehicle;
 use Illuminate\Database\Seeder;
 
 class TestDataSeeder extends Seeder
@@ -13,14 +14,19 @@ class TestDataSeeder extends Seeder
     {
         $user = User::oldest()->first();
 
-        $tire1 = Tire::factory()->installed()->tire1()->count(1)->for($user)->create();
-        $tire2 = Tire::factory()->installed()->tire2()->count(1)->for($user)->create();
-        $tire3 = Tire::factory()->installed()->tire3()->count(1)->for($user)->create();
-        $tire4 = Tire::factory()->installed()->tire4()->count(1)->for($user)->create();
-        $tire5 = Tire::factory()->installed()->tire5()->count(1)->for($user)->create();
+        $vehicle = Vehicle::factory()
+            ->for($user)
+            ->state(['nickname' => 'Seeded Vehicle'])
+            ->create();
+
+        $tire1 = Tire::factory()->installed()->tire1()->count(1)->for($vehicle)->create();
+        $tire2 = Tire::factory()->installed()->tire2()->count(1)->for($vehicle)->create();
+        $tire3 = Tire::factory()->installed()->tire3()->count(1)->for($vehicle)->create();
+        $tire4 = Tire::factory()->installed()->tire4()->count(1)->for($vehicle)->create();
+        $tire5 = Tire::factory()->installed()->tire5()->count(1)->for($vehicle)->create();
 
         Rotation::factory()
-            ->for($user)->state(['rotated_on' => '2021-12-31', 'odometer' => '54718'])->hasAttached(
+            ->for($vehicle)->state(['rotated_on' => '2021-12-31', 'odometer' => '54718'])->hasAttached(
                 $tire1,
                 ['position' => 1, 'tread' => 10]
             )
@@ -43,7 +49,7 @@ class TestDataSeeder extends Seeder
 
 
         Rotation::factory()
-            ->for($user)->state(['rotated_on' => '2022-04-10', 'odometer' => '62736'])->hasAttached(
+            ->for($vehicle)->state(['rotated_on' => '2022-04-10', 'odometer' => '62736'])->hasAttached(
                 $tire1,
                 ['position' => 2, 'tread' => 8]
             )
@@ -66,7 +72,7 @@ class TestDataSeeder extends Seeder
             ->create();
 
         Rotation::factory()
-            ->for($user)->state(['rotated_on' => '2022-09-15', 'odometer' => '69627'])->hasAttached(
+            ->for($vehicle)->state(['rotated_on' => '2022-09-15', 'odometer' => '69627'])->hasAttached(
                 $tire1,
                 ['position' => 3, 'tread' => 6]
             )

@@ -5,6 +5,7 @@ namespace App\Models;
 // use Illuminate\Contracts\Auth\MustVerifyEmail;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
 
@@ -17,10 +18,8 @@ class User extends Authenticatable
      *
      * @var array<int, string>
      */
-    protected $fillable = [
-        'name',
-        'email',
-        'password',
+    protected $guarded = [
+        'id',
     ];
 
     /**
@@ -46,13 +45,18 @@ class User extends Authenticatable
         ];
     }
 
-    public function tires(): HasMany
+    protected function vehicles(): HasMany
     {
-        return $this->hasMany(Tire::class);
+        return $this->hasMany(Vehicle::class);
     }
 
-    public function rotations(): HasMany
+    protected function tires(): HasManyThrough
     {
-        return $this->hasMany(Tire::class);
+        return $this->hasManyThrough(Tire::class,Vehicle::class);
+    }
+
+    protected function rotations(): HasManyThrough
+    {
+        return $this->hasManyThrough(Rotation::class,Vehicle::class);
     }
 }

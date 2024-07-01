@@ -1,26 +1,27 @@
 <?php
 
-use App\Http\Controllers\Auth\EmailVerificationController;
-use App\Http\Controllers\Auth\LogoutController;
+use App\Http\Controllers\VehicleController;
 use Illuminate\Support\Facades\Route;
+use Livewire\Volt\Volt;
 
-/*
-|--------------------------------------------------------------------------
-| Web Routes
-|--------------------------------------------------------------------------
-|
-| Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider within a group which
-| contains the "web" middleware group. Now create something great!
-|
-*/
+Route::view('/', 'welcome');
 
-Route::redirect('home', '/')->name('home');
+Route::middleware(['auth'])->group(function () {
+    Route::view('profile', 'profile')->name('profile');
 
-Route::middleware('auth')->group(function () {
-    Route::get('email/verify/{id}/{hash}', EmailVerificationController::class)
-        ->middleware('signed')
-        ->name('verification.verify');
-    Route::post('logout', LogoutController::class)
-        ->name('logout');
+
+    Route::middleware(['verified'])->group(function () {
+        Volt::route('dashboard', 'dashboard')->name('dashboard');
+
+        Route::resource('vehicles', VehicleController::class)->only([
+            'create', 'store', 'edit', 'update'
+        ]);
+
+        Volt::route('vehicles', 'vehicles.index')->name('vehicles.index');
+
+    });
 });
+
+
+
+require __DIR__.'/auth.php';
