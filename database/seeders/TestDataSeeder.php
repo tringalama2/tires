@@ -7,12 +7,21 @@ use App\Models\Tire;
 use App\Models\User;
 use App\Models\Vehicle;
 use Illuminate\Database\Seeder;
+use Illuminate\Support\Facades\Hash;
 
 class TestDataSeeder extends Seeder
 {
     public function run(): void
     {
-        $user = User::oldest()->first();
+        $user = User::factory()->state([
+            'first_name' => 'Steve',
+            'last_name' => 'T',
+            'email' => 'admin@test.com',
+            'password' => Hash::make('password'),
+            'timezone' => 'America/Los_Angeles',
+            'created_at' => now(),
+            'updated_at' => now(),
+        ])->create();
 
         $vehicle = Vehicle::factory()
             ->for($user)
@@ -46,7 +55,6 @@ class TestDataSeeder extends Seeder
                 $tire5,
                 ['position' => 5, 'tread' => 10]
             )->create();
-
 
         Rotation::factory()
             ->for($vehicle)->state(['rotated_on' => '2022-04-10', 'odometer' => '62736'])->hasAttached(
@@ -93,5 +101,4 @@ class TestDataSeeder extends Seeder
                 ['position' => 2, 'tread' => 7]
             )->create();
     }
-
 }
