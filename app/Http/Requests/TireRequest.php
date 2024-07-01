@@ -12,7 +12,7 @@ class TireRequest extends FormRequest
     {
         return [
             'user_id' => ['required', 'integer'],
-            'tin' => ['nullable', 'max:12'],
+            'tin' => ['nullable', 'max:17'],
             'label' => ['nullable', 'max:255'],
             'desc' => ['nullable', 'max:255'],
             'size' => ['required', 'max:255'],
