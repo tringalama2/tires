@@ -25,7 +25,7 @@ class TestDataSeeder extends Seeder
 
         $vehicle = Vehicle::factory()
             ->for($user)
-            ->state(['nickname' => 'Seeded Vehicle'])
+            ->state(['nickname' => 'Seeded Vehicle', 'tire_count' => 5])
             ->create();
 
         $tire1 = Tire::factory()->installed()->tire1()->count(1)->for($vehicle)->create();

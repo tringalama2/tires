@@ -4,7 +4,7 @@ namespace App\Http\Requests;
 
 use Illuminate\Foundation\Http\FormRequest;
 
-class VehicleRequest extends FormRequest
+class VehicleCreateRequest extends FormRequest
 {
     public function rules(): array
     {
@@ -14,6 +14,7 @@ class VehicleRequest extends FormRequest
             'model' => 'required|string|max:50',
             'vin' => 'required|string|max:17',
             'nickname' => 'required|string|max:50',
+            'tire_count' => 'required|integer|between:4,5',
         ];
     }
 

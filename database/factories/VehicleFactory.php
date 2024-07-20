@@ -20,6 +20,7 @@ class VehicleFactory extends Factory
             'model' => $this->faker->word(),
             'vin' => $this->faker->word(),
             'nickname' => $this->faker->word(),
+            'tire_count' => $this->faker->numberBetween(4, 5),
             'last_selected_at' => null,
             'created_at' => Carbon::now(),
             'updated_at' => Carbon::now(),

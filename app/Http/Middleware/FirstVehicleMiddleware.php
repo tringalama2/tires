@@ -31,12 +31,12 @@ class FirstVehicleMiddleware
         // back to vehicles create except for the create/store and
         // associated livewire internal routes.
         if ($lastSelectedVehicle === null &&
-            ! in_array($request->route()->getName(),[
+            ! in_array($request->route()->getName(), [
                 'vehicles.create',
                 'vehicles.store',
-                'livewire.update'
+                'livewire.update',
             ])) {
-            return to_route('vehicles.create')->with('status', 'Please add your first vehicle');;
+            return to_route('vehicles.create')->with('status', 'Please add your first vehicle');
         }
 
         return $next($request);

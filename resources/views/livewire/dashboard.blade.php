@@ -16,6 +16,13 @@ use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 
 new #[Layout('layouts.app')] class extends Component {
+
+    public function mount(): void
+    {
+        //
+    }
+
+
     #[Computed]
     public function currentRotation(): Rotation
     {

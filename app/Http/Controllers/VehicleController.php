@@ -2,9 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Http\Requests\VehicleCreateRequest;
+use App\Http\Requests\VehicleUpdateRequest;
 use App\Livewire\Actions\SelectVehicle;
 use App\Models\Vehicle;
-use App\Http\Requests\VehicleRequest;
 
 class VehicleController extends Controller
 {
@@ -19,7 +20,7 @@ class VehicleController extends Controller
     /**
      * Store a newly created resource in storage.
      */
-    public function store(VehicleRequest $request, SelectVehicle $selectVehicle)
+    public function store(VehicleCreateRequest $request, SelectVehicle $selectVehicle)
     {
         $vehicle = Vehicle::create(array_merge($request->validated(), [
             'user_id' => auth()->id(),
@@ -41,7 +42,7 @@ class VehicleController extends Controller
     /**
      * Update the specified resource in storage.
      */
-    public function update(VehicleRequest $request, Vehicle $vehicle, SelectVehicle $selectVehicle)
+    public function update(VehicleUpdateRequest $request, Vehicle $vehicle, SelectVehicle $selectVehicle)
     {
         $vehicle->update($request->validated());
 

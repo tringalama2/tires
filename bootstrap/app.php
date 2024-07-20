@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Middleware\ActiveVehicleTiresMiddleware;
 use App\Http\Middleware\FirstVehicleMiddleware;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
@@ -14,6 +15,8 @@ return Application::configure(basePath: dirname(__DIR__))
     ->withMiddleware(function (Middleware $middleware) {
         $middleware->web(append: [
             FirstVehicleMiddleware::class,
+        ])->alias([
+            'activeVehicleTires' => ActiveVehicleTiresMiddleware::class,
         ]);
         //$middleware->append(FirstVehicleMiddleware::class);
     })

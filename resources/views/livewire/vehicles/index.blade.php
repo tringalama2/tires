@@ -13,13 +13,12 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Validate;
 use Livewire\Volt\Component;
 
-new #[Layout('layouts.app')] class extends Component
-{
+new #[Layout('layouts.app')] class extends Component {
     public Collection $vehicles;
 
     protected $listeners = ['changeVehicle' => '$refresh'];
 
-    public function changeVehicle(SelectVehicle $selectVehicle, Vehicle $vehicle ): void
+    public function changeVehicle(SelectVehicle $selectVehicle, Vehicle $vehicle): void
     {
         $this->authorize('update', $vehicle);
 
@@ -27,7 +26,8 @@ new #[Layout('layouts.app')] class extends Component
 
         $this->dispatch('new-vehicle-selected', nickname: $vehicle->nickname);
     }
-    public function mount(): void
+
+    public function mount()
     {
         $this->vehicles = Vehicle::where('user_id', Auth::id())->get();
     }
@@ -46,7 +46,7 @@ new #[Layout('layouts.app')] class extends Component
         <div class="p-4 sm:px-8 bg-white shadow sm:rounded-lg">
 
             <!-- Session Status -->
-            <x-auth-session-status class="mb-4" :status="session('status')" />
+            <x-auth-session-status class="mb-4" :status="session('status')"/>
 
             <div class="max-w-xl">
                 <header>
@@ -59,28 +59,28 @@ new #[Layout('layouts.app')] class extends Component
 
 
         @foreach($vehicles as $vehicle)
-        <div class="p-4 sm:p-8 bg-white shadow hover:shadow-blue-600/50 sm:rounded-lg">
-            <a wire:click="changeVehicle({{$vehicle->id}})" class="cursor-pointer">
-                <div class="flex justify-between">
-                    <div class="max-w-xl flex gap-x-4">
-                        <div class="@if($vehicle->is(session('vehicle'))) text-blue-600 @else text-gray-300 @endif">
-                            <x-phosphor-check-circle-duotone class="w-8 h-8 inline"/>
-                        </div>
-                        <div>
-                            <h2 class="text-xl font-bold text-gray-800">{{ $vehicle->nickname }}</h2>
-                            <div class="text-gray-500 text-sm">
-                                {{ $vehicle->year }} {{ $vehicle->make }} {{ $vehicle->model }}
+            <div class="p-4 sm:p-8 bg-white shadow hover:shadow-blue-600/50 sm:rounded-lg">
+                <a wire:click="changeVehicle({{$vehicle->id}})" class="cursor-pointer">
+                    <div class="flex justify-between">
+                        <div class="max-w-xl flex gap-x-4">
+                            <div class="@if($vehicle->is(session('vehicle'))) text-blue-600 @else text-gray-300 @endif">
+                                <x-phosphor-check-circle-duotone class="w-8 h-8 inline"/>
+                            </div>
+                            <div>
+                                <h2 class="text-xl font-bold text-gray-800">{{ $vehicle->nickname }}</h2>
+                                <div class="text-gray-500 text-sm">
+                                    {{ $vehicle->year }} {{ $vehicle->make }} {{ $vehicle->model }}
+                                </div>
                             </div>
                         </div>
+                        <div>
+                            <a href="{{ route('vehicles.edit', $vehicle) }}">
+                                <x-phosphor-note-pencil-duotone class="w-8 h-8 inline text-blue-600"/>
+                            </a>
+                        </div>
                     </div>
-                    <div>
-                        <a href="{{ route('vehicles.edit', $vehicle) }}">
-                            <x-phosphor-note-pencil-duotone class="w-8 h-8 inline text-blue-600"/>
-                        </a>
-                    </div>
-                </div>
-            </a>
-        </div>
+                </a>
+            </div>
         @endforeach
         <div class="p-4 sm:p-8 bg-white shadow hover:shadow-blue-600/50 sm:rounded-lg">
 
