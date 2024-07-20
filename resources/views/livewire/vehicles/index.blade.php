@@ -57,7 +57,6 @@ new #[Layout('layouts.app')] class extends Component {
             </div>
         </div>
 
-
         @foreach($vehicles as $vehicle)
             <div class="p-4 sm:p-8 bg-white shadow hover:shadow-blue-600/50 sm:rounded-lg">
                 <a wire:click="changeVehicle({{$vehicle->id}})" class="cursor-pointer">
@@ -82,8 +81,9 @@ new #[Layout('layouts.app')] class extends Component {
                 </a>
             </div>
         @endforeach
-        <div class="p-4 sm:p-8 bg-white shadow hover:shadow-blue-600/50 sm:rounded-lg">
 
+        @can('create', Vehicle::class)
+        <div class="p-4 sm:p-8 bg-white shadow hover:shadow-blue-600/50 sm:rounded-lg">
             <a href="{{ route('vehicles.create') }}">
                 <div class="flex justify-between">
                     <div class="max-w-xl text-blue-600 flex gap-x-4">
@@ -100,5 +100,6 @@ new #[Layout('layouts.app')] class extends Component {
                 </div>
             </a>
         </div>
+        @endif
     </div>
 </div>

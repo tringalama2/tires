@@ -12,6 +12,8 @@ class Vehicle extends Model
 {
     use HasFactory, SoftDeletes;
 
+    const MAX_VEHICLES_PER_USER = 5;
+
     protected $guarded = ['id'];
 
     public function user(): BelongsTo

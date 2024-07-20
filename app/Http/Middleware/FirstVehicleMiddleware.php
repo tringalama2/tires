@@ -36,7 +36,7 @@ class FirstVehicleMiddleware
                 'vehicles.store',
                 'livewire.update',
             ])) {
-            return to_route('vehicles.create')->with('status', 'Please add your first vehicle');
+            return to_route('vehicles.create')->with('status', 'Please add your first vehicle.');
         }
 
         return $next($request);

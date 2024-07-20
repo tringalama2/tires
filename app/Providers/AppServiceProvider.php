@@ -24,11 +24,11 @@ class AppServiceProvider extends ServiceProvider
 
         Model::shouldBeStrict(! app()->isProduction());
 
-        Carbon::macro('inApplicationTimezone', function() {
+        Carbon::macro('inApplicationTimezone', function () {
             return $this->tz(config('app.timezone_display'));
         });
 
-        Carbon::macro('inUserTimezone', function() {
+        Carbon::macro('inUserTimezone', function () {
             return $this->tz(auth()->user()?->timezone ?? config('app.default_display_timezone'));
         });
     }

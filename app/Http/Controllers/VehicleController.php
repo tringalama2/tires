@@ -6,6 +6,7 @@ use App\Http\Requests\VehicleCreateRequest;
 use App\Http\Requests\VehicleUpdateRequest;
 use App\Livewire\Actions\SelectVehicle;
 use App\Models\Vehicle;
+use Illuminate\Support\Facades\Gate;
 
 class VehicleController extends Controller
 {
@@ -14,6 +15,8 @@ class VehicleController extends Controller
      */
     public function create()
     {
+        Gate::authorize('create', Vehicle::class);
+
         return view('vehicles.create');
     }
 
@@ -22,6 +25,8 @@ class VehicleController extends Controller
      */
     public function store(VehicleCreateRequest $request, SelectVehicle $selectVehicle)
     {
+        Gate::authorize('create', Vehicle::class);
+
         $vehicle = Vehicle::create(array_merge($request->validated(), [
             'user_id' => auth()->id(),
         ]));
@@ -36,6 +41,8 @@ class VehicleController extends Controller
      */
     public function edit(Vehicle $vehicle)
     {
+        Gate::authorize('update', $vehicle);
+
         return view('vehicles.edit', compact('vehicle'));
     }
 
@@ -44,6 +51,8 @@ class VehicleController extends Controller
      */
     public function update(VehicleUpdateRequest $request, Vehicle $vehicle, SelectVehicle $selectVehicle)
     {
+        Gate::authorize('update', $vehicle);
+
         $vehicle->update($request->validated());
 
         $selectVehicle($vehicle);

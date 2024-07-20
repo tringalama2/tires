@@ -15,11 +15,11 @@ class VehicleFactory extends Factory
     {
         return [
             'user_id' => User::factory(),
-            'year' => $this->faker->year(),
-            'make' => $this->faker->word(),
-            'model' => $this->faker->word(),
-            'vin' => $this->faker->word(),
-            'nickname' => $this->faker->word(),
+            'year' => $this->faker->numberBetween(1900, 9999),
+            'make' => $this->faker->text(50),
+            'model' => $this->faker->text(50),
+            'vin' => $this->faker->text(17),
+            'nickname' => $this->faker->text(50),
             'tire_count' => $this->faker->numberBetween(4, 5),
             'last_selected_at' => null,
             'created_at' => Carbon::now(),

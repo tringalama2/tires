@@ -52,11 +52,11 @@ class User extends Authenticatable
 
     protected function tires(): HasManyThrough
     {
-        return $this->hasManyThrough(Tire::class,Vehicle::class);
+        return $this->hasManyThrough(Tire::class, Vehicle::class);
     }
 
     protected function rotations(): HasManyThrough
     {
-        return $this->hasManyThrough(Rotation::class,Vehicle::class);
+        return $this->hasManyThrough(Rotation::class, Vehicle::class);
     }
 }
