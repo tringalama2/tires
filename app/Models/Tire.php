@@ -19,7 +19,7 @@ class Tire extends Model
     protected function casts(): array
     {
         return [
-            'purchased_on' => 'date',
+            'purchased_on' => 'date:Y-m-d',
             'status' => TireStatus::class,
         ];
     }
