@@ -1,66 +1,72 @@
-<p align="center"><a href="https://laravel.com" target="_blank"><img src="https://raw.githubusercontent.com/laravel/art/master/logo-lockup/5%20SVG/2%20CMYK/1%20Full%20Color/laravel-logolockup-cmyk-red.svg" width="400" alt="Laravel Logo"></a></p>
+Readme
 
-<p align="center">
-<a href="https://github.com/laravel/framework/actions"><img src="https://github.com/laravel/framework/workflows/tests/badge.svg" alt="Build Status"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/dt/laravel/framework" alt="Total Downloads"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/v/laravel/framework" alt="Latest Stable Version"></a>
-<a href="https://packagist.org/packages/laravel/framework"><img src="https://img.shields.io/packagist/l/laravel/framework" alt="License"></a>
-</p>
+# Tread Wear and Rotation Tracker
 
-## About Laravel
+## About
 
-Laravel is a web application framework with expressive, elegant syntax. We believe development must be an enjoyable and creative experience to be truly fulfilling. Laravel takes the pain out of development by easing common tasks used in many web projects, such as:
+This application allows users to track their tire rotation history and gain insights into the average tread wear for each position.
 
-- [Simple, fast routing engine](https://laravel.com/docs/routing).
-- [Powerful dependency injection container](https://laravel.com/docs/container).
-- Multiple back-ends for [session](https://laravel.com/docs/session) and [cache](https://laravel.com/docs/cache) storage.
-- Expressive, intuitive [database ORM](https://laravel.com/docs/eloquent).
-- Database agnostic [schema migrations](https://laravel.com/docs/migrations).
-- [Robust background job processing](https://laravel.com/docs/queues).
-- [Real-time event broadcasting](https://laravel.com/docs/broadcasting).
+Each user can add as many vehicles as they would like. (We should probably limit this to 5 per user and charge a fleet fee for more).
 
-Laravel is accessible, powerful, and provides tools required for large, robust applications.
+When a vehicle is added the user will choose whether to rotate 4 or 5 tires (some vehicles will rotate a spare). The user will then add details for each tire (a label, TIN [unique identifier], and the current tread depth).
 
-## Learning Laravel
+Throughout use of the application, the user must always have one vehicle currently selected.  By default, the last selected vehicle will be selected (this is stored for each vehicle in the vehicles table and updated every time s vehicle is selected).
 
-Laravel has the most extensive and thorough [documentation](https://laravel.com/docs) and video tutorial library of all modern web application frameworks, making it a breeze to get started with the framework.
+To ensure vehicles are set up properly, users will be forced to create a vehicle if none exists. This is accomplished through middleware.
+(this could be changed to the routes file and per page instead of every page and excluding certain pages)
 
-You may also try the [Laravel Bootcamp](https://bootcamp.laravel.com), where you will be guided through building a modern Laravel application from scratch.
+They then must add tires to the vehicle if there are no active tires for the currently selected vehicle.  The number of tires must match the number expected in the vehicle.  This is another middleware check.  When tires are added, a first rotation will be created, so mileage (odometer) and date will need to be entered.
 
-If you don't feel like reading, [Laracasts](https://laracasts.com) can help. Laracasts contains thousands of video tutorials on a range of topics including Laravel, modern PHP, unit testing, and JavaScript. Boost your skills by digging into our comprehensive video library.
+When a user rotates their tires, they can drag and drop them around the vehicle manually or they can use a template, provided visually.  They will need to enter the tread depth, date (default as today) and odometer before saving.
 
-## Laravel Sponsors
+Each rotation stores the tread depth at the time of the rotation.  Thus, the current record in the DB shows the current position and the tread depth at the time of rotation. This depth also represents the ending depth of the prior position.  The difference between the depth at the start and end of each rotation is the tread wear and a key data point in the application.
 
-We would like to extend our thanks to the following sponsors for funding Laravel development. If you are interested in becoming a sponsor, please visit the [Laravel Partners program](https://partners.laravel.com).
+The user can then view a report for each tire and position.
 
-### Premium Partners
+When a user buys new tires, the can retire the prior tires (but the tread wear is still part of the history).
 
-- **[Vehikl](https://vehikl.com/)**
-- **[Tighten Co.](https://tighten.co)**
-- **[WebReinvent](https://webreinvent.com/)**
-- **[Kirschbaum Development Group](https://kirschbaumdevelopment.com)**
-- **[64 Robots](https://64robots.com)**
-- **[Curotec](https://www.curotec.com/services/technologies/laravel/)**
-- **[Cyber-Duck](https://cyber-duck.co.uk)**
-- **[DevSquad](https://devsquad.com/hire-laravel-developers)**
-- **[Jump24](https://jump24.co.uk)**
-- **[Redberry](https://redberry.international/laravel/)**
-- **[Active Logic](https://activelogic.com)**
-- **[byte5](https://byte5.de)**
-- **[OP.GG](https://op.gg)**
+A user can also have multiple sets of tires, such as winter snow tires and summer tires, so tire status can be installed, removed, and retired.  Users can swap a set of tires for another.
 
-## Contributing
+Finally, a user can soft delete a vehicle. Currently no option to restore.
 
-Thank you for considering contributing to the Laravel framework! The contribution guide can be found in the [Laravel documentation](https://laravel.com/docs/contributions).
+## Installation and Deployments
 
-## Code of Conduct
+*Run all scripts from the root directory*
 
-In order to ensure that the Laravel community is welcoming to all, please review and abide by the [Code of Conduct](https://laravel.com/docs/contributions#code-of-conduct).
+### New Local Development
 
-## Security Vulnerabilities
+#### `./bin/init.sh`
 
-If you discover a security vulnerability within Laravel, please send an e-mail to Taylor Otwell via [taylor@laravel.com](mailto:taylor@laravel.com). All security vulnerabilities will be promptly addressed.
+Start a new environment with a new .env, composer, app key, migrations, and npm
 
-## License
 
-The Laravel framework is open-sourced software licensed under the [MIT license](https://opensource.org/licenses/MIT).
+### Updating the app after merging source
+
+#### `./bin/update.sh`
+
+Install composer, npm, and run migrations.
+
+### Before Committing
+
+#### `./bin/precomit.sh`
+
+Run pint and pest
+
+### Production Deployment
+
+#### `./bin/deploy-production.sh`
+
+Deploys on the server.  
+
+## Dependencies
+
+- blade-phosphor-icons 
+- laravel/breeze
+- livewire/livewire 3
+- livewire/volt
+- staudenmeir/belongs-to-through 
+
+### Dev Dependencies
+
+- laravel/pint
+- pestphp/pest
