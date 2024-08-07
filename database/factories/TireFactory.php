@@ -16,7 +16,7 @@ class TireFactory extends Factory
     {
         return [
             'vehicle_id' => Vehicle::factory(),
-            'tin' => $this->faker->unique()->text(12),
+            'tin' => $this->faker->text(12),
             'label' => $this->faker->word(),
             'brand' => $this->faker->randomElement([
                 'BF Goodrich',

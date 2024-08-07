@@ -16,9 +16,4 @@ class VehicleUpdateRequest extends FormRequest
             'nickname' => 'required|string|max:50',
         ];
     }
-
-    public function authorize(): bool
-    {
-        return true;
-    }
 }

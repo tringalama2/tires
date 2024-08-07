@@ -2,7 +2,7 @@
 
 namespace App\Http\Middleware;
 
-use App\Livewire\Actions\SelectVehicle;
+use App\Actions\SelectVehicle;
 use App\Models\Vehicle;
 use Closure;
 use Illuminate\Http\Request;
@@ -27,7 +27,7 @@ class FirstVehicleMiddleware
         }
 
         // A user must create a vehicle after account is created (or if
-        // their last vehicle is deleted).  all rounds should redirect
+        // their last vehicle is deleted).  all routes should redirect
         // back to vehicles create except for the create/store and
         // associated livewire internal routes.
         if ($lastSelectedVehicle === null &&

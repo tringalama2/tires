@@ -10,17 +10,16 @@ return new class extends Migration
     {
         Schema::create('rotations', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->unsignedBigInteger('vehicle_id');
+            $table->uuid('tire_id');
+            $table->unsignedTinyInteger('starting_position');
             $table->date('rotated_on');
-            $table->unsignedMediumInteger('odometer');
+            $table->unsignedMediumInteger('starting_odometer');
+            $table->unsignedTinyInteger('starting_tread')->comment('in 32nds on an inch');
+
             $table->timestamps();
 
-            $table->foreign('vehicle_id')->references('id')->on('vehicles');
+            $table->foreign('tire_id')->references('id')->on('tires');
         });
     }
 
-    public function down(): void
-    {
-        Schema::dropIfExists('rotations');
-    }
 };

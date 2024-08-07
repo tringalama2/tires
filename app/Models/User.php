@@ -18,8 +18,11 @@ class User extends Authenticatable
      *
      * @var array<int, string>
      */
-    protected $guarded = [
-        'id',
+    protected $fillable = [
+        'first_name',
+        'last_name',
+        'email',
+        'password',
     ];
 
     /**
@@ -45,18 +48,13 @@ class User extends Authenticatable
         ];
     }
 
-    protected function vehicles(): HasMany
+    public function vehicles(): HasMany
     {
         return $this->hasMany(Vehicle::class);
     }
 
-    protected function tires(): HasManyThrough
+    public function tires(): HasManyThrough
     {
         return $this->hasManyThrough(Tire::class, Vehicle::class);
-    }
-
-    protected function rotations(): HasManyThrough
-    {
-        return $this->hasManyThrough(Rotation::class, Vehicle::class);
     }
 }

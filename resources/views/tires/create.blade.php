@@ -10,16 +10,16 @@
             <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
 
                 <!-- Session Status -->
-                <x-auth-session-status class="mb-4" :status="session('status')"/>
+                <x-auth-session-status class="mb-4" :status="session('status')" />
 
                 <div class="max-w-xl">
                     <header>
                         <h2 class="text-lg font-medium text-gray-900">
-                            Add a new tire to your vehicle: {{ session('vehicle')->nickname }}
+                            Add a new tire to your {{ $vehicle->yearMakeModel }} '<i class="italic">{{ $vehicle->nickname }}</i>'
                         </h2>
                     </header>
 
-                    <x-forms.tires/>
+                    <x-forms.tires :vehicle="$vehicle" :tirePosition="$tirePosition" :existingTire="$existingTire"/>
                 </div>
             </div>
         </div>

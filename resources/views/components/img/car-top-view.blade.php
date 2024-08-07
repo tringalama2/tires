@@ -1,4 +1,4 @@
-<svg fill="#000000" xmlns="http://www.w3.org/2000/svg"
+<svg xmlns="http://www.w3.org/2000/svg"
      viewBox="0 0 47.032 47.032" xml:space="preserve" {{ $attributes }}>
 <g>
     <path d="M29.395,0H17.636c-3.117,0-5.643,3.467-5.643,6.584v34.804c0,3.116,2.526,5.644,5.643,5.644h11.759

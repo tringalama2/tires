@@ -14,41 +14,33 @@ class Rotation extends Model
 {
     use HasFactory, HasUuids;
 
-    protected $guarded = ['id'];
-
-    public function user(): BelongsToThrough
-    {
-        return $this->belongsToThrough(User::class, Vehicle::class);
-    }
-
-    public function vehicle(): BelongsTo
-    {
-        return $this->belongsTo(Vehicle::class);
-    }
-
-    public function tires(): BelongsToMany
-    {
-        return $this->belongsToMany(Tire::class)
-            ->using(RotationTire::class)
-            ->as('tireDetails')
-            ->withPivot('position', 'tread')
-            ->withTimestamps();
-    }
-
-    public function tiresByPosition(TirePosition $position): BelongsToMany
-    {
-        return $this->belongsToMany(Tire::class)
-            ->using(RotationTire::class)
-            ->as('tireDetails')
-            ->withPivot('position', 'tread')
-            ->wherePivot('position', $position)
-            ->withTimestamps();
-    }
+    protected $fillable = [
+        'starting_position',
+        'rotated_on',
+        'starting_odometer',
+        'starting_tread',
+    ];
 
     protected function casts(): array
     {
         return [
-            'rotated_on' => 'date',
+            'rotated_on' => 'date:Y-m-d',
+            'starting_position' => TirePosition::class,
         ];
+    }
+
+    public function tires(): BelongsTo
+    {
+        return $this->belongsTo(Tire::class);
+    }
+
+    public function vehicle(): BelongsToThrough
+    {
+        return $this->belongsToThrough(Vehicle::class, Tire::class);
+    }
+
+    public function user(): BelongsToThrough
+    {
+        return $this->belongsToThrough(User::class, [Vehicle::class, Tire::class]);
     }
 }

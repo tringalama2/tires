@@ -2,12 +2,16 @@
 
 namespace App\Models;
 
+use App\Enums\TirePosition;
 use App\Enums\TireStatus;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\BelongsToMany;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+use Illuminate\Database\Eloquent\Relations\HasOne;
+use Illuminate\Database\Eloquent\Builder;
 use Znck\Eloquent\Relations\BelongsToThrough;
 
 class Tire extends Model
@@ -34,12 +38,28 @@ class Tire extends Model
         return $this->belongsTo(Vehicle::class);
     }
 
-    public function rotations(): BelongsToMany
+    public function rotations(): HasMany
     {
-        return $this->belongsToMany(Rotation::class)
-            ->using(RotationTire::class)
-            ->as('rotationDetails')
-            ->withPivot('position', 'tread')
-            ->withTimestamps();
+        return $this->hasMany(Rotation::class);
+    }
+
+    public function scopeInstalled(Builder $query): void
+    {
+        $query->where('status', TireStatus::Installed);
+    }
+
+    public function currentRotation(): HasOne
+    {
+        return $this->rotations()->one()->ofMany([
+            'starting_odometer' => 'max',
+        ]);
+    }
+
+
+    public function scopeCurrentRotationByPosition(Builder $query, TirePosition $tirePosition): void
+    {
+        $query->withWhereHas('currentRotation', function ($query) use ($tirePosition) {
+            $query->where('starting_position', $tirePosition);
+        });
     }
 }

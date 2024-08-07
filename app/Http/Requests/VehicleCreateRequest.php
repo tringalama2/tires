@@ -15,11 +15,7 @@ class VehicleCreateRequest extends FormRequest
             'vin' => 'required|string|max:17',
             'nickname' => 'required|string|max:50',
             'tire_count' => 'required|integer|between:4,5',
+            'starting_odometer' => 'required|integer|between:1,16777215',
         ];
-    }
-
-    public function authorize(): bool
-    {
-        return true;
     }
 }

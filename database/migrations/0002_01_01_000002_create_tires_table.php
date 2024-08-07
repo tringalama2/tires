@@ -25,9 +25,4 @@ return new class extends Migration
             $table->foreign('vehicle_id')->references('id')->on('vehicles');
         });
     }
-
-    public function down(): void
-    {
-        Schema::dropIfExists('tires');
-    }
 };

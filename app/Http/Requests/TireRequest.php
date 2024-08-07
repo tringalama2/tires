@@ -11,7 +11,6 @@ class TireRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'user_id' => ['required', 'integer'],
             'tin' => ['nullable', 'max:17'],
             'label' => ['required', 'max:255'],
             'brand' => ['nullable', 'max:255'],
@@ -20,12 +19,7 @@ class TireRequest extends FormRequest
             'size' => ['nullable', 'max:255'],
             'purchased_on' => ['required', 'date'],
             'notes' => ['nullable', 'max:255'],
-            'status' => ['required', new Enum(TireStatus::class)],
+            'starting_tread' => ['required', 'max:255'],
         ];
-    }
-
-    public function authorize(): bool
-    {
-        return true;
     }
 }

@@ -4,7 +4,7 @@ namespace App\Http\Controllers;
 
 use App\Http\Requests\VehicleCreateRequest;
 use App\Http\Requests\VehicleUpdateRequest;
-use App\Livewire\Actions\SelectVehicle;
+use App\Actions\SelectVehicle;
 use App\Models\Vehicle;
 use Illuminate\Support\Facades\Gate;
 
@@ -27,13 +27,11 @@ class VehicleController extends Controller
     {
         Gate::authorize('create', Vehicle::class);
 
-        $vehicle = Vehicle::create(array_merge($request->validated(), [
-            'user_id' => auth()->id(),
-        ]));
+        $vehicle = auth()->user()->vehicles()->create($request->validated());
 
         $selectVehicle($vehicle);
 
-        return redirect()->route('vehicles.index')->with('status', 'Vehicle saved.');
+        return redirect()->route('vehicles.setuptires.index', $vehicle)->with('status', 'Vehicle saved.');
     }
 
     /**

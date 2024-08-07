@@ -1,6 +1,6 @@
 <?php
 
-use App\Http\Controllers\TireController;
+use App\Http\Controllers\TireSetupController;
 use App\Http\Controllers\VehicleController;
 use App\Livewire\RotationDashboard;
 use Illuminate\Support\Facades\Route;
@@ -12,21 +12,27 @@ Route::middleware(['auth'])->group(function () {
     Route::view('profile', 'profile')->name('profile');
 
     Route::middleware(['verified'])->group(function () {
-        //Volt::route('dashboard', 'dashboard')->name('dashboard');
-        Route::get('dashboard', RotationDashboard::class)->name('dashboard')
-            ->middleware('activeVehicleTires');
 
         Route::resource('vehicles', VehicleController::class)->only([
-            'create', 'store', 'edit', 'update',
+            'create', 'store'
         ]);
 
-        Route::resource('vehicles.tires', TireController::class)->only([
-            'index', 'create', 'store', 'edit', 'update',
-        ]);
+        Route::middleware(['firstVehicleExists'])->group(function () {
 
-        Volt::route('tires', 'tires.index')->name('tires.index');
+            Route::resource('vehicles', VehicleController::class)->only([
+                'edit', 'update'
+            ]);
 
-        Volt::route('vehicles', 'vehicles.index')->name('vehicles.index');
+            Volt::route('vehicles', 'vehicles.index')->name('vehicles.index');
+
+            Route::get('vehicles/{vehicle}/setuptires/create/{tirePosition}', [TireSetupController::class, 'create'])->name('vehicles.setuptires.create');
+            Route::post('vehicles/{vehicle}/setuptires/{tirePosition}', [TireSetupController::class, 'store'])->name('vehicles.setuptires.store');
+            Route::resource('vehicles.setuptires', TireSetupController::class)->scoped(['tires' => 'id'])->only('index');
+
+            Route::middleware(['activeVehicleTires'])->group(function () {
+                Route::get('dashboard/{vehicle_id?}', RotationDashboard::class)->name('dashboard');
+            });
+        });
     });
 });
 

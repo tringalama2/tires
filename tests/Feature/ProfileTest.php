@@ -3,12 +3,14 @@
 use App\Models\User;
 use Livewire\Volt\Volt;
 
+uses()->group('auth');
+
 test('profile page is displayed', function () {
     $user = User::factory()->create();
 
-    $this->actingAs($user);
-
-    $response = $this->get('/profile');
+    $response = $this
+        ->actingAs($user)
+        ->get('/profile');
 
     $response
         ->assertOk()
@@ -23,7 +25,8 @@ test('profile information can be updated', function () {
     $this->actingAs($user);
 
     $component = Volt::test('profile.update-profile-information-form')
-        ->set('name', 'Test User')
+        ->set('first_name', 'Test')
+        ->set('last_name', 'User')
         ->set('email', 'test@example.com')
         ->call('updateProfileInformation');
 
@@ -33,7 +36,8 @@ test('profile information can be updated', function () {
 
     $user->refresh();
 
-    $this->assertSame('Test User', $user->name);
+    $this->assertSame('Test', $user->first_name);
+    $this->assertSame('User', $user->last_name);
     $this->assertSame('test@example.com', $user->email);
     $this->assertNull($user->email_verified_at);
 });
@@ -44,7 +48,8 @@ test('email verification status is unchanged when the email address is unchanged
     $this->actingAs($user);
 
     $component = Volt::test('profile.update-profile-information-form')
-        ->set('name', 'Test User')
+        ->set('first_name', 'Test')
+        ->set('last_name', 'User')
         ->set('email', $user->email)
         ->call('updateProfileInformation');
 

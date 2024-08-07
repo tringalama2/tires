@@ -13,12 +13,15 @@ return Application::configure(basePath: dirname(__DIR__))
         health: '/up',
     )
     ->withMiddleware(function (Middleware $middleware) {
-        $middleware->web(append: [
-            FirstVehicleMiddleware::class,
-        ])->alias([
-            'activeVehicleTires' => ActiveVehicleTiresMiddleware::class,
-        ]);
-        //$middleware->append(FirstVehicleMiddleware::class);
+        $middleware
+//            ->web(append: [
+//                MyGlobalWebMiddleware::class,
+//            ])
+            ->alias([
+                'firstVehicleExists' => FirstVehicleMiddleware::class,
+                'activeVehicleTires' => ActiveVehicleTiresMiddleware::class,
+            ]);
+        //$middleware->append(MyGlobalMiddleware::class);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //

@@ -16,6 +16,10 @@ use Tests\TestCase;
 
 uses(TestCase::class, RefreshDatabase::class)->in('Feature');
 
+uses()
+    ->group('auth')
+    ->in('Feature/Auth');
+
 /*
 |--------------------------------------------------------------------------
 | Expectations

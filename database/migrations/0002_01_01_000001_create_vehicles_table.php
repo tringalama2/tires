@@ -4,8 +4,7 @@ use Illuminate\Database\Migrations\Migration;
 use Illuminate\Database\Schema\Blueprint;
 use Illuminate\Support\Facades\Schema;
 
-return new class extends Migration
-{
+return new class extends Migration {
     public function up(): void
     {
         Schema::create('vehicles', function (Blueprint $table) {
@@ -18,6 +17,7 @@ return new class extends Migration
             $table->string('nickname', 50);
             $table->unsignedTinyInteger('tire_count')->default(5);
             $table->timestamp('last_selected_at')->nullable();
+            $table->unsignedMediumInteger('starting_odometer');
             $table->softDeletes();
             $table->timestamps();
 
