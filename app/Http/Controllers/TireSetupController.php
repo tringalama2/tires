@@ -2,6 +2,7 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\SelectVehicle;
 use App\Enums\TirePosition;
 use App\Enums\TireStatus;
 use App\Http\Requests\TireRequest;
@@ -14,9 +15,13 @@ use ValueError;
 
 class TireSetupController extends Controller
 {
-    public function index(Vehicle $vehicle): RedirectResponse|View
+    public function __construct() {}
+
+    public function index(SelectVehicle $selectVehicle, Vehicle $vehicle): RedirectResponse|View
     {
         Gate::authorize('view', $vehicle);
+
+        $selectVehicle($vehicle);
 
         $frontLeftTire = Tire::installed()->where('vehicle_id', $vehicle->id)->currentRotationByPosition(TirePosition::FrontLeft)->first();
         $frontRightTire = Tire::installed()->where('vehicle_id', $vehicle->id)->currentRotationByPosition(TirePosition::FrontRight)->first();

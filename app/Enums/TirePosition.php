@@ -2,6 +2,8 @@
 
 namespace App\Enums;
 
+use Illuminate\Support\Str;
+
 enum TirePosition: int
 {
     use Labelable;
@@ -26,5 +28,10 @@ enum TirePosition: int
             self::RearRight => 'Rear Right',
             self::Spare => 'Spare',
         };
+    }
+
+    public function camel(): string
+    {
+        return Str::camel(self::label());
     }
 }

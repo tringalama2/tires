@@ -68,10 +68,12 @@ new class extends Component {
         <!-- Details Popover -->
         <div x-data="{ showPopover: false }">
             <button
-                @click="showPopover = !showPopover"
+                x-transition
+                @click="$dispatch('pop', { from: '{{ $position->camel() }}PositionHistory' });"
+                @pop.window="showPopover = $event.detail.from == '{{ $position->camel() }}PositionHistory'"
                 class="ml-2 hover:bg-gray-300 font-bold p-1 rounded transition-colors duration-300"
                 :class="{'bg-gray-300' : showPopover}"/>
-                <x-phosphor-list-magnifying-glass class="w-6" />
+            <x-phosphor-list-magnifying-glass class="w-6"/>
             </button>
 
             <div x-show="showPopover"
@@ -83,7 +85,12 @@ new class extends Component {
                  x-transition:leave-end="opacity-0 transform scale-95"
                  class="@if($position->side() == 'Right') -translate-x-full @endif font-normal text-sm z-10 absolute bg-gray-100 border shadow-md mt-1 px-4rounded">
 
-                <h3 class="text-lg font-extralight px-3">{{ $position->label() }} Position History</h3>
+                <div class="flex justify-between">
+                    <h3 class="text-lg font-extralight px-3">{{ $position->label() }} Position History</h3>
+                    <button @click="showPopover = false">
+                        <x-phosphor-x-square-duotone class="w-6 h-6 inline text-red-400"/>
+                    </button>
+                </div>
                 <table>
                     <thead>
                     <tr class="font-bold text-xs bg-gray-200 border-y border-gray-600">
@@ -127,7 +134,9 @@ new class extends Component {
                                                      )</small></div>
             <div x-data="{ showPopover: false }">
                 <button
-                    @click="showPopover = !showPopover"
+                    x-transition
+                    @click="$dispatch('pop', { from: '{{ $position->camel() }}TireHistory' });"
+                    @pop.window="showPopover = $event.detail.from == '{{ $position->camel() }}TireHistory'"
                     class="ml-2 hover:bg-gray-300 font-bold p-1 rounded transition-colors duration-300"
                     :class="{'bg-gray-300' : showPopover}">
                     <x-phosphor-list-magnifying-glass class="w-6"/>
@@ -142,9 +151,15 @@ new class extends Component {
                      x-transition:leave-end="opacity-0 transform scale-95"
                      class="-translate-x-1/2 font-normal text-sm z-10 absolute bg-gray-100 border shadow-md mt-1 px-4rounded">
 
-                    <h3 class="text-lg font-extralight px-3">Tire History:
-                        <i class="italic">{{ $this->tireHistory->first()->label }}</i>
-                    </h3>
+                    <div class="flex justify-between">
+                        <h3 class="text-lg font-extralight px-3">Tire History:
+                            <i class="italic">{{ $this->tireHistory->first()->label }}</i>
+                        </h3>
+                        <button @click="showPopover = false">
+                            <x-phosphor-x-square-duotone class="w-6 h-6 inline text-red-400"/>
+                        </button>
+                    </div>
+
                     <table>
                         <thead>
                         <tr class="font-bold text-xs bg-gray-200 border-y border-gray-600">
