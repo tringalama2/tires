@@ -14,13 +14,13 @@ Route::middleware(['auth'])->group(function () {
     Route::middleware(['verified'])->group(function () {
 
         Route::resource('vehicles', VehicleController::class)->only([
-            'create', 'store'
+            'create', 'store',
         ]);
 
         Route::middleware(['firstVehicleExists'])->group(function () {
 
             Route::resource('vehicles', VehicleController::class)->only([
-                'edit', 'update'
+                'edit', 'update',
             ]);
 
             Volt::route('vehicles', 'vehicles.index')->name('vehicles.index');
@@ -31,6 +31,8 @@ Route::middleware(['auth'])->group(function () {
 
             Route::middleware(['activeVehicleTires'])->group(function () {
                 Route::get('dashboard/{vehicle_id?}', RotationDashboard::class)->name('dashboard');
+
+                Volt::route('rotations/update', 'rotations.update')->name('rotations.update');
             });
         });
     });
