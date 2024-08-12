@@ -117,7 +117,7 @@ new #[Layout('layouts.app')] class extends Component {
 
             position.addEventListener('drop', function (e) {
                 e.preventDefault();
-                this.classList.remove('bg-blue-300')
+                this.classList.replace('bg-blue-300', 'bg-gray-300')
                 let draggingTire = dragRoot.querySelector('[dragging]')
                 let currentTire = this.querySelector('[drag-tire]')
                 if (currentTire != null) {
@@ -129,18 +129,18 @@ new #[Layout('layouts.app')] class extends Component {
             })
 
             position.addEventListener('dragenter', function (e) {
-                this.classList.add('bg-blue-300')
+                this.classList.replace('bg-gray-300', 'bg-blue-300')
                 // console.log('dragenter drag-position', this)
                 e.preventDefault()
             })
 
             position.addEventListener('dragover', function (e) {
-                this.classList.add('bg-blue-300')
+                this.classList.replace('bg-gray-300', 'bg-blue-300')
                 e.preventDefault()
             })
 
             position.addEventListener('dragleave', function (e) {
-                this.classList.remove('bg-blue-300')
+                this.classList.replace('bg-blue-300', 'bg-gray-300')
                 // console.log('leave drag-position', this)
             })
 
@@ -158,26 +158,26 @@ new #[Layout('layouts.app')] class extends Component {
         // As a reminder, arrow functions do not have their own 'this' context.
         garage.addEventListener('drop', function (e) {
             e.preventDefault();
-            this.classList.remove('bg-blue-300')
+            this.classList.replace('bg-blue-300', 'bg-gray-300')
             let draggingTire = dragRoot.querySelector('[dragging]')
             this.appendChild(draggingTire)
             // console.log('drop drag-garage', this)
         })
 
         garage.addEventListener('dragenter', function (e) {
-            this.classList.add('bg-blue-300')
+            this.classList.replace('bg-gray-300', 'bg-blue-300')
             // console.log('dragenter drag-garage', this)
             e.preventDefault()
         })
 
         garage.addEventListener('dragover', function (e) {
-            this.classList.add('bg-blue-300')
+            this.classList.replace('bg-gray-300', 'bg-blue-300')
             // console.log('dragover', this)
             e.preventDefault()
         })
 
         garage.addEventListener('dragleave', function (e) {
-            this.classList.remove('bg-blue-300')
+            this.classList.replace('bg-blue-300', 'bg-gray-300')
             // console.log('leave drag-garage', this)
         })
 
