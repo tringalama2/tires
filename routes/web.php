@@ -32,7 +32,7 @@ Route::middleware(['auth'])->group(function () {
             Route::middleware(['activeVehicleTires'])->group(function () {
                 Route::get('dashboard/{vehicle_id?}', RotationDashboard::class)->name('dashboard');
 
-                Volt::route('rotations/update', 'rotations.update')->name('rotations.update');
+                Volt::route('rotations/update/{vehicle_id?}', 'rotations.update')->name('rotations.update');
             });
         });
     });
