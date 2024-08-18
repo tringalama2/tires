@@ -2,9 +2,7 @@
 
 namespace App\Http\Requests;
 
-use App\Enums\TireStatus;
 use Illuminate\Foundation\Http\FormRequest;
-use Illuminate\Validation\Rules\Enum;
 
 class TireRequest extends FormRequest
 {
@@ -19,7 +17,7 @@ class TireRequest extends FormRequest
             'size' => ['nullable', 'max:255'],
             'purchased_on' => ['required', 'date'],
             'notes' => ['nullable', 'max:255'],
-            'starting_tread' => ['required', 'max:255'],
+            'starting_tread' => ['required', 'integer', 'between:0,255'],
         ];
     }
 }

@@ -17,7 +17,6 @@
                 ->where('tires.id', $tire->id)
                 ->limit(5)
                 ->get();
-
 @endphp
 
 <div class="flex flex-col">

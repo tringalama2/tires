@@ -98,7 +98,7 @@ new #[Layout('layouts.app')] class extends Component {
                             </a>
                         </div>
                         <div class="me-3">
-                            <a href="{{ route('rotations.update', $vehicle) }}">
+                            <a href="{{ route('rotations.prepare', $vehicle) }}">
                                 <x-phosphor-swap-duotone class="w-8 h-8 inline text-blue-600"/>
                                 Rotate
                             </a>

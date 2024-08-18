@@ -23,6 +23,11 @@ new #[Layout('layouts.app')] class extends Component {
 
     public function mount(SelectVehicle $selectVehicle): void
     {
+        if (session()->missing('rotation.starting_odometer')) {
+            $params = isset($this->vehicle_id) ? ['vehicle_id' => $this->vehicle_id] : [];
+            $this->redirect(route('rotations.prepare', $params), navigate: true);
+        }
+
         if (isset($this->vehicle_id)) {
             $this->vehicle = Vehicle::findOrFail($this->vehicle_id);
             $selectVehicle($this->vehicle);
@@ -92,7 +97,7 @@ new #[Layout('layouts.app')] class extends Component {
                         <div drag-position="{{ TirePosition::FrontRight->camel() }}" class="justify-self-center bg-gray-300 border border-gray-500 p-2 w-44 h-40">
                             <x-rotate::tire-draggable
                                 :position="TirePosition::FrontRight"
-                                :tire="$this->frontRightTire"
+                                :tire="$frontRightTire"
                                 color="text-indigo-600"
                             />
                         </div>

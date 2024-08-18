@@ -34,4 +34,9 @@ enum TirePosition: int
     {
         return Str::camel(self::label());
     }
+
+    public function snake(): string
+    {
+        return Str::snake(self::label());
+    }
 }

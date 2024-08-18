@@ -32,7 +32,7 @@ new class extends Component {
                     <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" wire:navigate>
                         {{ __('Dashboard') }}
                     </x-nav-link>
-                    <x-nav-link :href="route('rotations.update')" :active="request()->routeIs('rotations.update')" wire:navigate>
+                    <x-nav-link :href="route('rotations.prepare')" :active="request()->routeIs('rotations.prepare')" wire:navigate>
                         {{ __('Rotate') }}
                     </x-nav-link>
                     <x-nav-link :href="route('vehicles.index')" :active="request()->routeIs(['vehicles.index', 'vehicles.create'])" wire:navigate>
@@ -98,7 +98,7 @@ new class extends Component {
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" wire:navigate>
                 {{ __('Dashboard') }}
             </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('rotations.update')" :active="request()->routeIs('rotations.update')" wire:navigate>
+            <x-responsive-nav-link :href="route('rotations.prepare')" :active="request()->routeIs('rotations.prepare')" wire:navigate>
                 {{ __('Rotate') }}
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('vehicles.index')" :active="request()->routeIs(['vehicles.index', 'vehicles.create'])" wire:navigate>
