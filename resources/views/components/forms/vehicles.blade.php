@@ -26,7 +26,7 @@
         </div>
 
         <!-- Model -->
-            <div class="mt-4 basis-5/12">
+        <div class="mt-4 basis-5/12">
             <x-input-label for="model" :value="__('Model')"/>
             <x-text-input :value="old('model', $model?->model)" id="model" class="block mt-1 w-full" type="text" name="model" required/>
             <x-forms.input-error for="model" class="mt-2"/>
@@ -43,35 +43,34 @@
     <!-- Nickname -->
     <div class="mt-4">
         <x-input-label for="nickname" :value="__('Nickname')"/>
-        <x-text-input :value="old('nickname', $model?->nickname)" id="nickname" class="block mt-1 w-full" type="text" name="nickname" required/>
+        <x-text-input :value="old('nickname', $model?->nickname)" id="nickname" class="block mt-1 w-full" type="text" name="nickname"/>
         <x-forms.input-error for="nickname" class="mt-2"/>
     </div>
 
     @if($model===null)
 
+        <div class="flex flex-col sm:flex-row">
+            <!-- Tires to Rotate -->
+            <div class="mt-4 basis-1/2 sm:pe-8">
+                <x-input-label for="tire_count">
+                    {{ __('Number of Tires to Rotate') }}
+                    <span class="text-sm text-gray-400 italic ps-4">(4 or 5)</span>
+                </x-input-label>
+                <x-text-input type="number" min="4" max="5" step="1"
+                              :value="old('tire_count')" id="tire_count"
+                              class="block mt-1 w-full" name="tire_count"
+                              required
+                />
+                <x-forms.input-error for="tire_count" class="mt-2"/>
+            </div>
 
-    <div class="flex flex-col sm:flex-row">
-        <!-- Tires to Rotate -->
-        <div class="mt-4 basis-1/2 sm:pe-8">
-            <x-input-label for="tire_count">
-                {{ __('Number of Tires to Rotate') }}
-                <span class="text-sm text-gray-400 italic ps-4">(4 or 5)</span>
-            </x-input-label>
-            <x-text-input type="number" min="4" max="5" step="1"
-                          :value="old('tire_count')" id="tire_count"
-                          class="block mt-1 w-full" name="tire_count"
-                          required
-            />
-            <x-forms.input-error for="tire_count" class="mt-2"/>
+            <!-- Starting Odometer -->
+            <div class="mt-4 basis-1/2">
+                <x-input-label for="size" :value="__('Current Odometer')"/>
+                <x-text-input :value="old('starting_odometer')" id="starting_odometer" class="block mt-1 w-full" type="number" name="starting_odometer"/>
+                <x-forms.input-error for="starting_odometer" class="mt-2"/>
+            </div>
         </div>
-
-        <!-- Starting Odometer -->
-        <div class="mt-4 basis-1/2">
-            <x-input-label for="size" :value="__('Current Odometer')"/>
-            <x-text-input :value="old('starting_odometer')" id="starting_odometer" class="block mt-1 w-full" type="number" name="starting_odometer"/>
-            <x-forms.input-error for="starting_odometer" class="mt-2"/>
-        </div>
-    </div>
 
     @endif
 

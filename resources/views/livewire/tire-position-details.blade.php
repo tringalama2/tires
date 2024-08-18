@@ -65,7 +65,7 @@ new class extends Component {
             {{ $position->label() }}
         </span>
 
-        <!-- Details Popover -->
+        <!-- Position Details Popover -->
         <div x-data="{ showPopover: false }">
             <button
                 x-transition
@@ -132,6 +132,8 @@ new class extends Component {
             <div>Current Tire: {{ $this->tireHistory->first()->label }}
                 <small class="text-sm text-gray-500">( {{ $this->tireHistory->first()->tin }}
                                                      )</small></div>
+
+            <!-- Tire Details Popover -->
             <div x-data="{ showPopover: false }">
                 <button
                     x-transition

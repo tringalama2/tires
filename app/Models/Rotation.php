@@ -7,7 +7,6 @@ use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Illuminate\Database\Eloquent\Relations\BelongsToMany;
 use Znck\Eloquent\Relations\BelongsToThrough;
 
 class Rotation extends Model
@@ -29,7 +28,7 @@ class Rotation extends Model
         ];
     }
 
-    public function tires(): BelongsTo
+    public function tire(): BelongsTo
     {
         return $this->belongsTo(Tire::class);
     }
