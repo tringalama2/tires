@@ -1,0 +1,21 @@
+{
+    "agents": [
+        "claude_code"
+    ],
+    "cloud": true,
+    "guidelines": true,
+    "mcp": true,
+    "nightwatch": false,
+    "packages": [
+        "barryvdh/laravel-debugbar"
+    ],
+    "sail": false,
+    "skills": [
+        "laravel-best-practices",
+        "livewire-development",
+        "pest-testing",
+        "tailwindcss-development",
+        "debug-using-debugbar",
+        "deploying-laravel-cloud"
+    ]
+}
