@@ -6,95 +6,79 @@ use App\Models\Tire;
 use App\Models\Vehicle;
 use Illuminate\Support\Carbon;
 use App\Enums\TirePosition;
-use function Livewire\Volt\{layout, mount, rules, state};
+use Livewire\Attributes\Layout;
+use Livewire\Attributes\Validate;
+use Livewire\Component;
 
-state([
-    'vehicle_id',
-    'vehicle',
-    'vehicle_tire_count',
-    'starting_odometer',
-    'rotated_on' => fn() => Carbon::today()->toDateString(),
-    sprintf('starting_tread_%s', TirePosition::FrontLeft->snake()),
-    sprintf('starting_tread_%s', TirePosition::FrontRight->snake()),
-    sprintf('starting_tread_%s', TirePosition::RearLeft->snake()),
-    sprintf('starting_tread_%s', TirePosition::RearRight->snake()),
-    sprintf('starting_tread_%s', TirePosition::Spare->snake()),
-    'frontLeftTire',
-    'frontRightTire',
-    'rearLeftTire',
-    'rearRightTire',
-    'spareTire',
-]);
+new #[Layout('layouts.app')] class extends Component {
 
-layout('layouts.app');
+    public $vehicle_id;
+    public $vehicle;
+    public $vehicle_tire_count;
 
+    #[Validate('required|integer|between:1,16777215')]
+    public $starting_odometer;
 
-rules([
-    'starting_odometer' => ['required', 'integer', 'between:1,16777215'],
-    'rotated_on' => ['required', 'date'],
-    sprintf('starting_tread_%s', TirePosition::FrontLeft->snake()) => ['required', 'integer', 'between:0,255'],
-    sprintf('starting_tread_%s', TirePosition::FrontRight->snake()) => ['required', 'integer', 'between:0,255'],
-    sprintf('starting_tread_%s', TirePosition::RearLeft->snake()) => ['required', 'integer', 'between:0,255'],
-    sprintf('starting_tread_%s', TirePosition::RearRight->snake()) => ['required', 'integer', 'between:0,255'],
-    sprintf('starting_tread_%s', TirePosition::Spare->snake()) => ['required', 'integer', 'between:0,255'],
-]);
+    #[Validate('required|date')]
+    public $rotated_on;
 
-$next = function () {
-    $validated = $this->validate();
+    #[Validate('required|integer|between:0,255')]
+    public $starting_tread_front_left;
 
-    session(['rotation.starting_odometer' => $validated['starting_odometer']]);
-    session(['rotation.rotated_on' => $validated['rotated_on']]);
-    session([
-        sprintf('rotation.starting_tread_%s',
-            TirePosition::FrontLeft->snake()) => $validated[sprintf('starting_tread_%s',
-            TirePosition::FrontLeft->snake())]
-    ]);
-    session([
-        sprintf('rotation.starting_tread_%s',
-            TirePosition::FrontRight->snake()) => $validated[sprintf('starting_tread_%s',
-            TirePosition::FrontRight->snake())]
-    ]);
-    session([
-        sprintf('rotation.starting_tread_%s',
-            TirePosition::RearLeft->snake()) => $validated[sprintf('starting_tread_%s',
-            TirePosition::RearLeft->snake())]
-    ]);
-    session([
-        sprintf('rotation.starting_tread_%s',
-            TirePosition::RearRight->snake()) => $validated[sprintf('starting_tread_%s',
-            TirePosition::RearRight->snake())]
-    ]);
-    session([
-        sprintf('rotation.starting_tread_%s', TirePosition::Spare->snake()) => $validated[sprintf('starting_tread_%s',
-            TirePosition::Spare->snake())]
-    ]);
+    #[Validate('required|integer|between:0,255')]
+    public $starting_tread_front_right;
 
-    $this->redirect(route('rotations.update'), navigate: true);
-};
+    #[Validate('required|integer|between:0,255')]
+    public $starting_tread_rear_left;
 
-mount(function (SelectVehicle $selectVehicle, PredictCurrentOdometer $predictCurrentOdometer) {
-    if (isset($this->vehicle_id)) {
-        $this->vehicle = Vehicle::findOrFail($this->vehicle_id);
-        $selectVehicle($this->vehicle);
-    } else {
-        $this->vehicle = session('vehicle');
+    #[Validate('required|integer|between:0,255')]
+    public $starting_tread_rear_right;
+
+    #[Validate('required|integer|between:0,255')]
+    public $starting_tread_spare;
+
+    public $frontLeftTire;
+    public $frontRightTire;
+    public $rearLeftTire;
+    public $rearRightTire;
+    public $spareTire;
+
+    public function mount(SelectVehicle $selectVehicle, PredictCurrentOdometer $predictCurrentOdometer): void
+    {
+        $this->rotated_on = Carbon::today()->toDateString();
+
+        if (isset($this->vehicle_id)) {
+            $this->vehicle = Vehicle::findOrFail($this->vehicle_id);
+            $selectVehicle($this->vehicle);
+        } else {
+            $this->vehicle = session('vehicle');
+        }
+
+        $this->vehicle_tire_count = $this->vehicle->tire_count;
+        $this->starting_odometer = $predictCurrentOdometer($this->vehicle);
+
+        $this->frontLeftTire = Tire::installed()->where('vehicle_id', $this->vehicle->id)->currentRotationByPosition(TirePosition::FrontLeft)->first();
+        $this->frontRightTire = Tire::installed()->where('vehicle_id', $this->vehicle->id)->currentRotationByPosition(TirePosition::FrontRight)->first();
+        $this->rearLeftTire = Tire::installed()->where('vehicle_id', $this->vehicle->id)->currentRotationByPosition(TirePosition::RearLeft)->first();
+        $this->rearRightTire = Tire::installed()->where('vehicle_id', $this->vehicle->id)->currentRotationByPosition(TirePosition::RearRight)->first();
+        $this->spareTire = Tire::installed()->where('vehicle_id', $this->vehicle->id)->currentRotationByPosition(TirePosition::Spare)->first();
     }
 
-    $this->vehicle_tire_count = $this->vehicle->tire_count;
+    public function next(): void
+    {
+        $validated = $this->validate();
 
-    $this->starting_odometer = $predictCurrentOdometer($this->vehicle);
+        session(['rotation.starting_odometer' => $validated['starting_odometer']]);
+        session(['rotation.rotated_on' => $validated['rotated_on']]);
+        session([sprintf('rotation.starting_tread_%s', TirePosition::FrontLeft->snake()) => $validated['starting_tread_front_left']]);
+        session([sprintf('rotation.starting_tread_%s', TirePosition::FrontRight->snake()) => $validated['starting_tread_front_right']]);
+        session([sprintf('rotation.starting_tread_%s', TirePosition::RearLeft->snake()) => $validated['starting_tread_rear_left']]);
+        session([sprintf('rotation.starting_tread_%s', TirePosition::RearRight->snake()) => $validated['starting_tread_rear_right']]);
+        session([sprintf('rotation.starting_tread_%s', TirePosition::Spare->snake()) => $validated['starting_tread_spare']]);
 
-    $this->frontLeftTire = Tire::installed()->where('vehicle_id',
-        $this->vehicle->id)->currentRotationByPosition(TirePosition::FrontLeft)->first();
-    $this->frontRightTire = Tire::installed()->where('vehicle_id',
-        $this->vehicle->id)->currentRotationByPosition(TirePosition::FrontRight)->first();
-    $this->rearLeftTire = Tire::installed()->where('vehicle_id',
-        $this->vehicle->id)->currentRotationByPosition(TirePosition::RearLeft)->first();
-    $this->rearRightTire = Tire::installed()->where('vehicle_id',
-        $this->vehicle->id)->currentRotationByPosition(TirePosition::RearRight)->first();
-    $this->spareTire = Tire::installed()->where('vehicle_id',
-        $this->vehicle->id)->currentRotationByPosition(TirePosition::Spare)->first();
-});
+        $this->redirect(route('rotations.update'), navigate: true);
+    }
+};
 
 ?>
 
@@ -177,5 +161,4 @@ mount(function (SelectVehicle $selectVehicle, PredictCurrentOdometer $predictCur
             </div>
         </div>
     </div>
-</div>
 </div>

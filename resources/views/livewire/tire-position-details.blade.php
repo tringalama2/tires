@@ -4,7 +4,7 @@ use App\Enums\TirePosition;
 use App\Enums\TireStatus;
 use App\Models\Rotation;
 use Livewire\Attributes\Computed;
-use Livewire\Volt\Component;
+use Livewire\Component;
 use Illuminate\Database\Query\Builder;
 use Illuminate\Database\Eloquent\Collection;
 use Illuminate\Support\Facades\DB;

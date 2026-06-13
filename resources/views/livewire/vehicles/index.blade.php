@@ -11,7 +11,7 @@ use Illuminate\Support\Facades\Session;
 use Illuminate\Validation\Rules;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Validate;
-use Livewire\Volt\Component;
+use Livewire\Component;
 
 new #[Layout('layouts.app')] class extends Component {
     public Collection $vehicles;
