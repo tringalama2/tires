@@ -103,6 +103,18 @@ return [
     |
     */
 
-    'prefix' => env('CACHE_PREFIX', Str::slug(env('APP_NAME', 'laravel'), '_').'_cache_'),
+    'prefix' => env('CACHE_PREFIX', Str::slug(env('APP_NAME', 'laravel')).'-cache-'),
+
+    /*
+    |--------------------------------------------------------------------------
+    | Serializable Classes
+    |--------------------------------------------------------------------------
+    |
+    | When set to false, only scalar values may be stored in the cache. If your
+    | application intentionally stores PHP objects, list them explicitly here.
+    |
+    */
+
+    'serializable_classes' => false,
 
 ];
