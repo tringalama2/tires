@@ -1,21 +1,47 @@
+@import url('https://fonts.googleapis.com/css2?family=Oswald:wght@300;400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap');
+
 @tailwind base;
 @tailwind components;
 @tailwind utilities;
 
+@layer base {
+    :root {
+        --tread-good: #2F8F52;
+        --tread-fair: #C98A00;
+        --tread-low:  #FF5400;
+        --tread-worn: #C42B22;
+    }
+
+    body {
+        font-family: 'Figtree', ui-sans-serif, system-ui, sans-serif;
+        color: #0F1410;
+        background: #FBFCFA;
+    }
+}
+
 @layer components {
-    .btn {
-        @apply inline-flex items-center px-4 py-2 border border-transparent rounded-md font-semibold uppercase tracking-widest focus:outline-none focus:ring-2 focus:ring-offset-2 transition ease-in-out duration-150;
+    /* Inline-SVG icon default sizing */
+    .tm-ic {
+        width: 1em;
+        height: 1em;
+        display: inline-block;
+        flex: none;
+        vertical-align: -0.125em;
     }
 
-    .btn-white {
-        @apply btn bg-white text-gray-900 hover:bg-gray-300 focus:bg-gray-300 active:bg-white focus:ring-indigo-500;
+    /* Tread gauge track + fill — used by <x-treadmark.tread-gauge> */
+    .tread-gauge-track {
+        @apply relative h-2 w-full rounded-pill bg-ink-100 overflow-hidden;
     }
 
-    .btn-dark-gray {
-        @apply btn bg-gray-800 text-white hover:bg-gray-700 focus:bg-gray-700 active:bg-gray-900 focus:ring-indigo-500;
+    .tread-gauge-fill {
+        @apply absolute inset-y-0 left-0 rounded-pill transition-all duration-300;
+        width: var(--gauge-pct, 0%);
+        background-color: var(--gauge-color, #2F8F52);
     }
 
-    .btn-dark-red {
-        @apply btn bg-red-800 text-white hover:bg-red-700 focus:bg-red-700 active:bg-red-900 focus:ring-indigo-500;
+    .tread-gauge-limit {
+        @apply absolute inset-y-0 w-px bg-rust-600 opacity-60;
+        left: var(--limit-pct, 12.5%);
     }
 }
