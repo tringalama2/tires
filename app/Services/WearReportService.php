@@ -85,15 +85,22 @@ class WearReportService
                 ->map(fn ($p) => $p->rotated_on.': '.$p->note)
                 ->all();
 
+            $avgWear = $count > 0 ? round($tireIntervals->avg('wear_per_1000mi'), 4) : null;
+
+            $projectedMiles = null;
+            if ($count >= 2 && $avgWear > 0 && $latestPlacement) {
+                $remaining = ((float) $latestPlacement->tread_center - 2.0) / $avgWear * 1000;
+                $projectedMiles = max(0, round($remaining));
+            }
+
             return [
                 'tire' => $tire,
                 'current_position' => $this->tireService->currentPosition($tire),
                 'latest_tread_center' => $latestPlacement ? (float) $latestPlacement->tread_center : null,
                 'latest_tread_inner' => $latestPlacement ? $latestPlacement->tread_inner : null,
                 'latest_tread_outer' => $latestPlacement ? $latestPlacement->tread_outer : null,
-                'lifetime_avg_wear_per_1000mi' => $count > 0
-                    ? round($tireIntervals->avg('wear_per_1000mi'), 4)
-                    : null,
+                'lifetime_avg_wear_per_1000mi' => $avgWear,
+                'projected_miles' => $projectedMiles,
                 'notes' => $notes,
             ];
         });

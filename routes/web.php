@@ -34,6 +34,10 @@ Route::middleware(['auth'])->group(function () {
                 Route::livewire('rotations/prepare/{vehicle_id?}', 'rotations.prepare')->name('rotations.prepare');
                 Route::livewire('rotations/update/{vehicle_id?}', 'rotations.update')->name('rotations.update');
                 Route::livewire('rotations/prepare/edit/{edit_rotation_id}/{vehicle_id?}', 'rotations.prepare')->name('rotations.edit');
+
+                Route::livewire('reports/by-position', 'reports.by-position')->name('reports.by-position');
+                Route::livewire('reports/by-tire', 'reports.by-tire')->name('reports.by-tire');
+                Route::livewire('tires/{tire}', 'tires.show')->name('tires.show');
             });
         });
     });
