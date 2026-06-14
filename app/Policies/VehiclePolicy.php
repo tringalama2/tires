@@ -25,7 +25,7 @@ class VehiclePolicy
 
     public function create(User $user): Response
     {
-        return count($user->vehicles) < Vehicle::MAX_VEHICLES_PER_USER
+        return $user->vehicles()->count() < Vehicle::MAX_VEHICLES_PER_USER
             ? Response::allow()
             : Response::denyWithStatus(403, 'You are only allowed to create '.Vehicle::MAX_VEHICLES_PER_USER.' vehicles.');
     }

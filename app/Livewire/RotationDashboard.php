@@ -3,14 +3,8 @@
 namespace App\Livewire;
 
 use App\Actions\SelectVehicle;
-use App\Enums\TirePosition;
-use App\Enums\TireStatus;
 use App\Models\Rotation;
-use App\Models\Tire;
 use App\Models\Vehicle;
-use Illuminate\Database\Query\Builder;
-use Illuminate\Database\Eloquent\Collection;
-use Illuminate\Support\Facades\DB;
 use Illuminate\View\View;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
@@ -19,10 +13,10 @@ use Livewire\Component;
 class RotationDashboard extends Component
 {
     public ?int $vehicle_id;
-    public $vehicle_tire_count;
+
     protected Vehicle $vehicle;
 
-    public function mount(SelectVehicle $selectVehicle)
+    public function mount(SelectVehicle $selectVehicle): void
     {
         if (isset($this->vehicle_id)) {
             $this->vehicle = Vehicle::findOrFail($this->vehicle_id);
@@ -32,25 +26,21 @@ class RotationDashboard extends Component
         }
 
         $this->vehicle_id = $this->vehicle->id;
-        $this->vehicle_tire_count = session('vehicle')->tire_count;
 
-        if ($this->vehicle->tires->count() === 0) {
-            return redirect()->route('vehicles.setuptires.index', ['vehicle' => $this->vehicle])->with('status', 'Let\'s setup your tires for this vehicle');
+        if ($this->vehicle->tires()->count() === 0) {
+            $this->redirect(route('vehicles.setuptires.index', ['vehicle' => $this->vehicle]));
         }
     }
 
     #[Computed]
-    public function latestRotation(): Rotation
+    public function latestRotation(): ?Rotation
     {
-        return Rotation::query()
-            ->whereIn('tire_id', function (Builder $query) {
-                $query->select(['id'])->from('tires')
-                    ->where('tires.vehicle_id', $this->vehicle->id);
-            })
-            ->latest('starting_odometer')
+        // TODO Phase 4: expand dashboard with last rotation summary and replacement alerts
+        return $this->vehicle->rotations()
+            ->where('is_setup', false)
+            ->orderByDesc('odometer')
             ->first();
     }
-
 
     #[Layout('layouts.app')]
     public function render(): View

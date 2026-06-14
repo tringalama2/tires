@@ -80,8 +80,8 @@ Fact table. One row per tire per rotation.
 id              uuid PK
 rotation_id     uuid FK → rotations
 tire_id         uuid FK → tires
-from_position   string(5) nullable        -- null only on is_setup rotations
-to_position     string(5) NOT NULL        -- enum: FL|FR|RL|RR|SPARE
+from_position   string(2) nullable        -- null only on is_setup rotations
+to_position     string(2) NOT NULL        -- enum: FL|FR|RL|RR|SP
 tread_center    decimal(4,1) required     -- 32nds, allows .5
 tread_inner     decimal(4,1) nullable
 tread_outer     decimal(4,1) nullable

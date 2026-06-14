@@ -4,19 +4,20 @@ namespace App\Enums;
 
 use Illuminate\Support\Str;
 
-enum TirePosition: int
+enum TirePosition: string
 {
     use Labelable;
 
-    case FrontLeft = 1;
-    case FrontRight = 2;
-    case RearLeft = 3;
-    case RearRight = 4;
-    case Spare = 5;
+    case FrontLeft = 'FL';
+    case FrontRight = 'FR';
+    case RearLeft = 'RL';
+    case RearRight = 'RR';
+    case Spare = 'SP';
 
-    public function side(): string
+    /** Canonical display order for forms and reports. */
+    public static function order(): array
     {
-        return substr(self::label(), strrpos(self::label(), ' ') + 1);
+        return [self::FrontLeft, self::FrontRight, self::RearLeft, self::RearRight, self::Spare];
     }
 
     public function label(): string
@@ -32,11 +33,11 @@ enum TirePosition: int
 
     public function camel(): string
     {
-        return Str::camel(self::label());
+        return Str::camel($this->label());
     }
 
     public function snake(): string
     {
-        return Str::snake(self::label());
+        return Str::snake($this->label());
     }
 }

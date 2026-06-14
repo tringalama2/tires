@@ -37,16 +37,12 @@ new #[Layout('layouts.app')] class extends Component {
 
         $this->vehicle_tire_count = $this->vehicle->tire_count;
 
-        $this->frontLeftTire = Tire::installed()->where('vehicle_id',
-            $this->vehicle->id)->currentRotationByPosition(TirePosition::FrontLeft)->first();
-        $this->frontRightTire = Tire::installed()->where('vehicle_id',
-            $this->vehicle->id)->currentRotationByPosition(TirePosition::FrontRight)->first();
-        $this->rearLeftTire = Tire::installed()->where('vehicle_id',
-            $this->vehicle->id)->currentRotationByPosition(TirePosition::RearLeft)->first();
-        $this->rearRightTire = Tire::installed()->where('vehicle_id',
-            $this->vehicle->id)->currentRotationByPosition(TirePosition::RearRight)->first();
-        $this->spareTire = Tire::installed()->where('vehicle_id',
-            $this->vehicle->id)->currentRotationByPosition(TirePosition::Spare)->first();
+        // TODO Phase 2: load tires by current position via TireService::currentPosition()
+        $this->frontLeftTire = null;
+        $this->frontRightTire = null;
+        $this->rearLeftTire = null;
+        $this->rearRightTire = null;
+        $this->spareTire = null;
     }
 
     public function rotate(

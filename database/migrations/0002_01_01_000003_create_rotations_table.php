@@ -10,16 +10,19 @@ return new class extends Migration
     {
         Schema::create('rotations', function (Blueprint $table) {
             $table->uuid('id')->primary();
-            $table->uuid('tire_id');
-            $table->unsignedTinyInteger('starting_position');
+            $table->unsignedBigInteger('vehicle_id');
             $table->date('rotated_on');
-            $table->unsignedMediumInteger('starting_odometer');
-            $table->unsignedTinyInteger('starting_tread')->comment('in 32nds on an inch');
-
+            $table->unsignedMediumInteger('odometer');
+            $table->text('note')->nullable();
+            $table->boolean('is_setup')->default(false)->comment('true for the initial tire-install event, not a real rotation');
             $table->timestamps();
 
-            $table->foreign('tire_id')->references('id')->on('tires');
+            $table->foreign('vehicle_id')->references('id')->on('vehicles');
         });
     }
 
+    public function down(): void
+    {
+        Schema::dropIfExists('rotations');
+    }
 };

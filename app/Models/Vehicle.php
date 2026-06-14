@@ -2,17 +2,13 @@
 
 namespace App\Models;
 
-use App\Enums\TirePosition;
 use App\Enums\TireStatus;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasManyThrough;
-use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
-use Illuminate\Database\Query\Builder;
 
 class Vehicle extends Model
 {
@@ -41,7 +37,7 @@ class Vehicle extends Model
     protected function yearMakeModel(): Attribute
     {
         return Attribute::make(
-            get: fn (mixed $value, array $attributes) => $attributes['year'] . ' ' . $attributes['make'] . ' ' . $attributes['model']
+            get: fn (mixed $value, array $attributes) => $attributes['year'].' '.$attributes['make'].' '.$attributes['model']
         );
     }
 
@@ -55,13 +51,19 @@ class Vehicle extends Model
         return $this->hasMany(Tire::class);
     }
 
-    public function installedTires(): HasMany
+    public function activeTires(): HasMany
     {
-        return $this->hasMany(Tire::class)->where('status', TireStatus::Installed);
+        return $this->hasMany(Tire::class)->where('status', TireStatus::Active);
     }
 
-    public function rotations(): HasManyThrough
+    /** @deprecated Use activeTires(). Kept for middleware compatibility. */
+    public function installedTires(): HasMany
     {
-        return $this->hasManyThrough(Rotation::class, Tire::class);
+        return $this->activeTires();
+    }
+
+    public function rotations(): HasMany
+    {
+        return $this->hasMany(Rotation::class);
     }
 }

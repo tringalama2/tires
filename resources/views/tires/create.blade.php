@@ -19,7 +19,7 @@
                         </h2>
                     </header>
 
-                    <x-forms.tires :vehicle="$vehicle" :tirePosition="$tirePosition" :existingTire="$existingTire"/>
+                    <x-forms.tires :vehicle="$vehicle" :tirePosition="$position" :existingTire="$existingTire"/>
                 </div>
             </div>
         </div>

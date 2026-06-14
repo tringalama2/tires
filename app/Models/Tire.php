@@ -2,7 +2,6 @@
 
 namespace App\Models;
 
-use App\Enums\TirePosition;
 use App\Enums\TireStatus;
 use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
@@ -10,8 +9,7 @@ use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
-use Illuminate\Database\Eloquent\Relations\HasOne;
-use Znck\Eloquent\Relations\BelongsToThrough;
+use Illuminate\Database\Eloquent\Relations\HasManyThrough;
 
 class Tire extends Model
 {
@@ -27,47 +25,23 @@ class Tire extends Model
         ];
     }
 
-    public function user(): BelongsToThrough
-    {
-        return $this->belongsToThrough(User::class, Vehicle::class);
-    }
-
     public function vehicle(): BelongsTo
     {
         return $this->belongsTo(Vehicle::class);
     }
 
-    public function rotations(): HasMany
+    public function placements(): HasMany
     {
-        return $this->hasMany(Rotation::class);
+        return $this->hasMany(Placement::class);
     }
 
-    public function scopeInstalled(Builder $query): void
+    public function rotations(): HasManyThrough
     {
-        $query->where('status', TireStatus::Installed);
+        return $this->hasManyThrough(Rotation::class, Placement::class, 'tire_id', 'id', 'id', 'rotation_id');
     }
 
-    public function scopeWithCurrentRotation($query): void
+    public function scopeActive(Builder $query): void
     {
-        $query->addSelect([
-            'current_rotation_id' => Rotation::select('id')
-                ->whereColumn('tire_id', 'tires.id')
-                ->latest('starting_odometer')
-                ->take(1),
-        ])->with('currentRotation');
-    }
-
-    public function currentRotation(): HasOne
-    {
-        return $this->rotations()->one()->ofMany([
-            'starting_odometer' => 'max',
-        ]);
-    }
-
-    public function scopeCurrentRotationByPosition(Builder $query, TirePosition $tirePosition): void
-    {
-        $query->withWhereHas('currentRotation', function ($query) use ($tirePosition) {
-            $query->where('starting_position', $tirePosition);
-        });
+        $query->where('status', TireStatus::Active);
     }
 }

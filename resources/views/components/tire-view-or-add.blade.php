@@ -23,13 +23,15 @@
                 <div class="w-1/3">Size:</div>
                 <div class="w-2/3">{{ $tire->size }}</div>
             </div>
+            @if($tire->purchased_on)
             <div class="flex">
                 <div class="w-1/3">Purchased:</div>
                 <div class="w-2/3">{{ $tire->purchased_on->format('M Y') }}</div>
             </div>
+            @endif
         </div>
     @else
         <a class="btn-white text-xs ms-4"
-           href="{{ route('vehicles.setuptires.create', compact('vehicle', 'tirePosition')) }}">Add Tire</a>
+           href="{{ route('vehicles.setuptires.create', ['vehicle' => $vehicle, 'tirePosition' => $tirePosition->value]) }}">Add Tire</a>
     @endif
 </div>

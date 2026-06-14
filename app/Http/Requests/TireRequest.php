@@ -9,15 +9,14 @@ class TireRequest extends FormRequest
     public function rules(): array
     {
         return [
-            'tin' => ['nullable', 'max:17'],
-            'label' => ['required', 'max:255'],
-            'brand' => ['nullable', 'max:255'],
-            'model' => ['nullable', 'max:255'],
-            'desc' => ['nullable', 'max:255'],
-            'size' => ['nullable', 'max:255'],
-            'purchased_on' => ['required', 'date'],
-            'notes' => ['nullable', 'max:255'],
-            'starting_tread' => ['required', 'integer', 'between:0,255'],
+            'label' => ['required', 'string', 'max:255'],
+            'brand' => ['nullable', 'string', 'max:255'],
+            'model' => ['nullable', 'string', 'max:255'],
+            'tin' => ['nullable', 'string', 'max:12'],
+            'size' => ['nullable', 'string', 'max:255'],
+            'purchased_on' => ['nullable', 'date'],
+            'notes' => ['nullable', 'string', 'max:1000'],
+            'starting_tread' => ['required', 'numeric', 'between:0,20'],
         ];
     }
 }

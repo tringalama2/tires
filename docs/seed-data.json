@@ -46,7 +46,7 @@
                 },
                 {
                     "tire": "T3",
-                    "from": "SPARE",
+                    "from": "SP",
                     "to": "RL",
                     "center": 15
                 },
@@ -59,7 +59,7 @@
                 {
                     "tire": "T5",
                     "from": "FR",
-                    "to": "SPARE",
+                    "to": "SP",
                     "center": 11
                 }
             ]
@@ -71,7 +71,7 @@
                 {
                     "tire": "T1",
                     "from": "FL",
-                    "to": "SPARE",
+                    "to": "SP",
                     "center": 8,
                     "note": "scalloped (inner > outer) wear / vibrating steering wheel since start of rotation"
                 },
@@ -97,7 +97,7 @@
                 },
                 {
                     "tire": "T5",
-                    "from": "SPARE",
+                    "from": "SP",
                     "to": "RR",
                     "center": 11
                 }
@@ -128,13 +128,13 @@
                 {
                     "tire": "T5",
                     "from": "RR",
-                    "to": "SPARE",
+                    "to": "SP",
                     "center": 11,
                     "note": "inside more worn"
                 },
                 {
                     "tire": "T1",
-                    "from": "SPARE",
+                    "from": "SP",
                     "to": "RL",
                     "center": 9
                 }
@@ -165,13 +165,13 @@
                 {
                     "tire": "T2",
                     "from": "RR",
-                    "to": "SPARE",
+                    "to": "SP",
                     "center": 6,
                     "note": "Now the shaking is back"
                 },
                 {
                     "tire": "T5",
-                    "from": "SPARE",
+                    "from": "SP",
                     "to": "FL",
                     "center": 9
                 }

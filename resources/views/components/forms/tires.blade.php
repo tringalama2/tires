@@ -4,7 +4,7 @@
     $method = $model ? 'put' : 'post';
     $route = $model
         ? route('vehicles.setuptires.update', ['vehicle' => $vehicle, 'tire' => $model])
-        : route('vehicles.setuptires.store', ['vehicle' => $vehicle, 'tirePosition' => $tirePosition]);
+        : route('vehicles.setuptires.store', ['vehicle' => $vehicle, 'tirePosition' => $tirePosition?->value ?? $tirePosition]);
 @endphp
 
 <form method="post" action="{{ $route }}">
@@ -56,7 +56,7 @@
     <!-- Purchase Date -->
     <div class="mt-4">
         <x-input-label for="purchased_on" :value="__('Purchase Date')"/>
-        <x-text-input :value="old('purchased_on', $model?->purchased_on->toDateString() ?? $existingTire?->purchased_on->toDateString())" id="purchased_on" class="block mt-1 w-full sm:w-48" type="date" name="purchased_on" required/>
+        <x-text-input :value="old('purchased_on', $model?->purchased_on?->toDateString() ?? $existingTire?->purchased_on?->toDateString())" id="purchased_on" class="block mt-1 w-full sm:w-48" type="date" name="purchased_on"/>
         <x-forms.input-error for="purchased_on" class="mt-2"/>
     </div>
 

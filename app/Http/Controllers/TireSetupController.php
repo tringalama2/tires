@@ -15,65 +15,93 @@ use ValueError;
 
 class TireSetupController extends Controller
 {
-    public function __construct() {}
-
     public function index(SelectVehicle $selectVehicle, Vehicle $vehicle): RedirectResponse|View
     {
         Gate::authorize('view', $vehicle);
 
         $selectVehicle($vehicle);
 
-        $frontLeftTire = Tire::installed()->where('vehicle_id', $vehicle->id)->currentRotationByPosition(TirePosition::FrontLeft)->first();
-        $frontRightTire = Tire::installed()->where('vehicle_id', $vehicle->id)->currentRotationByPosition(TirePosition::FrontRight)->first();
-        $rearLeftTire = Tire::installed()->where('vehicle_id', $vehicle->id)->currentRotationByPosition(TirePosition::RearLeft)->first();
-        $rearRightTire = Tire::installed()->where('vehicle_id', $vehicle->id)->currentRotationByPosition(TirePosition::RearRight)->first();
-        $spareTire = Tire::installed()->where('vehicle_id', $vehicle->id)->currentRotationByPosition(TirePosition::Spare)->first();
+        $setupRotation = $vehicle->rotations()->where('is_setup', true)->first();
+        $placedPositions = $setupRotation
+            ? $setupRotation->placements()->pluck('to_position')->all()
+            : [];
 
-        return view('tires.index', compact('vehicle', 'frontLeftTire', 'frontRightTire', 'rearLeftTire', 'rearRightTire', 'spareTire'));
+        $tireAtPosition = function (TirePosition $position) use ($setupRotation): ?Tire {
+            if (! $setupRotation) {
+                return null;
+            }
+
+            $placement = $setupRotation->placements()
+                ->where('to_position', $position->value)
+                ->with('tire')
+                ->first();
+
+            return $placement?->tire;
+        };
+
+        return view('tires.index', [
+            'vehicle' => $vehicle,
+            'frontLeftTire' => $tireAtPosition(TirePosition::FrontLeft),
+            'frontRightTire' => $tireAtPosition(TirePosition::FrontRight),
+            'rearLeftTire' => $tireAtPosition(TirePosition::RearLeft),
+            'rearRightTire' => $tireAtPosition(TirePosition::RearRight),
+            'spareTire' => $tireAtPosition(TirePosition::Spare),
+        ]);
     }
 
-    public function create(Vehicle $vehicle, int $intTirePosition): RedirectResponse|View
+    public function create(Vehicle $vehicle, string $tirePosition): RedirectResponse|View
     {
         Gate::authorize('create', Tire::class);
 
         try {
-            $tirePosition = TirePosition::from($intTirePosition);
-        } catch (ValueError $e) {
-            abort(404, 'Invalid Tire position.');
+            $position = TirePosition::from($tirePosition);
+        } catch (ValueError) {
+            abort(404, 'Invalid tire position.');
         }
 
-        $existingTire = Tire::installed()->where('vehicle_id', $vehicle->id)->first();
+        // Guard: reject if this position already has a tire in the setup rotation.
+        $setupRotation = $vehicle->rotations()->where('is_setup', true)->first();
+        if ($setupRotation && $setupRotation->placements()->where('to_position', $position->value)->exists()) {
+            return redirect()
+                ->route('vehicles.setuptires.index', $vehicle)
+                ->with('status', "A tire is already placed at {$position->label()}.");
+        }
 
-        return view('tires.create', compact('vehicle', 'tirePosition', 'existingTire'));
+        $existingTire = $vehicle->tires()->first();
+
+        return view('tires.create', compact('vehicle', 'position', 'existingTire'));
     }
 
-    public function store(TireRequest $request, Vehicle $vehicle, int $intTirePosition)
+    public function store(TireRequest $request, Vehicle $vehicle, string $tirePosition): RedirectResponse
     {
         Gate::authorize('create', Tire::class);
 
         try {
-            $tirePosition = TirePosition::from($intTirePosition);
-        } catch (ValueError $e) {
-            abort(404, 'Invalid Tire position.');
+            $position = TirePosition::from($tirePosition);
+        } catch (ValueError) {
+            abort(404, 'Invalid tire position.');
         }
 
-        $tire = $vehicle->tires()->create($request->safe()->except(['starting_tread']) + ['status' => TireStatus::Installed]);
+        $tire = $vehicle->tires()->create(
+            $request->safe()->except(['starting_tread']) + ['status' => TireStatus::Active]
+        );
 
-        $rotation = $tire->rotations()->create([
-            'starting_position' => $intTirePosition,
-            'rotated_on' => $vehicle->created_at->toDateString(),
-            'starting_odometer' => $vehicle->starting_odometer,
-            'starting_tread' => $request->safe()['starting_tread'],
+        // Find or create the vehicle's is_setup rotation at the vehicle's starting odometer.
+        $setupRotation = $vehicle->rotations()->firstOrCreate(
+            ['is_setup' => true],
+            [
+                'rotated_on' => $vehicle->created_at->toDateString(),
+                'odometer' => $vehicle->starting_odometer,
+            ]
+        );
+
+        $setupRotation->placements()->create([
+            'tire_id' => $tire->id,
+            'from_position' => null,
+            'to_position' => $position->value,
+            'tread_center' => $request->validated()['starting_tread'],
         ]);
 
         return to_route('vehicles.setuptires.index', $vehicle);
     }
-
-    public function show(Vehicle $vehicle, Tire $tire) {}
-
-    public function edit(Vehicle $vehicle, Tire $tire) {}
-
-    public function update(TireRequest $request, Vehicle $vehicle, Tire $tire) {}
-
-    public function destroy(Vehicle $vehicle, Tire $tire) {}
 }

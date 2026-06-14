@@ -43,7 +43,7 @@
     <!-- Nickname -->
     <div class="mt-4">
         <x-input-label for="nickname" :value="__('Nickname')"/>
-        <x-text-input :value="old('nickname', $model?->nickname)" id="nickname" class="block mt-1 w-full" type="text" name="nickname"/>
+        <x-text-input :value="old('nickname', $model?->nickname)" id="nickname" class="block mt-1 w-full" type="text" name="nickname" required/>
         <x-forms.input-error for="nickname" class="mt-2"/>
     </div>
 
@@ -67,7 +67,7 @@
             <!-- Starting Odometer -->
             <div class="mt-4 basis-1/2">
                 <x-input-label for="size" :value="__('Current Odometer')"/>
-                <x-text-input :value="old('starting_odometer')" id="starting_odometer" class="block mt-1 w-full" type="number" name="starting_odometer"/>
+                <x-text-input :value="old('starting_odometer')" id="starting_odometer" class="block mt-1 w-full" type="number" name="starting_odometer" required/>
                 <x-forms.input-error for="starting_odometer" class="mt-2"/>
             </div>
         </div>

@@ -2,44 +2,33 @@
 
 namespace App\Models;
 
-use App\Enums\TirePosition;
 use Illuminate\Database\Eloquent\Concerns\HasUuids;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
-use Znck\Eloquent\Relations\BelongsToThrough;
+use Illuminate\Database\Eloquent\Relations\HasMany;
 
 class Rotation extends Model
 {
     use HasFactory, HasUuids;
 
-    protected $fillable = [
-        'starting_position',
-        'rotated_on',
-        'starting_odometer',
-        'starting_tread',
-    ];
+    protected $guarded = ['id'];
 
     protected function casts(): array
     {
         return [
             'rotated_on' => 'date:Y-m-d',
-            'starting_position' => TirePosition::class,
+            'is_setup' => 'boolean',
         ];
     }
 
-    public function tire(): BelongsTo
+    public function vehicle(): BelongsTo
     {
-        return $this->belongsTo(Tire::class);
+        return $this->belongsTo(Vehicle::class);
     }
 
-    public function vehicle(): BelongsToThrough
+    public function placements(): HasMany
     {
-        return $this->belongsToThrough(Vehicle::class, Tire::class);
-    }
-
-    public function user(): BelongsToThrough
-    {
-        return $this->belongsToThrough(User::class, [Vehicle::class, Tire::class]);
+        return $this->hasMany(Placement::class);
     }
 }
