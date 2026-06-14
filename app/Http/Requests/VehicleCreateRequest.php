@@ -12,7 +12,7 @@ class VehicleCreateRequest extends FormRequest
             'year' => 'required|integer|between:1900,9999',
             'make' => 'required|string|max:50',
             'model' => 'required|string|max:50',
-            'vin' => 'required|string|max:17',
+            'vin' => 'nullable|string|max:17',
             'nickname' => 'required|string|max:50',
             'tire_count' => 'required|integer|between:4,5',
             'starting_odometer' => 'required|integer|between:1,16777215',

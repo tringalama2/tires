@@ -36,7 +36,7 @@
     <!-- VIN -->
     <div class="mt-4">
         <x-input-label for="vin" :value="__('VIN')"/>
-        <x-text-input :value="old('vin', $model?->vin)" id="vin" class="block mt-1 w-full" type="text" name="vin" required/>
+        <x-text-input :value="old('vin', $model?->vin)" id="vin" class="block mt-1 w-full" type="text" name="vin"/>
         <x-forms.input-error for="vin" class="mt-2"/>
     </div>
 

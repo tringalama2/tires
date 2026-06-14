@@ -12,7 +12,7 @@ class VehicleUpdateRequest extends FormRequest
             'year' => 'required|integer|between:1900,9999',
             'make' => 'required|string|max:50',
             'model' => 'required|string|max:50',
-            'vin' => 'required|string|max:17',
+            'vin' => 'nullable|string|max:17',
             'nickname' => 'required|string|max:50',
         ];
     }
