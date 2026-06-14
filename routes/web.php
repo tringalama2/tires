@@ -37,6 +37,7 @@ Route::middleware(['auth'])->group(function () {
 
                 Route::livewire('reports/by-position', 'reports.by-position')->name('reports.by-position');
                 Route::livewire('reports/by-tire', 'reports.by-tire')->name('reports.by-tire');
+                Route::livewire('tires', 'tires.index')->name('tires.index');
                 Route::livewire('tires/{tire}', 'tires.show')->name('tires.show');
             });
         });

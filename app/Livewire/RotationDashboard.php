@@ -5,6 +5,9 @@ namespace App\Livewire;
 use App\Actions\SelectVehicle;
 use App\Models\Rotation;
 use App\Models\Vehicle;
+use App\Services\WearReportService;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
 use Illuminate\View\View;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
@@ -35,11 +38,35 @@ class RotationDashboard extends Component
     #[Computed]
     public function latestRotation(): ?Rotation
     {
-        // TODO Phase 4: expand dashboard with last rotation summary and replacement alerts
         return $this->vehicle->rotations()
             ->where('is_setup', false)
             ->orderByDesc('odometer')
             ->first();
+    }
+
+    #[Computed]
+    public function daysSinceRotation(): ?int
+    {
+        if (! $this->latestRotation) {
+            return null;
+        }
+
+        return (int) Carbon::parse($this->latestRotation->rotated_on)->diffInDays(Carbon::today());
+    }
+
+    /**
+     * Tires projected to hit 2/32" within 10,000 miles.
+     * Returns collection of ['tire', 'projected_miles', 'current_position'].
+     */
+    #[Computed]
+    public function replacementAlerts(): Collection
+    {
+        $report = app(WearReportService::class)->wearByTire($this->vehicle);
+
+        return $report
+            ->filter(fn ($r) => $r['projected_miles'] !== null && $r['projected_miles'] <= 10000)
+            ->sortBy('projected_miles')
+            ->values();
     }
 
     #[Layout('layouts.app')]
