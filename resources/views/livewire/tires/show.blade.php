@@ -239,7 +239,7 @@ new #[Layout('layouts.app')] class extends Component {
                                                         {{ $p->tread_inner ?? '?' }} / {{ $p->tread_outer ?? '?' }}
                                                     </span>
                                                     @if ($scalloped)
-                                                        <x-phosphor-warning-circle-duotone class="w-3.5 h-3.5 inline text-red-500" title="Uneven wear. Check pressure and alignment." />
+                                                        <x-scallop-warning />
                                                     @endif
                                                 @else
                                                     <span class="text-gray-400">—</span>

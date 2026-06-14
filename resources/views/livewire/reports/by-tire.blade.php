@@ -112,14 +112,14 @@ new #[Layout('layouts.app')] class extends Component {
                                     </td>
                                     <td class="py-3 text-right">
                                         @if ($row['latest_tread_inner'] !== null || $row['latest_tread_outer'] !== null)
-                                            <span class="{{ $hasScallop ? 'text-red-600 font-semibold' : 'text-gray-600' }}">
-                                                {{ $row['latest_tread_inner'] ?? '?' }} / {{ $row['latest_tread_outer'] ?? '?' }}
-                                            </span>
-                                            @if ($hasScallop)
-                                                <span title="Uneven wear detected. Check tire pressure (target 30 PSI) and inspect alignment.">
-                                                    <x-phosphor-warning-circle-duotone class="w-4 h-4 inline text-red-500 ml-1" />
+                                            <span class="inline-flex items-center gap-1 justify-end">
+                                                <span class="{{ $hasScallop ? 'text-red-600 font-semibold' : 'text-gray-600' }}">
+                                                    {{ $row['latest_tread_inner'] ?? '?' }} / {{ $row['latest_tread_outer'] ?? '?' }}
                                                 </span>
-                                            @endif
+                                                @if ($hasScallop)
+                                                    <x-scallop-warning />
+                                                @endif
+                                            </span>
                                         @else
                                             <span class="text-gray-400">—</span>
                                         @endif

@@ -229,15 +229,16 @@ new #[Layout('layouts.app')] class extends Component {
                                         <p class="text-xs text-gray-400 mb-2">Last: {{ $lastTread }}/32"</p>
                                     @endif
 
-                                    {{-- Center tread (required) --}}
-                                    <div class="mb-2">
-                                        <x-input-label :for="'tread_center_'.$pos" value="Center" />
+                                    {{-- Center tread (required) — text-base prevents iOS zoom on focus --}}
+                                    <div class="mb-3">
+                                        <x-input-label :for="'tread_center_'.$pos" value="Center *" />
                                         <div class="relative">
                                             <x-text-input
                                                 wire:model="treads.{{ $pos }}.tread_center"
                                                 :id="'tread_center_'.$pos"
-                                                class="block mt-1 w-full pr-12 text-right"
+                                                class="block mt-1 w-full pr-12 text-right text-base min-h-[44px]"
                                                 type="number" step="0.5" min="0" max="20" required
+                                                inputmode="decimal"
                                             />
                                             <span class="absolute inset-y-0 right-3 flex items-center text-gray-400 text-sm mt-1">/32"</span>
                                         </div>
@@ -245,17 +246,18 @@ new #[Layout('layouts.app')] class extends Component {
                                     </div>
 
                                     {{-- Inner + Outer (optional) --}}
-                                    <div class="flex gap-2 mb-2">
+                                    <div class="flex gap-2 mb-3">
                                         <div class="flex-1">
                                             <x-input-label :for="'tread_inner_'.$pos" value="Inner" />
                                             <div class="relative">
                                                 <x-text-input
                                                     wire:model="treads.{{ $pos }}.tread_inner"
                                                     :id="'tread_inner_'.$pos"
-                                                    class="block mt-1 w-full pr-10 text-right text-sm"
+                                                    class="block mt-1 w-full pr-10 text-right text-base min-h-[44px]"
                                                     type="number" step="0.5" min="0" max="20"
+                                                    inputmode="decimal"
                                                 />
-                                                <span class="absolute inset-y-0 right-2 flex items-center text-gray-400 text-xs mt-1">/32"</span>
+                                                <span class="absolute inset-y-0 right-2 flex items-center text-gray-400 text-sm mt-1">/32"</span>
                                             </div>
                                         </div>
                                         <div class="flex-1">
@@ -264,10 +266,11 @@ new #[Layout('layouts.app')] class extends Component {
                                                 <x-text-input
                                                     wire:model="treads.{{ $pos }}.tread_outer"
                                                     :id="'tread_outer_'.$pos"
-                                                    class="block mt-1 w-full pr-10 text-right text-sm"
+                                                    class="block mt-1 w-full pr-10 text-right text-base min-h-[44px]"
                                                     type="number" step="0.5" min="0" max="20"
+                                                    inputmode="decimal"
                                                 />
-                                                <span class="absolute inset-y-0 right-2 flex items-center text-gray-400 text-xs mt-1">/32"</span>
+                                                <span class="absolute inset-y-0 right-2 flex items-center text-gray-400 text-sm mt-1">/32"</span>
                                             </div>
                                         </div>
                                     </div>
@@ -286,7 +289,7 @@ new #[Layout('layouts.app')] class extends Component {
                         </div>
 
                         <div class="flex items-center justify-end">
-                            <x-primary-button>
+                            <x-primary-button class="min-h-[48px] text-base px-6">
                                 {{ __('Next: Assign Positions →') }}
                             </x-primary-button>
                         </div>
