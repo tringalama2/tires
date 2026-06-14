@@ -1,0 +1,181 @@
+{
+    "note": "Center tread in 32nds. Inner/outer not measured historically (null).",
+    "tires": [
+        {
+            "label": "T1",
+            "brand": "Falcon",
+            "model": "Wildpeak A/T3W"
+        },
+        {
+            "label": "T2",
+            "brand": "Falcon",
+            "model": "Wildpeak A/T3W"
+        },
+        {
+            "label": "T3",
+            "brand": "Falcon",
+            "model": "Wildpeak A/T3W"
+        },
+        {
+            "label": "T4",
+            "brand": "Falcon",
+            "model": "Wildpeak A/T3W"
+        },
+        {
+            "label": "T5",
+            "brand": "Falcon",
+            "model": "Wildpeak A/T3W"
+        }
+    ],
+    "rotations": [
+        {
+            "rotated_at": "2024-11-17",
+            "odometer": 104400,
+            "placements": [
+                {
+                    "tire": "T1",
+                    "from": "RL",
+                    "to": "FL",
+                    "center": 9
+                },
+                {
+                    "tire": "T2",
+                    "from": "RR",
+                    "to": "FR",
+                    "center": 9
+                },
+                {
+                    "tire": "T3",
+                    "from": "SPARE",
+                    "to": "RL",
+                    "center": 15
+                },
+                {
+                    "tire": "T4",
+                    "from": "FL",
+                    "to": "RR",
+                    "center": 14
+                },
+                {
+                    "tire": "T5",
+                    "from": "FR",
+                    "to": "SPARE",
+                    "center": 11
+                }
+            ]
+        },
+        {
+            "rotated_at": "2025-07-01",
+            "odometer": 110133,
+            "placements": [
+                {
+                    "tire": "T1",
+                    "from": "FL",
+                    "to": "SPARE",
+                    "center": 8,
+                    "note": "scalloped (inner > outer) wear / vibrating steering wheel since start of rotation"
+                },
+                {
+                    "tire": "T2",
+                    "from": "FR",
+                    "to": "RL",
+                    "center": 8,
+                    "note": "mild scalloped (inner > outer) wear"
+                },
+                {
+                    "tire": "T3",
+                    "from": "RL",
+                    "to": "FR",
+                    "center": 14,
+                    "note": "moved everything down to 30psi cause insider wearing too fast and chalk test suggests 30 or even less."
+                },
+                {
+                    "tire": "T4",
+                    "from": "RR",
+                    "to": "FL",
+                    "center": 13
+                },
+                {
+                    "tire": "T5",
+                    "from": "SPARE",
+                    "to": "RR",
+                    "center": 11
+                }
+            ]
+        },
+        {
+            "rotated_at": "2026-01-29",
+            "odometer": 115728,
+            "placements": [
+                {
+                    "tire": "T4",
+                    "from": "FL",
+                    "to": "FR",
+                    "center": 12
+                },
+                {
+                    "tire": "T3",
+                    "from": "FR",
+                    "to": "FL",
+                    "center": 12
+                },
+                {
+                    "tire": "T2",
+                    "from": "RL",
+                    "to": "RR",
+                    "center": 7
+                },
+                {
+                    "tire": "T5",
+                    "from": "RR",
+                    "to": "SPARE",
+                    "center": 11,
+                    "note": "inside more worn"
+                },
+                {
+                    "tire": "T1",
+                    "from": "SPARE",
+                    "to": "RL",
+                    "center": 9
+                }
+            ]
+        },
+        {
+            "rotated_at": "2026-06-10",
+            "odometer": 120495,
+            "placements": [
+                {
+                    "tire": "T3",
+                    "from": "FL",
+                    "to": "RL",
+                    "center": 12
+                },
+                {
+                    "tire": "T4",
+                    "from": "FR",
+                    "to": "RR",
+                    "center": 10
+                },
+                {
+                    "tire": "T1",
+                    "from": "RL",
+                    "to": "FR",
+                    "center": 7
+                },
+                {
+                    "tire": "T2",
+                    "from": "RR",
+                    "to": "SPARE",
+                    "center": 6,
+                    "note": "Now the shaking is back"
+                },
+                {
+                    "tire": "T5",
+                    "from": "SPARE",
+                    "to": "FL",
+                    "center": 9
+                }
+            ]
+        }
+    ]
+}
