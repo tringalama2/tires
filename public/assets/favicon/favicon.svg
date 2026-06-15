@@ -1,0 +1,8 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 128 128" fill="none" role="img" aria-label="Tread Mark">
+  <rect width="128" height="128" rx="30" fill="#0F1410"></rect>
+  <g stroke-linecap="round" stroke-linejoin="round" stroke-width="17">
+    <path d="M28 98 L64 74 L100 98" stroke="#FFFFFF"></path>
+    <path d="M28 73 L64 49 L100 73" stroke="#FFFFFF"></path>
+    <path d="M28 48 L64 24 L100 48" stroke="#FF7A2E"></path>
+  </g>
+</svg>
