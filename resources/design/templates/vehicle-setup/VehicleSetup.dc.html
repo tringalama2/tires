@@ -1,0 +1,145 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<!-- @template name="Vehicle Setup" description="Two-step onboarding — add a vehicle, then its tires — built from Tread Mark components" -->
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="./ds-base.js"></script>
+</helmet>
+
+<div style="min-height:100vh;background:var(--surface-page);font-family:var(--font-sans);padding:40px 20px;">
+  <div style="max-width:680px;margin:0 auto;">
+
+    <div style="display:flex;justify-content:center;margin-bottom:26px;">
+      <x-import component-from-global-scope="TreadMarkDesignSystem_b4620a.Logo" size="{{ 32 }}" hint-size="170px,40px"></x-import>
+    </div>
+
+    <!-- ===================== STEP 1 — VEHICLE ===================== -->
+    <sc-if value="{{ isStep1 }}" hint-placeholder-val="{{ true }}">
+    <div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:24px;">
+        <span style="width:30px;height:30px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-weight:600;font-size:13px;">1</span>
+        <span style="font-family:var(--font-display);font-weight:600;text-transform:uppercase;letter-spacing:0.04em;font-size:13px;color:var(--text-primary);">Vehicle</span>
+        <span style="width:26px;height:2px;background:var(--border-default);margin:0 4px;"></span>
+        <span style="width:30px;height:30px;border-radius:50%;background:var(--surface-sunken);border:1px solid var(--border-default);color:var(--text-tertiary);display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-weight:600;font-size:13px;">2</span>
+        <span style="font-family:var(--font-display);font-weight:600;text-transform:uppercase;letter-spacing:0.04em;font-size:13px;color:var(--text-tertiary);">Tires</span>
+      </div>
+
+      <div style="background:var(--surface-card);border:1px solid var(--border-subtle);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);overflow:hidden;">
+        <div style="display:flex;align-items:center;gap:12px;padding:22px 24px;border-bottom:1px solid var(--border-subtle);">
+          <span style="width:44px;height:44px;border-radius:var(--radius-md);background:var(--blaze-50);color:var(--blaze-600);display:flex;align-items:center;justify-content:center;flex:none;">
+            <x-import component-from-global-scope="TreadMarkDesignSystem_b4620a.Icon" name="car-profile" size="{{ 24 }}" hint-size="24px,24px"></x-import>
+          </span>
+          <div>
+            <div style="font-family:var(--font-display);font-weight:600;font-size:17px;text-transform:uppercase;letter-spacing:0.01em;color:var(--text-primary);">Add a rig to your garage</div>
+            <div style="font-size:13.5px;color:var(--text-secondary);">Up to 5 vehicles. You'll add tires next.</div>
+          </div>
+        </div>
+
+        <div style="padding:24px;display:flex;flex-direction:column;gap:16px;">
+          <div style="display:grid;grid-template-columns:96px 1fr 1.3fr;gap:14px;">
+            <x-import component-from-global-scope="TreadMarkDesignSystem_b4620a.Input" label="Year" type="number" mono="{{ true }}" required="{{ true }}" placeholder="2019" hint-size="100%,66px"></x-import>
+            <x-import component-from-global-scope="TreadMarkDesignSystem_b4620a.Input" label="Make" required="{{ true }}" placeholder="Toyota" hint-size="100%,66px"></x-import>
+            <x-import component-from-global-scope="TreadMarkDesignSystem_b4620a.Input" label="Model" required="{{ true }}" placeholder="4Runner" hint-size="100%,66px"></x-import>
+          </div>
+          <x-import component-from-global-scope="TreadMarkDesignSystem_b4620a.Input" label="VIN" optional="{{ true }}" mono="{{ true }}" placeholder="JTEBU5JR9K5..." hint-size="100%,66px"></x-import>
+          <x-import component-from-global-scope="TreadMarkDesignSystem_b4620a.Input" label="Nickname" required="{{ true }}" placeholder="'19 4Runner" hint="What you'll call it across the app." hint-size="100%,84px"></x-import>
+          <div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;padding-top:8px;border-top:1px dashed var(--border-subtle);">
+            <x-import component-from-global-scope="TreadMarkDesignSystem_b4620a.Select" label="Tires to rotate" required="{{ true }}" hint="4 or 5" options="{{ tireOptions }}" hint-size="100%,84px"></x-import>
+            <x-import component-from-global-scope="TreadMarkDesignSystem_b4620a.Input" label="Current odometer" type="number" mono="{{ true }}" suffix="mi" required="{{ true }}" placeholder="120495" hint-size="100%,84px"></x-import>
+          </div>
+          <div style="display:flex;justify-content:flex-end;gap:10px;margin-top:6px;">
+            <x-import component-from-global-scope="TreadMarkDesignSystem_b4620a.Button" variant="primary" onClick="{{ goNext }}" hint-size="190px,44px">Save &amp; add tires</x-import>
+          </div>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+
+    <!-- ===================== STEP 2 — TIRES ===================== -->
+    <sc-if value="{{ isStep2 }}" hint-placeholder-val="{{ false }}">
+    <div>
+      <div style="display:flex;align-items:center;justify-content:center;gap:8px;margin-bottom:24px;">
+        <span style="width:30px;height:30px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;flex:none;">
+          <x-import component-from-global-scope="TreadMarkDesignSystem_b4620a.Icon" name="check" size="{{ 16 }}" hint-size="16px,16px"></x-import>
+        </span>
+        <span style="font-family:var(--font-display);font-weight:600;text-transform:uppercase;letter-spacing:0.04em;font-size:13px;color:var(--text-primary);">Vehicle</span>
+        <span style="width:26px;height:2px;background:var(--accent);margin:0 4px;"></span>
+        <span style="width:30px;height:30px;border-radius:50%;background:var(--accent);color:#fff;display:flex;align-items:center;justify-content:center;font-family:var(--font-mono);font-weight:600;font-size:13px;">2</span>
+        <span style="font-family:var(--font-display);font-weight:600;text-transform:uppercase;letter-spacing:0.04em;font-size:13px;color:var(--text-primary);">Tires</span>
+      </div>
+
+      <div style="background:var(--surface-card);border:1px solid var(--border-subtle);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);overflow:hidden;">
+        <div style="display:flex;align-items:center;gap:12px;padding:22px 24px;border-bottom:1px solid var(--border-subtle);">
+          <span style="width:44px;height:44px;border-radius:var(--radius-md);background:var(--blaze-50);color:var(--blaze-600);display:flex;align-items:center;justify-content:center;flex:none;">
+            <x-import component-from-global-scope="TreadMarkDesignSystem_b4620a.Icon" name="tire" size="{{ 24 }}" hint-size="24px,24px"></x-import>
+          </span>
+          <div>
+            <div style="font-family:var(--font-display);font-weight:600;font-size:17px;text-transform:uppercase;letter-spacing:0.01em;color:var(--text-primary);">Add a tire to each position</div>
+            <div style="font-size:13.5px;color:var(--text-secondary);">Record the starting tread. We'll track wear from here.</div>
+          </div>
+        </div>
+
+        <div style="padding:18px 24px 24px;">
+          <sc-for list="{{ positions }}" as="p" hint-placeholder-count="5">
+            <div style="display:flex;align-items:center;gap:14px;padding:12px 0;border-bottom:1px solid var(--border-subtle);">
+              <div style="width:120px;flex:none;">
+                <x-import component-from-global-scope="TreadMarkDesignSystem_b4620a.PositionTag" position="{{ p.code }}" size="md" showLabel="{{ true }}" hint-size="120px,32px"></x-import>
+              </div>
+              <div style="flex:1;">
+                <x-import component-from-global-scope="TreadMarkDesignSystem_b4620a.Input" placeholder="{{ p.label }} tire — brand / model" hint-size="100%,44px"></x-import>
+              </div>
+              <div style="width:120px;flex:none;">
+                <x-import component-from-global-scope="TreadMarkDesignSystem_b4620a.Input" type="number" mono="{{ true }}" suffix="/32&quot;" placeholder="12" hint-size="120px,44px"></x-import>
+              </div>
+            </div>
+          </sc-for>
+
+          <div style="display:flex;justify-content:space-between;align-items:center;margin-top:20px;">
+            <x-import component-from-global-scope="TreadMarkDesignSystem_b4620a.Button" variant="ghost" onClick="{{ goBack }}" hint-size="90px,40px">Back</x-import>
+            <x-import component-from-global-scope="TreadMarkDesignSystem_b4620a.Button" variant="primary" hint-size="150px,44px">Finish setup</x-import>
+          </div>
+        </div>
+      </div>
+    </div>
+    </sc-if>
+
+    <p style="text-align:center;font-family:var(--font-mono);font-size:11px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-hint);margin-top:22px;">
+      Tread Mark · Vehicle setup
+    </p>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:720,&quot;height&quot;:820}}">
+class Component extends DCLogic {
+  state = { step: 1 };
+  renderVals() {
+    return {
+      isStep1: this.state.step === 1,
+      isStep2: this.state.step === 2,
+      tireOptions: [
+        { value: '5', label: '5 — spare in rotation' },
+        { value: '4', label: '4 — spare excluded' },
+      ],
+      positions: [
+        { code: 'FL', label: 'Front left' },
+        { code: 'FR', label: 'Front right' },
+        { code: 'RL', label: 'Rear left' },
+        { code: 'RR', label: 'Rear right' },
+        { code: 'SP', label: 'Spare' },
+      ],
+      goNext: () => this.setState({ step: 2 }),
+      goBack: () => this.setState({ step: 1 }),
+    };
+  }
+}
+</script>
+</body>
+</html>

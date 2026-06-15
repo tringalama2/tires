@@ -4,170 +4,168 @@ use App\Livewire\Actions\Logout;
 use Livewire\Component;
 
 new class extends Component {
-    /**
-     * Log the current user out of the application.
-     */
     public function logout(Logout $logout): void
     {
         $logout();
-
         $this->redirect('/', navigate: true);
     }
 }; ?>
 
-<nav x-data="{ open: false }" class="bg-white border-b border-gray-100">
-    <!-- Primary Navigation Menu -->
-    <div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-        <div class="flex justify-between h-16">
-            <div class="flex">
-                <!-- Logo -->
-                <div class="shrink-0 flex items-center">
-                    <a href="{{ route('dashboard') }}" wire:navigate>
-                        <x-application-logo class="block h-9 w-auto fill-current text-red-800"/>
-                    </a>
-                </div>
+<nav x-data="{ open: false }" class="bg-white border-b border-ink-100 shadow-tm-sm">
+    <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8">
+        <div class="flex justify-between h-14">
 
-                <!-- Navigation Links -->
-                <div class="hidden space-x-8 sm:-my-px sm:ms-10 sm:flex">
-                    <x-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" wire:navigate>
-                        {{ __('Dashboard') }}
-                    </x-nav-link>
-                    <x-nav-link :href="route('rotations.prepare')" :active="request()->routeIs('rotations.prepare')" wire:navigate>
-                        {{ __('Rotate') }}
-                    </x-nav-link>
-                    <x-nav-link :href="route('tires.index')" :active="request()->routeIs(['tires.index', 'tires.show'])" wire:navigate>
-                        {{ __('Tires') }}
-                    </x-nav-link>
-                    <!-- Reports dropdown -->
-                    <div x-data="{ open: false }" class="relative inline-flex items-center">
-                        <button @click="open = !open" @click.outside="open = false"
-                            class="inline-flex items-center px-1 pt-1 border-b-2 text-sm font-medium leading-5 transition duration-150 ease-in-out focus:outline-none
-                                {{ request()->routeIs('reports.*') ? 'border-indigo-400 text-gray-900' : 'border-transparent text-gray-500 hover:text-gray-700 hover:border-gray-300' }}">
-                            {{ __('Reports') }}
-                            <svg class="ms-1 h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20" fill="currentColor">
-                                <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
-                            </svg>
+            {{-- Logo + nav links --}}
+            <div class="flex items-center gap-8">
+                <a href="{{ route('dashboard') }}" wire:navigate class="shrink-0">
+                    <x-treadmark.logo />
+                </a>
+
+                <div class="hidden sm:flex items-center gap-1">
+                    @php
+                        $linkBase = 'inline-flex items-center gap-1.5 px-3 py-1.5 rounded-control text-sm font-medium transition-colors duration-150';
+                        $linkActive = 'bg-ink-50 text-ink-900';
+                        $linkInactive = 'text-ink-500 hover:text-ink-900 hover:bg-ink-50';
+                    @endphp
+
+                    <a href="{{ route('dashboard') }}" wire:navigate
+                       class="{{ $linkBase }} {{ request()->routeIs('dashboard') ? $linkActive : $linkInactive }}">
+                        <x-treadmark.icon name="gauge" class="w-4 h-4" />
+                        Dashboard
+                    </a>
+
+                    <a href="{{ route('rotations.prepare') }}" wire:navigate
+                       class="{{ $linkBase }} {{ request()->routeIs('rotations.*') ? $linkActive : $linkInactive }}">
+                        <x-treadmark.icon name="arrows-clockwise" class="w-4 h-4" />
+                        Rotate
+                    </a>
+
+                    <a href="{{ route('tires.index') }}" wire:navigate
+                       class="{{ $linkBase }} {{ request()->routeIs(['tires.index', 'tires.show']) ? $linkActive : $linkInactive }}">
+                        <x-treadmark.icon name="tire" class="w-4 h-4" />
+                        Tires
+                    </a>
+
+                    {{-- Reports dropdown --}}
+                    <div x-data="{ reportsOpen: false }" class="relative">
+                        <button @click="reportsOpen = !reportsOpen" @click.outside="reportsOpen = false"
+                                class="{{ $linkBase }} {{ request()->routeIs('reports.*') ? $linkActive : $linkInactive }}">
+                            <x-treadmark.icon name="chart-bar" class="w-4 h-4" />
+                            Reports
+                            <x-treadmark.icon name="caret-down" class="w-3 h-3" />
                         </button>
-                        <div x-show="open" x-transition
-                            class="absolute top-full left-0 mt-1 w-44 bg-white border border-gray-200 rounded-md shadow-lg z-50">
+                        <div x-show="reportsOpen" x-transition x-cloak
+                             class="absolute top-full left-0 mt-1 w-44 bg-white border border-ink-100 rounded-card shadow-tm-md z-50">
                             <a href="{{ route('reports.by-position') }}" wire:navigate
-                                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 {{ request()->routeIs('reports.by-position') ? 'font-semibold' : '' }}">
+                               class="flex items-center gap-2 px-4 py-2.5 text-sm text-ink-700 hover:bg-ink-50 first:rounded-t-card {{ request()->routeIs('reports.by-position') ? 'font-semibold text-ink-900' : '' }}">
                                 By Position
                             </a>
                             <a href="{{ route('reports.by-tire') }}" wire:navigate
-                                class="block px-4 py-2 text-sm text-gray-700 hover:bg-gray-50 {{ request()->routeIs('reports.by-tire') ? 'font-semibold' : '' }}">
+                               class="flex items-center gap-2 px-4 py-2.5 text-sm text-ink-700 hover:bg-ink-50 last:rounded-b-card {{ request()->routeIs('reports.by-tire') ? 'font-semibold text-ink-900' : '' }}">
                                 By Tire
                             </a>
                         </div>
                     </div>
-                    <x-nav-link :href="route('vehicles.index')" :active="request()->routeIs(['vehicles.index', 'vehicles.create'])" wire:navigate>
-                        {{ __('Vehicles') }}
-                    </x-nav-link>
+
+                    <a href="{{ route('vehicles.index') }}" wire:navigate
+                       class="{{ $linkBase }} {{ request()->routeIs(['vehicles.index', 'vehicles.create']) ? $linkActive : $linkInactive }}">
+                        <x-treadmark.icon name="jeep" class="w-4 h-4" />
+                        Vehicles
+                    </a>
                 </div>
             </div>
 
-            <!-- Settings Dropdown -->
-            <div class="hidden sm:flex sm:items-center sm:ms-6">
-                <!-- Selected Vehicle -->
-                <div class="me-4 inline-flex items-center px-1 pt-1 border-b-2 border-transparent text-sm font-medium leading-5 text-blue-600">
-                    <a href="{{ route('vehicles.index') }}">
-                        <div x-data="{{ json_encode(['nickname' => session('vehicle')?->nickname]) }}" x-text="nickname" x-on:new-vehicle-selected.window="nickname = $event.detail.nickname"></div>
+            {{-- Right side: vehicle chip + user menu --}}
+            <div class="hidden sm:flex items-center gap-3">
+                {{-- Selected vehicle chip --}}
+                @if(session('vehicle'))
+                    <a href="{{ route('vehicles.index') }}" wire:navigate
+                       class="inline-flex items-center gap-1.5 text-sm font-medium text-ink-700 bg-ink-50 border border-ink-100 px-3 py-1.5 rounded-pill hover:bg-ink-100 transition-colors">
+                        <x-treadmark.icon name="jeep" class="w-4 h-4 text-ink-400" />
+                        <span x-data="{{ json_encode(['nickname' => session('vehicle')?->nickname]) }}"
+                              x-text="nickname"
+                              x-on:new-vehicle-selected.window="nickname = $event.detail.nickname"></span>
                     </a>
-                </div>
+                @endif
 
+                {{-- User dropdown --}}
                 <x-dropdown align="right" width="48">
-                    <!-- Name -->
                     <x-slot name="trigger">
-                        <button class="inline-flex items-center px-3 py-2 border border-transparent text-sm leading-4 font-medium rounded-md text-gray-500 bg-white hover:text-gray-700 focus:outline-none transition ease-in-out duration-150">
-                            <div x-data="{{ json_encode(['first_name' => auth()->user()->first_name]) }}" x-text="first_name" x-on:profile-updated.window="first_name = $event.detail.first_name"></div>
-
-                            <div class="ms-1">
-                                <svg class="fill-current h-4 w-4" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 20 20">
-                                    <path fill-rule="evenodd" d="M5.293 7.293a1 1 0 011.414 0L10 10.586l3.293-3.293a1 1 0 111.414 1.414l-4 4a1 1 0 01-1.414 0l-4-4a1 1 0 010-1.414z" clip-rule="evenodd"/>
-                                </svg>
-                            </div>
+                        <button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-control text-sm font-medium text-ink-500 hover:text-ink-900 hover:bg-ink-50 transition-colors border border-transparent hover:border-ink-100">
+                            <x-treadmark.icon name="user" class="w-4 h-4" />
+                            <span x-data="{{ json_encode(['first_name' => auth()->user()->first_name]) }}"
+                                  x-text="first_name"
+                                  x-on:profile-updated.window="first_name = $event.detail.first_name"></span>
+                            <x-treadmark.icon name="caret-down" class="w-3 h-3" />
                         </button>
                     </x-slot>
-
                     <x-slot name="content">
-                        <!-- Profile -->
                         <x-dropdown-link :href="route('profile')" wire:navigate>
-                            {{ __('Profile') }}
+                            Profile
                         </x-dropdown-link>
-
-                        <!-- Authentication -->
                         <button wire:click="logout" class="w-full text-start">
-                            <x-dropdown-link>
-                                {{ __('Log Out') }}
-                            </x-dropdown-link>
+                            <x-dropdown-link>Log Out</x-dropdown-link>
                         </button>
                     </x-slot>
                 </x-dropdown>
             </div>
 
-            <!-- Hamburger -->
-            <div class="-me-2 flex items-center sm:hidden">
-                <button @click="open = ! open" class="inline-flex items-center justify-center p-2 rounded-md text-gray-400 hover:text-gray-500 hover:bg-gray-100 focus:outline-none focus:bg-gray-100 focus:text-gray-500 transition duration-150 ease-in-out">
-                    <svg class="h-6 w-6" stroke="currentColor" fill="none" viewBox="0 0 24 24">
-                        <path :class="{'hidden': open, 'inline-flex': ! open }" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
-                        <path :class="{'hidden': ! open, 'inline-flex': open }" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
+            {{-- Mobile hamburger --}}
+            <div class="flex items-center sm:hidden">
+                <button @click="open = !open"
+                        class="p-2 rounded-control text-ink-400 hover:text-ink-700 hover:bg-ink-50 transition-colors">
+                    <svg class="h-5 w-5" stroke="currentColor" fill="none" viewBox="0 0 24 24">
+                        <path :class="{'hidden': open, 'inline-flex': !open}" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
+                        <path :class="{'hidden': !open, 'inline-flex': open}" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                     </svg>
                 </button>
             </div>
         </div>
     </div>
 
-    <!-- Responsive Navigation Menu -->
-    <div :class="{'block': open, 'hidden': ! open}" class="hidden sm:hidden">
-        <div class="pt-2 pb-3 space-y-1">
+    {{-- Mobile menu --}}
+    <div :class="{'block': open, 'hidden': !open}" class="hidden sm:hidden border-t border-ink-100 bg-white">
+        <div class="pt-2 pb-3 space-y-1 px-3">
             <x-responsive-nav-link :href="route('dashboard')" :active="request()->routeIs('dashboard')" wire:navigate>
-                {{ __('Dashboard') }}
+                Dashboard
             </x-responsive-nav-link>
-            <x-responsive-nav-link :href="route('rotations.prepare')" :active="request()->routeIs('rotations.prepare')" wire:navigate>
-                {{ __('Rotate') }}
+            <x-responsive-nav-link :href="route('rotations.prepare')" :active="request()->routeIs('rotations.*')" wire:navigate>
+                Rotate
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('tires.index')" :active="request()->routeIs(['tires.index', 'tires.show'])" wire:navigate>
-                {{ __('Tires') }}
+                Tires
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('reports.by-position')" :active="request()->routeIs('reports.by-position')" wire:navigate>
-                {{ __('Report: By Position') }}
+                Report: By Position
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('reports.by-tire')" :active="request()->routeIs('reports.by-tire')" wire:navigate>
-                {{ __('Report: By Tire') }}
+                Report: By Tire
             </x-responsive-nav-link>
             <x-responsive-nav-link :href="route('vehicles.index')" :active="request()->routeIs(['vehicles.index', 'vehicles.create'])" wire:navigate>
-                {{ __('Vehicles') }}
+                Vehicles
             </x-responsive-nav-link>
         </div>
 
-        <!-- Responsive Settings Options -->
-        <div class="pt-4 pb-1 border-t border-gray-200">
-            <div class="px-4">
-                <div class="font-medium text-base text-gray-800" x-data="{{ json_encode(['first_name' => auth()->user()->first_name]) }}" x-text="first_name" x-on:profile-updated.window="first_name = $event.detail.first_name"></div>
-                <div class="font-medium text-sm text-gray-500">{{ auth()->user()->email }}</div>
+        <div class="pt-4 pb-3 border-t border-ink-100 px-3">
+            <div class="px-3 mb-3">
+                <div class="text-sm font-semibold text-ink-900"
+                     x-data="{{ json_encode(['first_name' => auth()->user()->first_name]) }}"
+                     x-text="first_name"
+                     x-on:profile-updated.window="first_name = $event.detail.first_name"></div>
+                <div class="text-xs text-ink-400">{{ auth()->user()->email }}</div>
             </div>
-
-            <div class="mt-3 space-y-1">
-                <!-- Selected Vehicle -->
-                <div class="font-medium text-base text-blue-600">
-                    <x-responsive-nav-link :href="route('vehicles.index')" wire:navigate>
-                        <span class="text-sm">Selected Vehicle:</span>
-                        <div x-data="{{ json_encode(['nickname' => session('vehicle')?->nickname]) }}" x-text="nickname" x-on:new-vehicle-selected.window="nickname = $event.detail.nickname"></div>
-                    </x-responsive-nav-link>
-                </div>
-
-                <!-- Profile -->
-                <x-responsive-nav-link :href="route('profile')" wire:navigate>
-                    {{ __('Profile') }}
+            @if(session('vehicle'))
+                <div class="px-3 mb-2 text-xs font-medium text-ink-400 uppercase tracking-caps">Vehicle</div>
+                <x-responsive-nav-link :href="route('vehicles.index')" wire:navigate>
+                    <span x-data="{{ json_encode(['nickname' => session('vehicle')?->nickname]) }}"
+                          x-text="nickname"
+                          x-on:new-vehicle-selected.window="nickname = $event.detail.nickname"></span>
                 </x-responsive-nav-link>
-
-                <!-- Authentication -->
-                <button wire:click="logout" class="w-full text-start">
-                    <x-responsive-nav-link>
-                        {{ __('Log Out') }}
-                    </x-responsive-nav-link>
-                </button>
-            </div>
+            @endif
+            <x-responsive-nav-link :href="route('profile')" wire:navigate>Profile</x-responsive-nav-link>
+            <button wire:click="logout" class="w-full text-start">
+                <x-responsive-nav-link>Log Out</x-responsive-nav-link>
+            </button>
         </div>
     </div>
 </nav>

@@ -3,7 +3,7 @@
 @props([
     'position',
     'tire',
-    'color' => 'text-blue-600'
+    'color' => 'text-ink-600'
 ])
 
 @php

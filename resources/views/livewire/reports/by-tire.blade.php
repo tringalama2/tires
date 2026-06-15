@@ -99,7 +99,7 @@ new #[Layout('layouts.app')] class extends Component {
                                 @endphp
                                 <tr class="hover:bg-gray-50 align-top">
                                     <td class="py-3">
-                                        <a href="{{ route('tires.show', $tire) }}" class="font-bold text-blue-700 hover:underline">
+                                        <a href="{{ route('tires.show', $tire) }}" class="font-bold text-ink-900 hover:text-steel-600 hover:underline">
                                             {{ $tire->label }}
                                         </a>
                                         @if ($tire->brand)
@@ -138,7 +138,7 @@ new #[Layout('layouts.app')] class extends Component {
                                         @if (count($row['notes']) > 0)
                                             <p class="text-xs text-gray-600 truncate">{{ $row['notes'][0] }}</p>
                                             @if (count($row['notes']) > 1)
-                                                <button wire:click="toggleNotes('{{ $tire->id }}')" class="text-xs text-blue-500 hover:underline mt-0.5">
+                                                <button wire:click="toggleNotes('{{ $tire->id }}')" class="text-xs text-steel-600 hover:underline mt-0.5">
                                                     {{ $isExpanded ? 'hide' : '+'.( count($row['notes']) - 1).' more' }}
                                                 </button>
                                                 @if ($isExpanded)

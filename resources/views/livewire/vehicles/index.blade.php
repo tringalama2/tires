@@ -58,14 +58,14 @@ new #[Layout('layouts.app')] class extends Component {
         </div>
 
         @foreach($vehicles as $vehicle)
-            <div class="p-4 sm:p-8 bg-white shadow hover:shadow-blue-600/50 sm:rounded-lg">
+            <div class="p-4 sm:p-8 bg-white shadow hover:shadow-tm-md sm:rounded-lg">
 
                 <div class="flex justify-between">
 
 
                     <div class="max-w-xl flex flex-row gap-x-8">
                         <a wire:click="changeVehicle({{$vehicle->id}})" class="cursor-pointer">
-                            <div class="@if($vehicle->is(session('vehicle'))) text-blue-600 @else text-gray-300 @endif">
+                            <div class="@if($vehicle->is(session('vehicle'))) text-blaze-500 @else text-ink-200 @endif">
                                 <x-phosphor-check-circle-duotone class="w-8 h-8 inline"/>
                             </div>
                         </a>
@@ -93,19 +93,19 @@ new #[Layout('layouts.app')] class extends Component {
                     <div class="flex flex-col md:flex-row gap-x-2">
                         <div class="me-3">
                             <a href="{{ route('dashboard', $vehicle) }}">
-                                <x-phosphor-tire-duotone class="w-8 h-8 inline text-blue-600"/>
+                                <x-phosphor-tire-duotone class="w-8 h-8 inline text-ink-600"/>
                                 Dashboard
                             </a>
                         </div>
                         <div class="me-3">
                             <a href="{{ route('rotations.prepare', $vehicle) }}">
-                                <x-phosphor-swap-duotone class="w-8 h-8 inline text-blue-600"/>
+                                <x-phosphor-swap-duotone class="w-8 h-8 inline text-ink-600"/>
                                 Rotate
                             </a>
                         </div>
                         <div>
                             <a href="{{ route('vehicles.edit', $vehicle) }}">
-                                <x-phosphor-note-pencil-duotone class="w-8 h-8 inline text-blue-600"/>
+                                <x-phosphor-note-pencil-duotone class="w-8 h-8 inline text-ink-600"/>
                                 Edit
                             </a>
                         </div>
@@ -115,10 +115,10 @@ new #[Layout('layouts.app')] class extends Component {
         @endforeach
 
         @can('create', Vehicle::class)
-            <div class="p-4 sm:p-8 bg-white shadow hover:shadow-blue-600/50 sm:rounded-lg">
+            <div class="p-4 sm:p-8 bg-white shadow hover:shadow-tm-md sm:rounded-lg">
                 <a href="{{ route('vehicles.create') }}">
                     <div class="flex justify-between">
-                        <div class="max-w-xl text-blue-600 flex gap-x-4">
+                        <div class="max-w-xl text-ink-600 flex gap-x-4">
                             <div>
                                 <x-phosphor-jeep-duotone class="w-8 h-8 inline"/>
                             </div>
@@ -127,7 +127,7 @@ new #[Layout('layouts.app')] class extends Component {
                             </div>
                         </div>
                         <div>
-                            <x-phosphor-file-plus-duotone class="w-8 h-8 inline text-blue-600"/>
+                            <x-phosphor-file-plus-duotone class="w-8 h-8 inline text-ink-600"/>
                         </div>
                     </div>
                 </a>

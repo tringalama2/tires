@@ -172,7 +172,7 @@ new #[Layout('layouts.app')] class extends Component {
                 <div class="p-6 text-gray-900">
 
                     <div class="flex justify-between mb-4">
-                        <div class="text-blue-600 text-2xl font-semibold">{{ $this->vehicle->nickname }}</div>
+                        <div class="font-display font-semibold uppercase text-2xl tracking-wider text-ink-900">{{ $this->vehicle->nickname }}</div>
                         @if ($isEdit)
                             <span class="text-sm text-amber-600 font-medium self-center">Editing existing rotation</span>
                         @endif
@@ -207,7 +207,7 @@ new #[Layout('layouts.app')] class extends Component {
                         <div class="mb-6">
                             <x-input-label for="rotation_note" :value="__('Rotation Note (optional)')" />
                             <textarea wire:model="rotation_note" id="rotation_note" name="rotation_note"
-                                class="block mt-1 w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-sm"
+                                class="block mt-1 w-full border-gray-300 rounded-md shadow-sm focus:ring-blaze-500/40 focus:border-blaze-500 text-sm"
                                 rows="2" placeholder="e.g. adjusted tire pressure to 32 PSI"></textarea>
                         </div>
 
@@ -222,7 +222,7 @@ new #[Layout('layouts.app')] class extends Component {
                                 <div class="border border-gray-300 rounded-lg p-4 bg-gray-50">
                                     <div class="flex items-center justify-between mb-3 border-b border-gray-300 pb-2">
                                         <span class="font-semibold text-sm text-gray-700 uppercase tracking-wide">{{ $stub['from_position']->label() }}</span>
-                                        <span class="font-bold text-blue-700">{{ $tire->label }}</span>
+                                        <span class="font-bold text-ink-900">{{ $tire->label }}</span>
                                     </div>
 
                                     @if ($lastTread !== null)
@@ -281,7 +281,7 @@ new #[Layout('layouts.app')] class extends Component {
                                         <textarea
                                             wire:model="treads.{{ $pos }}.note"
                                             :id="'note_'.$pos"
-                                            class="block mt-1 w-full border-gray-300 rounded-md shadow-sm focus:ring-indigo-500 focus:border-indigo-500 text-xs"
+                                            class="block mt-1 w-full border-gray-300 rounded-md shadow-sm focus:ring-blaze-500/40 focus:border-blaze-500 text-xs"
                                             rows="2"></textarea>
                                     </div>
                                 </div>

@@ -1,0 +1,175 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<!-- @template name="Assign Positions" description="Rotation step 2 — drag tires to their physical corners. Toggle passenger-car (4) vs SUV-with-spare (5)." -->
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="./ds-base.js"></script>
+</helmet>
+
+<div style="min-height:100vh;background:var(--surface-page);font-family:var(--font-sans);padding:32px 20px 64px;">
+  <div style="max-width:760px;margin:0 auto;">
+
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;margin-bottom:20px;">
+      <x-import component-from-global-scope="TreadMarkDesignSystem_b4620a.Logo" size="{{ 28 }}" hint-size="150px,34px"></x-import>
+      <x-import component-from-global-scope="TreadMarkDesignSystem_b4620a.Badge" tone="brand" variant="soft" hint-size="220px,28px">Step 2 of 2 · Assign positions</x-import>
+    </div>
+
+    <h1 style="font-family:var(--font-display);font-weight:600;font-size:28px;text-transform:uppercase;letter-spacing:0.01em;color:var(--text-primary);margin:0 0 4px;">New Rotation</h1>
+    <p style="color:var(--text-secondary);margin:0 0 18px;font-size:15px;">Drag a tire onto another position to swap them. Each corner shows the tire now in that spot.</p>
+
+    <div style="display:inline-flex;background:var(--surface-sunken);padding:4px;border-radius:var(--radius-md);gap:4px;margin-bottom:18px;">
+      <sc-if value="{{ isCar }}" hint-placeholder-val="{{ true }}"><button type="button" onClick="{{ setCar }}" style="flex:none;border:0;cursor:pointer;font-family:var(--font-display);font-weight:600;font-size:13px;text-transform:uppercase;letter-spacing:0.05em;padding:9px 16px;border-radius:var(--radius-md);background:var(--surface-card);color:var(--blaze-600);box-shadow:var(--shadow-sm);">Passenger car · 4</button></sc-if>
+      <sc-if value="{{ isSuv }}" hint-placeholder-val="{{ true }}"><button type="button" onClick="{{ setCar }}" style="flex:none;border:0;cursor:pointer;font-family:var(--font-display);font-weight:600;font-size:13px;text-transform:uppercase;letter-spacing:0.05em;padding:9px 16px;border-radius:var(--radius-md);background:transparent;color:var(--text-secondary);">Passenger car · 4</button></sc-if>
+      <sc-if value="{{ isSuv }}" hint-placeholder-val="{{ true }}"><button type="button" onClick="{{ setSuv }}" style="flex:none;border:0;cursor:pointer;font-family:var(--font-display);font-weight:600;font-size:13px;text-transform:uppercase;letter-spacing:0.05em;padding:9px 16px;border-radius:var(--radius-md);background:var(--surface-card);color:var(--blaze-600);box-shadow:var(--shadow-sm);">SUV + spare · 5</button></sc-if>
+      <sc-if value="{{ isCar }}" hint-placeholder-val="{{ true }}"><button type="button" onClick="{{ setSuv }}" style="flex:none;border:0;cursor:pointer;font-family:var(--font-display);font-weight:600;font-size:13px;text-transform:uppercase;letter-spacing:0.05em;padding:9px 16px;border-radius:var(--radius-md);background:transparent;color:var(--text-secondary);">SUV + spare · 5</button></sc-if>
+    </div>
+
+    <div style="background:var(--surface-card);border:1px solid var(--border-subtle);border-radius:var(--radius-lg);box-shadow:var(--shadow-sm);padding:20px;">
+      <div style="position:relative;width:480px;max-width:100%;height:410px;margin:0 auto;">
+
+        <div style="position:absolute;top:6px;left:0;right:0;text-align:center;font-family:var(--font-mono);font-size:10px;letter-spacing:0.18em;text-transform:uppercase;color:var(--text-hint);">Front</div>
+
+        <!-- ===== SUV body ===== -->
+        <sc-if value="{{ isSuv }}" hint-placeholder-val="{{ true }}">
+          <div style="position:absolute;left:163px;top:54px;width:154px;height:236px;background:var(--ink-100);border:2px solid var(--ink-200);border-radius:26px;">
+            <div style="position:absolute;left:15px;right:15px;top:30px;height:46px;background:var(--ink-50);border:1px solid var(--ink-200);border-radius:12px 12px 7px 7px;"></div>
+            <div style="position:absolute;left:15px;right:15px;top:88px;height:96px;background:var(--ink-50);border:1px solid var(--ink-200);border-radius:7px;"></div>
+            <div style="position:absolute;left:54px;right:54px;bottom:-11px;height:16px;background:var(--ink-200);border-radius:5px;"></div>
+          </div>
+        </sc-if>
+
+        <!-- ===== Passenger-car body ===== -->
+        <sc-if value="{{ isCar }}" hint-placeholder-val="{{ true }}">
+          <div style="position:absolute;left:170px;top:62px;width:140px;height:222px;background:var(--ink-100);border:2px solid var(--ink-200);border-radius:46px 46px 34px 34px;">
+            <div style="position:absolute;left:20px;right:20px;top:34px;height:54px;background:var(--ink-50);border:1px solid var(--ink-200);border-radius:22px 22px 9px 9px;"></div>
+            <div style="position:absolute;left:18px;right:18px;top:98px;height:78px;background:var(--ink-50);border:1px solid var(--ink-200);border-radius:9px 9px 18px 18px;"></div>
+          </div>
+        </sc-if>
+
+        <!-- ===== FL ===== -->
+        <div style="position:absolute;left:64px;top:80px;width:90px;display:flex;flex-direction:column;align-items:center;gap:5px;" onDragOver="{{ onDragOver }}" onDrop="{{ fl.onDrop }}">
+          <span style="display:inline-flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700;font-size:11px;letter-spacing:0.05em;color:#fff;background:var(--blaze-500);border-radius:var(--radius-sm);padding:2px 9px;text-transform:uppercase;">FL</span>
+          <div draggable="{{ true }}" onDragStart="{{ fl.onDragStart }}" onDragEnd="{{ onDragEnd }}" style="display:flex;flex-direction:column;align-items:center;gap:4px;cursor:grab;user-select:none;width:100%;background:var(--surface-card);border:1px solid var(--border-default);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);padding:9px 6px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ink-500)" stroke-width="2"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="3.4"></circle></svg>
+            <div style="display:flex;align-items:baseline;gap:4px;"><span style="font-family:var(--font-mono);font-weight:600;font-size:13px;color:var(--text-primary);">{{ fl.label }}</span><span style="font-family:var(--font-mono);font-size:11px;color:var(--text-tertiary);">{{ fl.tread }}</span></div>
+          </div>
+        </div>
+
+        <!-- ===== FR ===== -->
+        <div style="position:absolute;left:326px;top:80px;width:90px;display:flex;flex-direction:column;align-items:center;gap:5px;" onDragOver="{{ onDragOver }}" onDrop="{{ fr.onDrop }}">
+          <span style="display:inline-flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700;font-size:11px;letter-spacing:0.05em;color:#fff;background:var(--blaze-500);border-radius:var(--radius-sm);padding:2px 9px;text-transform:uppercase;">FR</span>
+          <div draggable="{{ true }}" onDragStart="{{ fr.onDragStart }}" onDragEnd="{{ onDragEnd }}" style="display:flex;flex-direction:column;align-items:center;gap:4px;cursor:grab;user-select:none;width:100%;background:var(--surface-card);border:1px solid var(--border-default);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);padding:9px 6px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ink-500)" stroke-width="2"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="3.4"></circle></svg>
+            <div style="display:flex;align-items:baseline;gap:4px;"><span style="font-family:var(--font-mono);font-weight:600;font-size:13px;color:var(--text-primary);">{{ fr.label }}</span><span style="font-family:var(--font-mono);font-size:11px;color:var(--text-tertiary);">{{ fr.tread }}</span></div>
+          </div>
+        </div>
+
+        <!-- ===== RL ===== -->
+        <div style="position:absolute;left:64px;top:208px;width:90px;display:flex;flex-direction:column;align-items:center;gap:5px;" onDragOver="{{ onDragOver }}" onDrop="{{ rl.onDrop }}">
+          <span style="display:inline-flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700;font-size:11px;letter-spacing:0.05em;color:#fff;background:var(--blaze-500);border-radius:var(--radius-sm);padding:2px 9px;text-transform:uppercase;">RL</span>
+          <div draggable="{{ true }}" onDragStart="{{ rl.onDragStart }}" onDragEnd="{{ onDragEnd }}" style="display:flex;flex-direction:column;align-items:center;gap:4px;cursor:grab;user-select:none;width:100%;background:var(--surface-card);border:1px solid var(--border-default);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);padding:9px 6px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ink-500)" stroke-width="2"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="3.4"></circle></svg>
+            <div style="display:flex;align-items:baseline;gap:4px;"><span style="font-family:var(--font-mono);font-weight:600;font-size:13px;color:var(--text-primary);">{{ rl.label }}</span><span style="font-family:var(--font-mono);font-size:11px;color:var(--text-tertiary);">{{ rl.tread }}</span></div>
+          </div>
+        </div>
+
+        <!-- ===== RR ===== -->
+        <div style="position:absolute;left:326px;top:208px;width:90px;display:flex;flex-direction:column;align-items:center;gap:5px;" onDragOver="{{ onDragOver }}" onDrop="{{ rr.onDrop }}">
+          <span style="display:inline-flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700;font-size:11px;letter-spacing:0.05em;color:#fff;background:var(--blaze-500);border-radius:var(--radius-sm);padding:2px 9px;text-transform:uppercase;">RR</span>
+          <div draggable="{{ true }}" onDragStart="{{ rr.onDragStart }}" onDragEnd="{{ onDragEnd }}" style="display:flex;flex-direction:column;align-items:center;gap:4px;cursor:grab;user-select:none;width:100%;background:var(--surface-card);border:1px solid var(--border-default);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);padding:9px 6px;">
+            <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ink-500)" stroke-width="2"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="3.4"></circle></svg>
+            <div style="display:flex;align-items:baseline;gap:4px;"><span style="font-family:var(--font-mono);font-weight:600;font-size:13px;color:var(--text-primary);">{{ rr.label }}</span><span style="font-family:var(--font-mono);font-size:11px;color:var(--text-tertiary);">{{ rr.tread }}</span></div>
+          </div>
+        </div>
+
+        <!-- ===== SP (SUV only, rear-mounted) ===== -->
+        <sc-if value="{{ isSuv }}" hint-placeholder-val="{{ true }}">
+          <div style="position:absolute;left:195px;top:314px;width:90px;display:flex;flex-direction:column;align-items:center;gap:5px;" onDragOver="{{ onDragOver }}" onDrop="{{ sp.onDrop }}">
+            <div draggable="{{ true }}" onDragStart="{{ sp.onDragStart }}" onDragEnd="{{ onDragEnd }}" style="display:flex;flex-direction:column;align-items:center;gap:4px;cursor:grab;user-select:none;width:100%;background:var(--surface-card);border:1px solid var(--border-default);border-radius:var(--radius-md);box-shadow:var(--shadow-sm);padding:9px 6px;">
+              <svg width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="var(--ink-500)" stroke-width="2"><circle cx="12" cy="12" r="9"></circle><circle cx="12" cy="12" r="3.4"></circle></svg>
+              <div style="display:flex;align-items:baseline;gap:4px;"><span style="font-family:var(--font-mono);font-weight:600;font-size:13px;color:var(--text-primary);">{{ sp.label }}</span><span style="font-family:var(--font-mono);font-size:11px;color:var(--text-tertiary);">{{ sp.tread }}</span></div>
+            </div>
+            <span style="display:inline-flex;align-items:center;justify-content:center;font-family:var(--font-display);font-weight:700;font-size:11px;letter-spacing:0.05em;color:var(--text-secondary);background:var(--surface-sunken);border:1px solid var(--border-default);border-radius:var(--radius-sm);padding:2px 9px;text-transform:uppercase;">SP · spare</span>
+          </div>
+        </sc-if>
+
+      </div>
+    </div>
+
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:12px;margin-top:18px;">
+      <span style="font-family:var(--font-mono);font-size:12px;color:var(--text-tertiary);">{{ movedText }}</span>
+      <div style="display:flex;gap:10px;">
+        <x-import component-from-global-scope="TreadMarkDesignSystem_b4620a.Button" variant="ghost" hint-size="90px,42px">Back</x-import>
+        <x-import component-from-global-scope="TreadMarkDesignSystem_b4620a.Button" variant="primary" hint-size="160px,42px">Save rotation</x-import>
+      </div>
+    </div>
+
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:760,&quot;height&quot;:640}}">
+class Component extends DCLogic {
+  state = {
+    layout: 'suv',
+    drag: null,
+    suv: { FL: { label: 'T5', center: 9 }, FR: { label: 'T1', center: 7 }, RL: { label: 'T3', center: 12 }, RR: { label: 'T4', center: 10 }, SP: { label: 'T2', center: 6 } },
+    car: { FL: { label: 'T5', center: 9 }, FR: { label: 'T1', center: 7 }, RL: { label: 'T3', center: 12 }, RR: { label: 'T4', center: 10 } },
+  };
+
+  INITIAL = {
+    suv: { FL: 'T5', FR: 'T1', RL: 'T3', RR: 'T4', SP: 'T2' },
+    car: { FL: 'T5', FR: 'T1', RL: 'T3', RR: 'T4' },
+  };
+
+  swap(targetKey) {
+    const map = this.state.layout;
+    const from = this.state.drag;
+    if (!from || from === targetKey) { this.setState({ drag: null }); return; }
+    const slots = { ...this.state[map] };
+    const tmp = slots[from];
+    slots[from] = slots[targetKey];
+    slots[targetKey] = tmp;
+    this.setState({ [map]: slots, drag: null });
+  }
+
+  renderVals() {
+    const isSuv = this.state.layout === 'suv';
+    const slots = this.state[this.state.layout];
+    const order = isSuv ? ['FL', 'FR', 'RL', 'RR', 'SP'] : ['FL', 'FR', 'RL', 'RR'];
+
+    const mk = (key) => {
+      const t = slots[key];
+      return {
+        label: t ? t.label : '',
+        tread: t ? t.center + '/32"' : '',
+        onDragStart: (e) => { this.setState({ drag: key }); if (e.dataTransfer) { e.dataTransfer.effectAllowed = 'move'; try { e.dataTransfer.setData('text/plain', key); } catch (_) {} } },
+        onDrop: (e) => { e.preventDefault(); this.swap(key); },
+      };
+    };
+
+    const initial = this.INITIAL[this.state.layout];
+    const moved = order.filter((k) => slots[k] && slots[k].label !== initial[k]).length;
+
+    return {
+      isSuv,
+      isCar: !isSuv,
+      fl: mk('FL'), fr: mk('FR'), rl: mk('RL'), rr: mk('RR'), sp: mk('SP'),
+      onDragOver: (e) => e.preventDefault(),
+      onDragEnd: () => this.setState({ drag: null }),
+      setSuv: () => this.setState({ layout: 'suv', drag: null }),
+      setCar: () => this.setState({ layout: 'car', drag: null }),
+      movedText: moved === 0 ? 'No changes yet' : `${moved} of ${order.length} positions changed`,
+    };
+  }
+}
+</script>
+</body>
+</html>

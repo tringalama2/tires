@@ -196,7 +196,7 @@ new #[Layout('layouts.app')] class extends Component {
                     <div class="flex justify-between mb-4">
                         <div class="text-sm text-gray-500">
                             Drag each tire to its new position, or
-                            <button wire:click="toggleMode" class="text-blue-600 underline">switch to {{ $tableMode ? 'drag' : 'table' }} view</button>.
+                            <button wire:click="toggleMode" class="text-steel-600 underline hover:text-steel-700">switch to {{ $tableMode ? 'drag' : 'table' }} view</button>.
                         </div>
                         <x-primary-button wire:click="save">
                             {{ __('Complete Rotation') }}
@@ -217,7 +217,7 @@ new #[Layout('layouts.app')] class extends Component {
                             <tbody>
                                 @foreach ($placements as $fromPos => $p)
                                     <tr class="odd:bg-white even:bg-gray-50">
-                                        <td class="p-3 border border-gray-300 font-bold text-blue-700">{{ $p['tire_label'] ?? $fromPos }}</td>
+                                        <td class="p-3 border border-gray-300 font-bold text-ink-900">{{ $p['tire_label'] ?? $fromPos }}</td>
                                         <td class="p-3 border border-gray-300">{{ TirePosition::from($fromPos)->label() }}</td>
                                         <td class="p-3 border border-gray-300">
                                             <select wire:model.live="toPositions.{{ $fromPos }}" class="border-gray-300 rounded text-sm w-full">
@@ -262,8 +262,8 @@ new #[Layout('layouts.app')] class extends Component {
                                         x-on:touchstart.prevent="onTouchStart(fromPos, $event)"
                                         class="cursor-grab select-none flex flex-col items-center mt-1"
                                     >
-                                        <x-phosphor-tire-duotone class="w-12 h-12 text-blue-600" />
-                                        <span class="text-xs font-bold text-blue-700" x-text="p.tire_label"></span>
+                                        <x-phosphor-tire-duotone class="w-12 h-12 text-ink-600" />
+                                        <span class="text-xs font-bold text-ink-900" x-text="p.tire_label"></span>
                                         <span class="text-xs text-gray-500">from <span x-text="p.from_position_label"></span></span>
                                         <span class="text-xs text-gray-700" x-text="p.tread_center + '/32&quot;'"></span>
                                     </div>
@@ -295,8 +295,8 @@ new #[Layout('layouts.app')] class extends Component {
                                         x-on:touchstart.prevent="onTouchStart(fromPos, $event)"
                                         class="cursor-grab select-none flex flex-col items-center mt-1"
                                     >
-                                        <x-phosphor-tire-duotone class="w-12 h-12 text-indigo-600" />
-                                        <span class="text-xs font-bold text-indigo-700" x-text="p.tire_label"></span>
+                                        <x-phosphor-tire-duotone class="w-12 h-12 text-ink-600" />
+                                        <span class="text-xs font-bold text-ink-900" x-text="p.tire_label"></span>
                                         <span class="text-xs text-gray-500">from <span x-text="p.from_position_label"></span></span>
                                         <span class="text-xs text-gray-700" x-text="p.tread_center + '/32&quot;'"></span>
                                     </div>
@@ -439,7 +439,7 @@ Alpine.data('rotationDrag', (placements, initialPositions) => ({
         const base = pos === 'GARAGE'
             ? 'bg-gray-50 border-gray-300'
             : 'bg-gray-100 border-gray-400';
-        const highlight = 'bg-blue-100 border-blue-400';
+        const highlight = 'bg-blaze-50 border-blaze-400';
         return this.hovering === pos ? highlight : base;
     },
 

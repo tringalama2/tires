@@ -1,93 +1,109 @@
 <div>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-            {{ __('Dashboard') }}
-        </h2>
+        <div class="flex items-baseline justify-between gap-4">
+            <div>
+                <h1 class="font-display font-semibold uppercase text-2xl tracking-wider text-ink-900">Dashboard</h1>
+                <p class="text-ink-500 text-sm mt-0.5">
+                    {{ session('vehicle')?->year }} {{ session('vehicle')?->make }} {{ session('vehicle')?->model }}
+                    · {{ session('vehicle')?->tires()->count() }} tires in rotation
+                </p>
+            </div>
+            <x-treadmark.button href="{{ route('rotations.prepare') }}" size="sm">
+                <x-treadmark.icon name="arrows-clockwise" class="w-4 h-4" />
+                Log Rotation
+            </x-treadmark.button>
+        </div>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-4xl mx-auto sm:px-6 lg:px-8 space-y-6">
+    <div class="py-8">
+        <div class="max-w-5xl mx-auto px-4 sm:px-6 lg:px-8 space-y-5">
 
             {{-- Replacement alerts --}}
             @if ($this->replacementAlerts->isNotEmpty())
-                <div class="bg-red-50 border border-red-200 rounded-lg p-4">
-                    <div class="flex items-start gap-2">
-                        <x-phosphor-warning-duotone class="w-5 h-5 text-red-500 shrink-0 mt-0.5" />
-                        <div>
-                            <h3 class="font-semibold text-red-800 text-sm mb-1">Tires nearing replacement</h3>
-                            <ul class="space-y-1">
-                                @foreach ($this->replacementAlerts as $alert)
-                                    <li class="text-sm text-red-700">
-                                        <a href="{{ route('tires.show', $alert['tire']) }}" class="font-bold hover:underline">
-                                            {{ $alert['tire']->label }}
-                                        </a>
-                                        ({{ $alert['current_position']?->label() ?? '—' }})
-                                        — ≈ {{ number_format($alert['projected_miles']) }} miles to 2/32"
-                                    </li>
-                                @endforeach
-                            </ul>
-                        </div>
-                    </div>
-                </div>
+                <x-treadmark.alert tone="danger" title="Tires nearing replacement">
+                    <ul class="mt-1 space-y-1">
+                        @foreach ($this->replacementAlerts as $alert)
+                            <li>
+                                <a href="{{ route('tires.show', $alert['tire']) }}"
+                                   class="font-semibold underline underline-offset-2">{{ $alert['tire']->label }}</a>
+                                ({{ $alert['current_position']?->label() ?? '—' }})
+                                — ≈ {{ number_format($alert['projected_miles']) }} miles to 2/32"
+                            </li>
+                        @endforeach
+                    </ul>
+                </x-treadmark.alert>
             @endif
 
-            {{-- Last rotation card --}}
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6">
-                    <h3 class="text-sm font-semibold text-gray-500 uppercase tracking-wide mb-3">Last Rotation</h3>
-                    @if ($this->latestRotation)
-                        <div class="flex flex-col sm:flex-row sm:items-end gap-4">
-                            <div>
-                                <div class="text-3xl font-bold text-blue-700">
-                                    {{ $this->latestRotation->rotated_on->format('M j, Y') }}
-                                </div>
-                                <div class="text-gray-500 mt-1">
-                                    {{ number_format($this->latestRotation->odometer) }} miles
-                                </div>
-                            </div>
-                            <div class="text-gray-400 text-sm sm:ml-6 self-start sm:self-auto">
-                                {{ $this->daysSinceRotation }} day{{ $this->daysSinceRotation === 1 ? '' : 's' }} ago
-                            </div>
-                            <div class="sm:ml-auto flex gap-3">
-                                <a href="{{ route('rotations.edit', $this->latestRotation->id) }}"
-                                   class="text-sm text-gray-500 hover:text-gray-800 hover:underline">
-                                    Edit
-                                </a>
-                                <a href="{{ route('rotations.prepare') }}"
-                                   class="inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700">
-                                    New Rotation
-                                </a>
-                            </div>
-                        </div>
-                        @if ($this->latestRotation->note)
-                            <p class="mt-3 text-sm text-gray-600 italic">{{ $this->latestRotation->note }}</p>
-                        @endif
-                    @else
-                        <div class="text-gray-400 text-sm">No rotations recorded yet.</div>
-                        <a href="{{ route('rotations.prepare') }}"
-                           class="mt-3 inline-flex items-center px-4 py-2 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700">
-                            Record First Rotation
-                        </a>
-                    @endif
-                </div>
+            {{-- Stat row --}}
+            <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+                @if ($this->latestRotation)
+                    <x-treadmark.card class="col-span-1">
+                        <x-treadmark.stat-tile
+                            label="Last rotation"
+                            value="{{ $this->latestRotation->rotated_on->format('M j, Y') }}"
+                            sub="{{ $this->daysSinceRotation }} day{{ $this->daysSinceRotation === 1 ? '' : 's' }} ago"
+                        />
+                    </x-treadmark.card>
+                    <x-treadmark.card class="col-span-1">
+                        <x-treadmark.stat-tile
+                            label="Odometer"
+                            value="{{ number_format($this->latestRotation->odometer) }}"
+                            unit="mi"
+                            mono
+                        />
+                    </x-treadmark.card>
+                @endif
+
+                {{-- Fastest-wear inverse tile --}}
+                @php
+                    $fastestAlert = $this->replacementAlerts->first();
+                @endphp
+                @if ($fastestAlert)
+                    <x-treadmark.card tone="inverse" class="col-span-2 sm:col-span-1">
+                        <x-treadmark.stat-tile
+                            tone="inverse"
+                            label="Needs attention"
+                            value="{{ $fastestAlert['tire']->label }}"
+                            sub="≈ {{ number_format($fastestAlert['projected_miles']) }} mi left"
+                        />
+                    </x-treadmark.card>
+                @endif
             </div>
 
+            {{-- Rotation note --}}
+            @if ($this->latestRotation?->note)
+                <p class="text-sm text-ink-500 italic px-1">{{ $this->latestRotation->note }}</p>
+            @endif
+
+            {{-- No rotations yet --}}
+            @if (! $this->latestRotation)
+                <x-treadmark.card>
+                    <div class="py-8 text-center">
+                        <x-treadmark.icon name="arrows-clockwise" class="w-10 h-10 text-ink-300 mx-auto mb-3" />
+                        <p class="text-ink-500 mb-4">No rotations logged yet. Add your first to start tracking wear.</p>
+                        <x-treadmark.button href="{{ route('rotations.prepare') }}">
+                            Log First Rotation
+                        </x-treadmark.button>
+                    </div>
+                </x-treadmark.card>
+            @endif
+
             {{-- Quick links --}}
-            <div class="grid grid-cols-2 sm:grid-cols-3 gap-4">
+            <div class="grid grid-cols-3 gap-4">
                 <a href="{{ route('reports.by-position') }}"
-                   class="bg-white shadow-sm rounded-lg p-4 hover:shadow-md transition-shadow text-center">
-                    <x-phosphor-chart-bar-duotone class="w-8 h-8 text-blue-500 mx-auto mb-1" />
-                    <div class="text-sm font-medium text-gray-700">Wear by Position</div>
+                   class="group flex flex-col items-center gap-2 bg-white border border-ink-100 rounded-card p-5 shadow-tm-sm hover:shadow-tm-md hover:-translate-y-px transition-all duration-150 text-center">
+                    <x-treadmark.icon name="chart-bar" class="w-7 h-7 text-ink-400 group-hover:text-blaze-500 transition-colors" />
+                    <span class="text-sm font-semibold text-ink-700 group-hover:text-ink-900">Wear by Position</span>
                 </a>
                 <a href="{{ route('reports.by-tire') }}"
-                   class="bg-white shadow-sm rounded-lg p-4 hover:shadow-md transition-shadow text-center">
-                    <x-phosphor-tire-duotone class="w-8 h-8 text-blue-500 mx-auto mb-1" />
-                    <div class="text-sm font-medium text-gray-700">Wear by Tire</div>
+                   class="group flex flex-col items-center gap-2 bg-white border border-ink-100 rounded-card p-5 shadow-tm-sm hover:shadow-tm-md hover:-translate-y-px transition-all duration-150 text-center">
+                    <x-treadmark.icon name="tire" class="w-7 h-7 text-ink-400 group-hover:text-blaze-500 transition-colors" />
+                    <span class="text-sm font-semibold text-ink-700 group-hover:text-ink-900">Wear by Tire</span>
                 </a>
                 <a href="{{ route('tires.index') }}"
-                   class="bg-white shadow-sm rounded-lg p-4 hover:shadow-md transition-shadow text-center">
-                    <x-phosphor-list-duotone class="w-8 h-8 text-blue-500 mx-auto mb-1" />
-                    <div class="text-sm font-medium text-gray-700">Manage Tires</div>
+                   class="group flex flex-col items-center gap-2 bg-white border border-ink-100 rounded-card p-5 shadow-tm-sm hover:shadow-tm-md hover:-translate-y-px transition-all duration-150 text-center">
+                    <x-treadmark.icon name="list" class="w-7 h-7 text-ink-400 group-hover:text-blaze-500 transition-colors" />
+                    <span class="text-sm font-semibold text-ink-700 group-hover:text-ink-900">Manage Tires</span>
                 </a>
             </div>
 

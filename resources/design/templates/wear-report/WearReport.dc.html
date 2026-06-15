@@ -1,0 +1,96 @@
+<!DOCTYPE html>
+<html>
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<script src="./support.js"></script>
+</head>
+<body>
+<x-dc>
+<!-- @template name="Wear Report" description="Printable branded wear report — by-position and by-tire tables with tread gauges" -->
+<helmet>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://fonts.googleapis.com/css2?family=Oswald:wght@400;500;600;700&family=Figtree:wght@400;500;600;700&family=JetBrains+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+  <script src="./ds-base.js"></script>
+</helmet>
+
+<div style="min-height:100vh;background:var(--surface-page);font-family:var(--font-sans);padding:40px 20px;">
+  <div style="max-width:800px;margin:0 auto;background:var(--surface-card);border:1px solid var(--border-subtle);border-radius:var(--radius-lg);box-shadow:var(--shadow-md);overflow:hidden;">
+
+    <div style="display:flex;align-items:center;justify-content:space-between;gap:16px;padding:26px 32px;background:var(--surface-inverse);">
+      <x-import component-from-global-scope="TreadMarkDesignSystem_b4620a.Logo" tone="onDark" size="{{ 30 }}" hint-size="160px,36px"></x-import>
+      <div style="text-align:right;">
+        <div style="font-family:var(--font-display);font-weight:600;text-transform:uppercase;letter-spacing:0.04em;font-size:20px;color:#fff;">Wear Report</div>
+        <div style="font-family:var(--font-mono);font-size:11px;letter-spacing:0.08em;color:var(--ink-300);margin-top:3px;">'19 4Runner · through Jun 10, 2026</div>
+      </div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:16px;padding:24px 32px;border-bottom:1px solid var(--border-subtle);">
+      <x-import component-from-global-scope="TreadMarkDesignSystem_b4620a.StatTile" size="sm" label="Odometer" value="120,495" unit="mi" mono="{{ true }}" hint-size="100%,56px"></x-import>
+      <x-import component-from-global-scope="TreadMarkDesignSystem_b4620a.StatTile" size="sm" label="Rotations" value="4" sub="since 104,400 mi" hint-size="100%,56px"></x-import>
+      <x-import component-from-global-scope="TreadMarkDesignSystem_b4620a.StatTile" size="sm" tone="brand" label="Fastest position" value="Front R" sub="0.32 /1k mi" hint-size="100%,56px"></x-import>
+    </div>
+
+    <div style="padding:24px 32px;">
+      <div style="font-family:var(--font-display);font-weight:600;text-transform:uppercase;letter-spacing:0.04em;font-size:14px;color:var(--text-primary);margin-bottom:14px;">Wear by position</div>
+      <div style="display:grid;grid-template-columns:1.6fr 0.7fr 1fr 1fr;padding-bottom:10px;border-bottom:1px solid var(--border-default);font-family:var(--font-mono);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-tertiary);">
+        <span>Position</span><span style="text-align:right;">Intervals</span><span style="text-align:right;">Avg /1k mi</span><span style="text-align:right;">Tread at removal</span>
+      </div>
+      <sc-for list="{{ byPosition }}" as="r" hint-placeholder-count="5">
+        <div style="display:grid;grid-template-columns:1.6fr 0.7fr 1fr 1fr;align-items:center;padding:11px 0;border-bottom:1px solid var(--border-subtle);">
+          <span style="display:inline-flex;align-items:center;gap:9px;">
+            <x-import component-from-global-scope="TreadMarkDesignSystem_b4620a.PositionTag" position="{{ r.pos }}" active="{{ r.fastest }}" size="sm" hint-size="40px,28px"></x-import>
+            <span style="font-size:14px;color:var(--text-primary);">{{ r.label }}</span>
+          </span>
+          <span style="text-align:right;font-family:var(--font-mono);font-size:13px;color:var(--text-secondary);">{{ r.intervals }}</span>
+          <span style="text-align:right;font-family:var(--font-mono);font-size:13px;font-weight:600;color:var(--text-primary);">{{ r.wear }}</span>
+          <span style="text-align:right;font-family:var(--font-mono);font-size:13px;color:var(--text-secondary);">{{ r.removal }}/32"</span>
+        </div>
+      </sc-for>
+    </div>
+
+    <div style="padding:0 32px 28px;">
+      <div style="font-family:var(--font-display);font-weight:600;text-transform:uppercase;letter-spacing:0.04em;font-size:14px;color:var(--text-primary);margin-bottom:14px;">Wear by tire</div>
+      <div style="display:grid;grid-template-columns:0.8fr 0.6fr 1.5fr 0.9fr 1fr;padding-bottom:10px;border-bottom:1px solid var(--border-default);font-family:var(--font-mono);font-size:10px;letter-spacing:0.1em;text-transform:uppercase;color:var(--text-tertiary);">
+        <span>Tire</span><span>Pos</span><span>Tread</span><span style="text-align:right;">Avg /1k</span><span style="text-align:right;">To 2/32"</span>
+      </div>
+      <sc-for list="{{ byTire }}" as="t" hint-placeholder-count="5">
+        <div style="display:grid;grid-template-columns:0.8fr 0.6fr 1.5fr 0.9fr 1fr;align-items:center;padding:11px 0;border-bottom:1px solid var(--border-subtle);">
+          <span style="font-family:var(--font-mono);font-weight:600;font-size:13px;color:var(--text-primary);">{{ t.label }}</span>
+          <span><x-import component-from-global-scope="TreadMarkDesignSystem_b4620a.PositionTag" position="{{ t.pos }}" size="sm" hint-size="40px,28px"></x-import></span>
+          <span style="padding-right:16px;"><x-import component-from-global-scope="TreadMarkDesignSystem_b4620a.TreadGauge" depth="{{ t.center }}" label="" size="sm" hint-size="100%,34px"></x-import></span>
+          <span style="text-align:right;font-family:var(--font-mono);font-size:13px;color:var(--text-secondary);">{{ t.wear }}</span>
+          <span style="text-align:right;font-family:var(--font-mono);font-size:13px;color:var(--text-secondary);">≈ {{ t.miles }}</span>
+        </div>
+      </sc-for>
+      <p style="font-family:var(--font-sans);font-size:12px;color:var(--text-tertiary);margin-top:16px;line-height:1.5;">
+        Wear rate = tread lost per 1,000 miles, charged to the position the tire left. Projection to the 2/32" legal limit needs ≥ 2 intervals. Readings are hand-gauged (±1/32").
+      </p>
+    </div>
+  </div>
+</div>
+</x-dc>
+<script type="text/x-dc" data-dc-script data-props="{&quot;$preview&quot;:{&quot;width&quot;:800,&quot;height&quot;:900}}">
+class Component extends DCLogic {
+  renderVals() {
+    return {
+      byPosition: [
+        { pos: 'FR', label: 'Front Right', intervals: 3, wear: '0.32', removal: '7.7', fastest: true },
+        { pos: 'RL', label: 'Rear Left', intervals: 3, wear: '0.26', removal: '12.7', fastest: false },
+        { pos: 'RR', label: 'Rear Right', intervals: 3, wear: '0.13', removal: '11.0', fastest: false },
+        { pos: 'FL', label: 'Front Left', intervals: 3, wear: '0.12', removal: '10.3', fastest: false },
+        { pos: 'SP', label: 'Spare', intervals: 3, wear: '0.08', removal: '9.0', fastest: false },
+      ],
+      byTire: [
+        { label: 'T1', pos: 'FR', center: 7, wear: '0.19', miles: '26,300' },
+        { label: 'T2', pos: 'SP', center: 6, wear: '0.22', miles: '18,200' },
+        { label: 'T3', pos: 'RL', center: 12, wear: '0.16', miles: '62,500' },
+        { label: 'T4', pos: 'RR', center: 10, wear: '0.20', miles: '40,000' },
+        { label: 'T5', pos: 'FL', center: 9, wear: '0.11', miles: '63,600' },
+      ],
+    };
+  }
+}
+</script>
+</body>
+</html>

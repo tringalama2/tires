@@ -8,7 +8,7 @@
     <div class="flex flex-col items-center">
         <div class="text-center self-center font-semibold uppercase tracking-tight text-sm text-gray-800 border-b border-gray-500">
             {{ $position->label() }}
-            <x-phosphor-tire-duotone class="w-8 h-8 inline self-center text-blue-600"/>
+            <x-phosphor-tire-duotone class="w-8 h-8 inline self-center text-ink-500"/>
         </div>
         <div class="m-2 flex flex-col items-center">
 

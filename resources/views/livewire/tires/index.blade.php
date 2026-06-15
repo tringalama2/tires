@@ -150,7 +150,7 @@ new #[Layout('layouts.app')] class extends Component {
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">{{ __('Tires') }}</h2>
             @unless ($showAddForm)
                 <button wire:click="openAddForm"
-                    class="inline-flex items-center px-3 py-1.5 bg-blue-600 text-white text-sm font-medium rounded-md hover:bg-blue-700">
+                    class="inline-flex items-center px-3 py-1.5 bg-blaze-500 text-white text-sm font-semibold rounded-control hover:bg-blaze-600 transition-colors">
                     + Add Tire
                 </button>
             @endunless
@@ -193,7 +193,7 @@ new #[Layout('layouts.app')] class extends Component {
                             </div>
                             <div>
                                 <x-input-label value="Status" />
-                                <select wire:model="status" class="mt-1 block w-full border-gray-300 rounded-md shadow-sm text-sm focus:ring-indigo-500 focus:border-indigo-500">
+                                <select wire:model="status" class="mt-1 block w-full border-ink-200 rounded-control shadow-sm text-sm focus:ring-blaze-500/40 focus:border-blaze-500">
                                     <option value="{{ TireStatus::Active->value }}">Active</option>
                                     <option value="{{ TireStatus::Retired->value }}">Retired</option>
                                 </select>
@@ -228,7 +228,7 @@ new #[Layout('layouts.app')] class extends Component {
                                 @foreach ($this->tires as $row)
                                     @php $tire = $row['tire']; @endphp
                                     <tr class="hover:bg-gray-50 {{ $tire->status === \App\Enums\TireStatus::Retired ? 'opacity-60' : '' }}">
-                                        <td class="py-3 font-bold text-blue-700">
+                                        <td class="py-3 font-bold text-ink-900">
                                             <a href="{{ route('tires.show', $tire) }}" class="hover:underline">{{ $tire->label }}</a>
                                         </td>
                                         <td class="py-3 text-gray-700">
@@ -244,7 +244,7 @@ new #[Layout('layouts.app')] class extends Component {
                                             </span>
                                         </td>
                                         <td class="py-3 flex gap-3">
-                                            <a href="{{ route('tires.show', $tire) }}" class="text-sm text-blue-600 hover:underline">Edit</a>
+                                            <a href="{{ route('tires.show', $tire) }}" class="text-sm text-steel-600 hover:text-steel-800 hover:underline">Edit</a>
                                             <button wire:click="toggleStatus('{{ $tire->id }}')"
                                                 class="text-sm text-gray-500 hover:underline">
                                                 {{ $tire->status === \App\Enums\TireStatus::Active ? 'Retire' : 'Reactivate' }}
