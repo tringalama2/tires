@@ -26,6 +26,8 @@ class PlacementFactory extends Factory
             'tread_inner' => null,
             'tread_outer' => null,
             'note' => null,
+            'is_feathering' => false,
+            'is_cupped' => false,
         ];
     }
 }

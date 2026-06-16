@@ -14,7 +14,6 @@ class TireService
     {
         return $tire->placements()
             ->join('rotations', 'rotations.id', '=', 'placements.rotation_id')
-            ->where('rotations.is_setup', false)
             ->orderByDesc('rotations.odometer')
             ->value('placements.to_position');
     }

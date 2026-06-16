@@ -166,41 +166,27 @@ new #[Layout('layouts.app')] class extends Component {
                     <div class="p-6">
                         <h3 class="font-semibold text-gray-700 mb-4">Add Tire</h3>
                         <form wire:submit="addTire" class="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                            <div>
-                                <x-input-label value="Label *" />
-                                <x-text-input wire:model="label" class="mt-1 block w-full" type="text" placeholder="T6" required />
-                                <x-input-error :messages="$errors->get('label')" class="mt-1" />
-                            </div>
-                            <div>
-                                <x-input-label value="Brand" />
-                                <x-text-input wire:model="brand" class="mt-1 block w-full" type="text" />
-                            </div>
-                            <div>
-                                <x-input-label value="Model" />
-                                <x-text-input wire:model="model" class="mt-1 block w-full" type="text" />
-                            </div>
-                            <div>
-                                <x-input-label value="DOT / TIN" />
-                                <x-text-input wire:model="tin" class="mt-1 block w-full" type="text" maxlength="12" />
-                            </div>
-                            <div>
-                                <x-input-label value="Size" />
-                                <x-text-input wire:model="size" class="mt-1 block w-full" type="text" placeholder="275/70R18" />
-                            </div>
-                            <div>
-                                <x-input-label value="Purchase Date" />
-                                <x-text-input wire:model="purchased_on" class="mt-1 block w-full" type="date" />
-                            </div>
-                            <div>
-                                <x-input-label value="Status" />
-                                <select wire:model="status" class="mt-1 block w-full border-ink-200 rounded-control shadow-sm text-sm focus:ring-blaze-500/40 focus:border-blaze-500">
-                                    <option value="{{ TireStatus::Active->value }}">Active</option>
-                                    <option value="{{ TireStatus::Retired->value }}">Retired</option>
-                                </select>
-                            </div>
+                            <x-treadmark.input
+                                wire:model="label"
+                                type="text"
+                                label="Label"
+                                placeholder="T6"
+                                required
+                                :error="$errors->first('label')"
+                            />
+                            <x-treadmark.input wire:model="brand" type="text" label="Brand" />
+                            <x-treadmark.input wire:model="model" type="text" label="Model" />
+                            <x-treadmark.input wire:model="tin" type="text" label="DOT / TIN" maxlength="12" />
+                            <x-treadmark.input wire:model="size" type="text" label="Size" placeholder="275/70R18" />
+                            <x-treadmark.input wire:model="purchased_on" type="date" label="Purchase Date" />
+                            <x-treadmark.select
+                                wire:model="status"
+                                label="Status"
+                                :options="[TireStatus::Active->value => 'Active', TireStatus::Retired->value => 'Retired']"
+                            />
                             <div class="col-span-2 sm:col-span-3 flex gap-3 pt-2">
-                                <x-primary-button type="submit">Add Tire</x-primary-button>
-                                <button type="button" wire:click="cancelAdd" class="text-sm text-gray-500 hover:underline">Cancel</button>
+                                <x-treadmark.button type="submit">Add Tire</x-treadmark.button>
+                                <button type="button" wire:click="cancelAdd" class="text-sm text-ink-500 hover:underline">Cancel</button>
                             </div>
                         </form>
                     </div>

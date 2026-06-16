@@ -22,6 +22,8 @@ class Placement extends Model
             'tread_center' => 'decimal:1',
             'tread_inner' => 'decimal:1',
             'tread_outer' => 'decimal:1',
+            'is_feathering' => 'boolean',
+            'is_cupped' => 'boolean',
         ];
     }
 
@@ -35,13 +37,27 @@ class Placement extends Model
         return $this->belongsTo(Tire::class);
     }
 
-    /** True when inner and outer tread diverge enough to suggest scalloping. */
-    public function isScalloped(): bool
+    /** True when center tread is 2+ /32" lower than avg(inner, outer) — overinflation signature. */
+    public function isCenterWear(): bool
     {
         if ($this->tread_inner === null || $this->tread_outer === null) {
             return false;
         }
 
-        return abs($this->tread_inner - $this->tread_outer) >= 2;
+        $avg = ((float) $this->tread_inner + (float) $this->tread_outer) / 2;
+
+        return ((float) $this->tread_center - $avg) <= -2.0;
+    }
+
+    /** True when center tread is 2+ /32" higher than avg(inner, outer) — underinflation signature. */
+    public function isEdgeWear(): bool
+    {
+        if ($this->tread_inner === null || $this->tread_outer === null) {
+            return false;
+        }
+
+        $avg = ((float) $this->tread_inner + (float) $this->tread_outer) / 2;
+
+        return ((float) $this->tread_center - $avg) >= 2.0;
     }
 }

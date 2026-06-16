@@ -19,7 +19,9 @@ new #[Layout('layouts.guest')] class extends Component
 }; ?>
 
 <div>
-    <x-auth-session-status class="mb-4" :status="session('status')" />
+    @if (session('status'))
+        <x-treadmark.alert tone="success" class="mb-4">{{ session('status') }}</x-treadmark.alert>
+    @endif
 
     <form wire:submit="login" class="space-y-5">
         <x-treadmark.input

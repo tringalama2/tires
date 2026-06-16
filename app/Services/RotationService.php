@@ -5,6 +5,7 @@ namespace App\Services;
 use App\Enums\TirePosition;
 use App\Models\Placement;
 use App\Models\Rotation;
+use App\Models\Tire;
 use App\Models\Vehicle;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
@@ -34,7 +35,6 @@ class RotationService
 
             $lastTread = $tire->placements()
                 ->join('rotations', 'rotations.id', '=', 'placements.rotation_id')
-                ->where('rotations.is_setup', false)
                 ->orderByDesc('rotations.odometer')
                 ->value('placements.tread_center');
 
@@ -128,7 +128,13 @@ class RotationService
                     'tread_inner' => $p['tread_inner'] ?? null,
                     'tread_outer' => $p['tread_outer'] ?? null,
                     'note' => $p['note'] ?? null,
+                    'is_feathering' => $p['is_feathering'] ?? false,
+                    'is_cupped' => $p['is_cupped'] ?? false,
                 ]);
+
+                if (! empty($p['tire_flags'])) {
+                    Tire::where('id', $p['tire_id'])->update($p['tire_flags']);
+                }
             }
 
             return $rotation;

@@ -99,6 +99,7 @@ class WearReportService
                 'latest_tread_center' => $latestPlacement ? (float) $latestPlacement->tread_center : null,
                 'latest_tread_inner' => $latestPlacement ? $latestPlacement->tread_inner : null,
                 'latest_tread_outer' => $latestPlacement ? $latestPlacement->tread_outer : null,
+                'latest_is_cupped' => $latestPlacement ? (bool) $latestPlacement->is_cupped : false,
                 'lifetime_avg_wear_per_1000mi' => $avgWear,
                 'projected_miles' => $projectedMiles,
                 'notes' => $notes,
@@ -138,12 +139,9 @@ class WearReportService
         return max(0, round($remaining));
     }
 
-    /**
-     * True when |tread_inner − tread_outer| ≥ 2 and both are non-null.
-     */
     public function scalpingFlag(Placement $placement): bool
     {
-        return $placement->isScalloped();
+        return $placement->is_cupped;
     }
 
     /**

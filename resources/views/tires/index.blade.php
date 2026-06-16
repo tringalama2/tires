@@ -11,7 +11,9 @@
             <div class="p-4 sm:p-8 bg-white shadow sm:rounded-lg">
 
                 <!-- Session Status -->
-                <x-auth-session-status class="mb-4" :status="session('status')"/>
+                @if (session('status'))
+        <x-treadmark.alert tone="success" class="mb-4">{{ session('status') }}</x-treadmark.alert>
+    @endif
 
                 <div class="p-6 text-gray-900">
 

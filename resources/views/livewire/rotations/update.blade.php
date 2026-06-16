@@ -102,6 +102,9 @@ new #[Layout('layouts.app')] class extends Component {
                 'tread_inner' => $p['tread_inner'] ?? null,
                 'tread_outer' => $p['tread_outer'] ?? null,
                 'note' => $p['note'] ?? null,
+                'tire_flags' => $p['tire_flags'] ?? [],
+                'is_feathering' => $p['is_feathering'] ?? false,
+                'is_cupped' => $p['is_cupped'] ?? false,
             ];
         }
 
@@ -198,9 +201,9 @@ new #[Layout('layouts.app')] class extends Component {
                             Drag each tire to its new position, or
                             <button wire:click="toggleMode" class="text-steel-600 underline hover:text-steel-700">switch to {{ $tableMode ? 'drag' : 'table' }} view</button>.
                         </div>
-                        <x-primary-button wire:click="save">
+                        <x-treadmark.button wire:click="save">
                             {{ __('Complete Rotation') }}
-                        </x-primary-button>
+                        </x-treadmark.button>
                     </div>
 
                     @if ($tableMode)
@@ -416,9 +419,9 @@ new #[Layout('layouts.app')] class extends Component {
                     @endif
 
                     <div class="flex justify-end mt-6">
-                        <x-primary-button wire:click="save">
+                        <x-treadmark.button wire:click="save">
                             {{ __('Complete Rotation') }}
-                        </x-primary-button>
+                        </x-treadmark.button>
                     </div>
                 </div>
             </div>

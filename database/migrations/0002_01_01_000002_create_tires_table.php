@@ -18,6 +18,10 @@ return new class extends Migration
             $table->string('size', 255)->nullable();
             $table->date('purchased_on')->nullable();
             $table->text('notes')->nullable();
+            $table->boolean('has_cracking')->default(false);
+            $table->boolean('has_bulge')->default(false);
+            $table->boolean('has_cupping')->default(false);
+            $table->boolean('has_puncture_repair')->default(false);
             $table->unsignedTinyInteger('status')->default(1);
             $table->timestamps();
 

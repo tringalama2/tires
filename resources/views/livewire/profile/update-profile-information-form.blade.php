@@ -67,58 +67,74 @@ new class extends Component
 
 <section>
     <header>
-        <h2 class="text-lg font-medium text-gray-900">
+        <h2 class="text-lg font-medium text-ink-900">
             {{ __('Profile Information') }}
         </h2>
 
-        <p class="mt-1 text-sm text-gray-600">
+        <p class="mt-1 text-sm text-ink-500">
             {{ __("Update your account's profile information and email address.") }}
         </p>
     </header>
 
     <form wire:submit="updateProfileInformation" class="mt-6 space-y-6">
-        <div>
-            <x-input-label for="first_name" :value="__('First Name')" />
-            <x-text-input wire:model="first_name" id="first_name" name="first_name" type="text" class="mt-1 block w-full" required autofocus autocomplete="first_name" />
-            <x-input-error class="mt-2" :messages="$errors->get('first_name')" />
-        </div>
+        <x-treadmark.input
+            wire:model="first_name"
+            id="first_name"
+            name="first_name"
+            type="text"
+            label="First Name"
+            required
+            autofocus
+            autocomplete="first_name"
+            :error="$errors->first('first_name')"
+        />
+
+        <x-treadmark.input
+            wire:model="last_name"
+            id="last_name"
+            name="last_name"
+            type="text"
+            label="Last Name"
+            required
+            autocomplete="last_name"
+            :error="$errors->first('last_name')"
+        />
 
         <div>
-            <x-input-label for="last_name" :value="__('Last Name')" />
-            <x-text-input wire:model="last_name" id="last_name" name="last_name" type="text" class="mt-1 block w-full" required autofocus autocomplete="last_name" />
-            <x-input-error class="mt-2" :messages="$errors->get('last_name')" />
-        </div>
-
-        <div>
-            <x-input-label for="email" :value="__('Email')" />
-            <x-text-input wire:model="email" id="email" name="email" type="email" class="mt-1 block w-full" required autocomplete="username" />
-            <x-input-error class="mt-2" :messages="$errors->get('email')" />
+            <x-treadmark.input
+                wire:model="email"
+                id="email"
+                name="email"
+                type="email"
+                label="Email"
+                required
+                autocomplete="username"
+                :error="$errors->first('email')"
+            />
 
             @if (auth()->user() instanceof \Illuminate\Contracts\Auth\MustVerifyEmail && ! auth()->user()->hasVerifiedEmail())
-                <div>
-                    <p class="text-sm mt-2 text-gray-800">
+                <div class="mt-2">
+                    <p class="text-sm text-ink-700">
                         {{ __('Your email address is unverified.') }}
 
-                        <button wire:click.prevent="sendVerification" class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blaze-500/40">
+                        <button wire:click.prevent="sendVerification" class="underline text-sm text-ink-500 hover:text-ink-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blaze-500/40">
                             {{ __('Click here to re-send the verification email.') }}
                         </button>
                     </p>
 
                     @if (session('status') === 'verification-link-sent')
-                        <p class="mt-2 font-medium text-sm text-green-600">
+                        <x-treadmark.alert tone="success" class="mt-2">
                             {{ __('A new verification link has been sent to your email address.') }}
-                        </p>
+                        </x-treadmark.alert>
                     @endif
                 </div>
             @endif
         </div>
 
         <div class="flex items-center gap-4">
-            <x-primary-button>{{ __('Save') }}</x-primary-button>
+            <x-treadmark.button type="submit">{{ __('Save') }}</x-treadmark.button>
 
-            <x-action-message class="me-3" on="profile-updated">
-                {{ __('Saved.') }}
-            </x-action-message>
+            <x-treadmark.flash on="profile-updated">{{ __('Saved.') }}</x-treadmark.flash>
         </div>
     </form>
 </section>

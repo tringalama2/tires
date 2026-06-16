@@ -150,23 +150,16 @@ it('returns a positive projection for tires with sufficient data', function () {
 // WearReportService::scalpingFlag
 // ---------------------------------------------------------------------------
 
-it('flags scalloping when inner/outer delta >= 2', function () {
+it('flags scalloping when is_cupped is true', function () {
     $service = app(WearReportService::class);
-    $placement = new Placement(['tread_inner' => 5.0, 'tread_outer' => 3.0, 'tread_center' => 4.0]);
+    $placement = new Placement(['is_cupped' => true]);
 
     expect($service->scalpingFlag($placement))->toBeTrue();
 });
 
-it('does not flag when delta < 2', function () {
+it('does not flag scalloping when is_cupped is false', function () {
     $service = app(WearReportService::class);
-    $placement = new Placement(['tread_inner' => 5.0, 'tread_outer' => 4.0, 'tread_center' => 4.5]);
-
-    expect($service->scalpingFlag($placement))->toBeFalse();
-});
-
-it('does not flag when inner or outer is null', function () {
-    $service = app(WearReportService::class);
-    $placement = new Placement(['tread_inner' => null, 'tread_outer' => 3.0, 'tread_center' => 4.0]);
+    $placement = new Placement(['is_cupped' => false]);
 
     expect($service->scalpingFlag($placement))->toBeFalse();
 });

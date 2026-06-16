@@ -19,6 +19,10 @@ class TireFactory extends Factory
             'size' => fake()->optional(60)->bothify('###/##R##'),
             'purchased_on' => fake()->optional(60)->date(),
             'notes' => null,
+            'has_cracking' => false,
+            'has_bulge' => false,
+            'has_cupping' => false,
+            'has_puncture_repair' => false,
             'status' => TireStatus::Active,
         ];
     }

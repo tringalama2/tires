@@ -22,6 +22,10 @@ class Tire extends Model
         return [
             'purchased_on' => 'date:Y-m-d',
             'status' => TireStatus::class,
+            'has_cracking' => 'boolean',
+            'has_bulge' => 'boolean',
+            'has_cupping' => 'boolean',
+            'has_puncture_repair' => 'boolean',
         ];
     }
 

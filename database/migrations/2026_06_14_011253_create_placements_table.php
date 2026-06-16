@@ -21,6 +21,8 @@ return new class extends Migration
             $table->decimal('tread_inner', 4, 1)->nullable();
             $table->decimal('tread_outer', 4, 1)->nullable();
             $table->text('note')->nullable();
+            $table->boolean('is_feathering')->default(false);
+            $table->boolean('is_cupped')->default(false);
             $table->timestamps();
 
             $table->foreign('rotation_id')->references('id')->on('rotations')->cascadeOnDelete();

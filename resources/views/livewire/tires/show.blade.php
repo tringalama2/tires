@@ -28,6 +28,18 @@ new #[Layout('layouts.app')] class extends Component {
     #[Validate('nullable|date')]
     public ?string $purchased_on = null;
 
+    #[Validate('boolean')]
+    public bool $has_cracking = false;
+
+    #[Validate('boolean')]
+    public bool $has_bulge = false;
+
+    #[Validate('boolean')]
+    public bool $has_cupping = false;
+
+    #[Validate('boolean')]
+    public bool $has_puncture_repair = false;
+
     public function mount(): void
     {
         $this->brand = $this->tire->brand;
@@ -35,6 +47,10 @@ new #[Layout('layouts.app')] class extends Component {
         $this->tin = $this->tire->tin;
         $this->size = $this->tire->size;
         $this->purchased_on = $this->tire->purchased_on?->toDateString();
+        $this->has_cracking = (bool) $this->tire->has_cracking;
+        $this->has_bulge = (bool) $this->tire->has_bulge;
+        $this->has_cupping = (bool) $this->tire->has_cupping;
+        $this->has_puncture_repair = (bool) $this->tire->has_puncture_repair;
     }
 
     #[Computed]
@@ -83,6 +99,10 @@ new #[Layout('layouts.app')] class extends Component {
             'tin' => $this->tin ?: null,
             'size' => $this->size ?: null,
             'purchased_on' => $this->purchased_on ?: null,
+            'has_cracking' => $this->has_cracking,
+            'has_bulge' => $this->has_bulge,
+            'has_cupping' => $this->has_cupping,
+            'has_puncture_repair' => $this->has_puncture_repair,
         ]);
         $this->editing = false;
     }
@@ -94,6 +114,10 @@ new #[Layout('layouts.app')] class extends Component {
         $this->tin = $this->tire->tin;
         $this->size = $this->tire->size;
         $this->purchased_on = $this->tire->purchased_on?->toDateString();
+        $this->has_cracking = (bool) $this->tire->has_cracking;
+        $this->has_bulge = (bool) $this->tire->has_bulge;
+        $this->has_cupping = (bool) $this->tire->has_cupping;
+        $this->has_puncture_repair = (bool) $this->tire->has_puncture_repair;
         $this->editing = false;
     }
 
@@ -133,33 +157,56 @@ new #[Layout('layouts.app')] class extends Component {
 
                     @if ($editing)
                         <form wire:submit="save" class="grid grid-cols-2 gap-4">
-                            <div>
-                                <x-input-label value="Brand" />
-                                <x-text-input wire:model="brand" class="mt-1 block w-full" type="text" />
-                                <x-input-error :messages="$errors->get('brand')" class="mt-1" />
-                            </div>
-                            <div>
-                                <x-input-label value="Model" />
-                                <x-text-input wire:model="model" class="mt-1 block w-full" type="text" />
-                                <x-input-error :messages="$errors->get('model')" class="mt-1" />
-                            </div>
-                            <div>
-                                <x-input-label value="DOT / TIN" />
-                                <x-text-input wire:model="tin" class="mt-1 block w-full" type="text" maxlength="12" />
-                                <x-input-error :messages="$errors->get('tin')" class="mt-1" />
-                            </div>
-                            <div>
-                                <x-input-label value="Size" />
-                                <x-text-input wire:model="size" class="mt-1 block w-full" type="text" />
-                                <x-input-error :messages="$errors->get('size')" class="mt-1" />
-                            </div>
-                            <div>
-                                <x-input-label value="Purchase Date" />
-                                <x-text-input wire:model="purchased_on" class="mt-1 block w-full" type="date" />
-                                <x-input-error :messages="$errors->get('purchased_on')" class="mt-1" />
+                            <x-treadmark.input
+                                wire:model="brand"
+                                type="text"
+                                label="Brand"
+                                :error="$errors->first('brand')"
+                            />
+                            <x-treadmark.input
+                                wire:model="model"
+                                type="text"
+                                label="Model"
+                                :error="$errors->first('model')"
+                            />
+                            <x-treadmark.input
+                                wire:model="tin"
+                                type="text"
+                                label="DOT / TIN"
+                                maxlength="12"
+                                :error="$errors->first('tin')"
+                            />
+                            <x-treadmark.input
+                                wire:model="size"
+                                type="text"
+                                label="Size"
+                                :error="$errors->first('size')"
+                            />
+                            <x-treadmark.input
+                                wire:model="purchased_on"
+                                type="date"
+                                label="Purchase Date"
+                                :error="$errors->first('purchased_on')"
+                            />
+                            <div class="col-span-2">
+                                <p class="text-sm font-medium text-gray-600 mb-2">Condition</p>
+                                <div class="flex flex-wrap gap-x-6 gap-y-2">
+                                    @foreach ([
+                                        'has_cracking' => 'Cracking / dry rot',
+                                        'has_bulge' => 'Sidewall bulge',
+                                        'has_cupping' => 'Cupping',
+                                        'has_puncture_repair' => 'Plug / patch',
+                                    ] as $field => $label)
+                                        <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer select-none">
+                                            <input type="checkbox" wire:model="{{ $field }}"
+                                                class="rounded border-gray-300 text-blaze-600 focus:ring-blaze-500">
+                                            {{ $label }}
+                                        </label>
+                                    @endforeach
+                                </div>
                             </div>
                             <div class="flex items-end gap-2">
-                                <x-primary-button type="submit">Save</x-primary-button>
+                                <x-treadmark.button type="submit">Save</x-treadmark.button>
                                 <button type="button" wire:click="cancelEdit" class="text-sm text-gray-500 hover:underline">Cancel</button>
                             </div>
                         </form>
@@ -190,6 +237,21 @@ new #[Layout('layouts.app')] class extends Component {
                                 <dd class="font-medium text-gray-800">{{ $tire->status->label() }}</dd>
                             </div>
                         </dl>
+                        @php
+                            $activeConditions = array_filter([
+                                $tire->has_cracking ? 'Cracking' : null,
+                                $tire->has_bulge ? 'Bulge' : null,
+                                $tire->has_cupping ? 'Cupping' : null,
+                                $tire->has_puncture_repair ? 'Plug/Patch' : null,
+                            ]);
+                        @endphp
+                        @if ($activeConditions)
+                            <div class="mt-3 flex flex-wrap gap-1">
+                                @foreach ($activeConditions as $condition)
+                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800">{{ $condition }}</span>
+                                @endforeach
+                            </div>
+                        @endif
                     @endif
 
                     @if ($this->projectedMiles !== null)
@@ -217,15 +279,20 @@ new #[Layout('layouts.app')] class extends Component {
                                         <th class="pb-2 font-semibold text-gray-600">To</th>
                                         <th class="pb-2 font-semibold text-gray-600 text-right">Center</th>
                                         <th class="pb-2 font-semibold text-gray-600 text-right">Inner / Outer</th>
+                                        <th class="pb-2 font-semibold text-gray-600">Wear Pattern</th>
                                         <th class="pb-2 font-semibold text-gray-600">Note</th>
                                     </tr>
                                 </thead>
                                 <tbody class="divide-y divide-gray-100">
                                     @foreach ($this->history as $p)
                                         @php
-                                            $scalloped = $p->tread_inner !== null
-                                                && $p->tread_outer !== null
-                                                && abs($p->tread_inner - $p->tread_outer) >= 2;
+                                            $scalloped = $p->is_cupped;
+                                            $wearTags = array_filter([
+                                                $p->isCenterWear() ? 'Center' : null,
+                                                $p->isEdgeWear() ? 'Edge' : null,
+                                                $p->is_feathering ? 'Feathering' : null,
+                                                $p->is_cupped ? 'Cupping' : null,
+                                            ]);
                                         @endphp
                                         <tr class="hover:bg-gray-50">
                                             <td class="py-2 text-gray-700 whitespace-nowrap">{{ \Carbon\Carbon::parse($p->rotated_on)->format('M j, Y') }}</td>
@@ -243,6 +310,17 @@ new #[Layout('layouts.app')] class extends Component {
                                                     @endif
                                                 @else
                                                     <span class="text-gray-400">—</span>
+                                                @endif
+                                            </td>
+                                            <td class="py-2">
+                                                @if ($wearTags)
+                                                    <div class="flex flex-wrap gap-1">
+                                                        @foreach ($wearTags as $tag)
+                                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800">{{ $tag }}</span>
+                                                        @endforeach
+                                                    </div>
+                                                @else
+                                                    <span class="text-gray-400 text-xs">—</span>
                                                 @endif
                                             </td>
                                             <td class="py-2 text-gray-600 max-w-xs text-xs">{{ $p->note ?? '' }}</td>

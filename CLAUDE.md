@@ -1,4 +1,6 @@
-# CLAUDE.md — Tire Rotation & Tread-Wear Tracker
+# CLAUDE.md
+
+This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
 
 > Handoff from a spreadsheet prototype. This file is the entry point for Claude Code.
 > Read `docs/business-logic.md` BEFORE building any reporting or rotation-entry code —
@@ -70,6 +72,70 @@ driveway/garage, often on a phone).
 See docs/roadmap.md. Short version: migrations + models + seeder (historical data) → rotation
 entry with auto-seed → wear/report services → the two reports → polish/mobile. Write Pest tests
 against the known-good outputs in docs/seed-data.md as you go.
+
+## 6a. Commands
+
+```bash
+# Run all tests
+php artisan test --compact
+
+# Run a specific test file or filter by name
+php artisan test --compact --filter=Phase2
+php artisan test --compact tests/Feature/Phase1ServicesTest.php
+
+# Format changed PHP files (required after every PHP edit)
+vendor/bin/pint --dirty --format agent
+
+# Inspect routes
+php artisan route:list --except-vendor
+
+# Read-only DB queries (prefer over tinker for data checks)
+# Use the Laravel Boost MCP tool: database-query
+
+# Asset bundling (Herd serves the site; run this if CSS/JS changes aren't visible)
+npm run build
+```
+
+## 6b. Architecture
+
+### Route → middleware → component flow
+
+Routes in `routes/web.php` are layered through two custom middlewares:
+
+1. `firstVehicleExists` — redirects to vehicle creation if the session has no vehicle.
+2. `activeVehicleTires` — redirects to `vehicles.setuptires.index` if the active vehicle's tire count doesn't match `vehicle->tire_count`. All dashboard/rotation/report routes sit behind this gate.
+
+The `activeVehicle` is stored in the session via `App\Actions\SelectVehicle` and re-hydrated on each component mount.
+
+### Livewire component pattern
+
+All feature components use Livewire 4's **Single-File Component (SFC)** style — the PHP class is defined inline at the top of the Blade file with `new #[Layout('layouts.app')] class extends Component { ... };`. Class-based components in `app/Livewire/` are the exception (only `RotationDashboard` and the Breeze auth components use that pattern).
+
+### The `is_setup` rotation
+
+Every vehicle has at most one `Rotation` with `is_setup = true`, created during tire setup. It establishes each tire's starting position (`to_position`) and initial tread reading. It is excluded from wear calculations (`WearReportService`, `buildIntervals()`) but **included** in `TireService::currentPosition()` — the setup placement is the source of truth for position until the first real rotation overwrites it.
+
+### Service layer responsibilities
+
+- **`TireService`** — single method: `currentPosition(Tire)` returns the `to_position` of the tire's most recent placement (any rotation, ordered by odometer desc).
+- **`WearReportService`** — all reporting. `buildIntervals()` is the core: for each tire, it zips consecutive non-setup placements and attributes wear to the later placement's `from_position`. `wearByPosition()` and `wearByTire()` aggregate from intervals.
+- **`RotationService`** — `startNext()` seeds stubs for a new rotation using current positions; `save()` validates the permutation constraint and persists atomically.
+
+### Treadmark component library
+
+All UI uses a custom design system in `resources/views/components/treadmark/`. Key components:
+- `<x-treadmark.card>` / `<x-treadmark.stat-tile>` — dashboard cards
+- `<x-treadmark.position-tag position="FR">` — renders the 2-letter abbreviation chip (pass `show-label` for the full name)
+- `<x-treadmark.tread-gauge :depth="$value">` — visual tread depth bar
+- `<x-treadmark.button>` / `<x-treadmark.alert tone="danger|warn">` — standard controls
+
+Design tokens live in `resources/design/tokens/colors.css`. The skill at `.claude/skills/treadmark-design.md` documents the full system — activate it before any UI work.
+
+### Rotation entry (prepare vs update)
+
+Two separate Livewire SFCs handle rotation entry:
+- `rotations/prepare.blade.php` — new rotation wizard, also handles edit when `edit_rotation_id` is set. Calls `RotationService::startNext()` to pre-seed `from_position` stubs; user sets `to_position` and tread per tire.
+- `rotations/update.blade.php` — confirmation/review screen after save.
 
 ## 7. Where the data came from
 

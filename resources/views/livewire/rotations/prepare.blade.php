@@ -29,6 +29,12 @@ new #[Layout('layouts.app')] class extends Component {
     /** Tread readings keyed by TirePosition value (FL, FR, RL, RR, SP). */
     public array $treads = [];
 
+    /** Tire condition flags keyed by TirePosition value. */
+    public array $tireFlags = [];
+
+    /** Placement wear flags keyed by TirePosition value. */
+    public array $wearFlags = [];
+
     /** Stubs from RotationService::startNext(), shape: [{tire, from_position, last_tread_center}] */
     public array $stubs = [];
 
@@ -79,6 +85,15 @@ new #[Layout('layouts.app')] class extends Component {
                 'note' => $placement->note,
                 'to_position' => $placement->to_position->value,
             ];
+            $this->tireFlags[$pos] = [
+                'has_cracking' => (bool) $placement->tire->has_cracking,
+                'has_bulge' => (bool) $placement->tire->has_bulge,
+                'has_cupping' => (bool) $placement->tire->has_cupping,
+                'has_puncture_repair' => (bool) $placement->tire->has_puncture_repair,
+            ];
+            $this->wearFlags[$pos] = [
+                'is_feathering' => (bool) $placement->is_feathering,
+            ];
         }
 
         // Sort by canonical position order
@@ -98,6 +113,13 @@ new #[Layout('layouts.app')] class extends Component {
                 'note' => null,
                 'to_position' => null,
             ];
+            $this->tireFlags[$pos] = [
+                'has_cracking' => (bool) $stub['tire']->has_cracking,
+                'has_bulge' => (bool) $stub['tire']->has_bulge,
+                'has_cupping' => (bool) $stub['tire']->has_cupping,
+                'has_puncture_repair' => (bool) $stub['tire']->has_puncture_repair,
+            ];
+            $this->wearFlags[$pos] = ['is_feathering' => false];
         }
     }
 
@@ -115,6 +137,11 @@ new #[Layout('layouts.app')] class extends Component {
             $rules["treads.{$pos}.tread_inner"] = 'nullable|numeric|min:0|max:20';
             $rules["treads.{$pos}.tread_outer"] = 'nullable|numeric|min:0|max:20';
             $rules["treads.{$pos}.note"] = 'nullable|string|max:500';
+            $rules["tireFlags.{$pos}.has_cracking"] = 'boolean';
+            $rules["tireFlags.{$pos}.has_bulge"] = 'boolean';
+            $rules["tireFlags.{$pos}.has_cupping"] = 'boolean';
+            $rules["tireFlags.{$pos}.has_puncture_repair"] = 'boolean';
+            $rules["wearFlags.{$pos}.is_feathering"] = 'boolean';
         }
 
         return $rules;
@@ -137,6 +164,14 @@ new #[Layout('layouts.app')] class extends Component {
                 'tread_outer' => $this->treads[$pos]['tread_outer'] ?: null,
                 'note' => $this->treads[$pos]['note'] ?: null,
                 'to_position' => $this->isEdit ? ($this->treads[$pos]['to_position'] ?? null) : null,
+                'tire_flags' => [
+                    'has_cracking' => (bool) ($this->tireFlags[$pos]['has_cracking'] ?? false),
+                    'has_bulge' => (bool) ($this->tireFlags[$pos]['has_bulge'] ?? false),
+                    'has_cupping' => (bool) ($this->tireFlags[$pos]['has_cupping'] ?? false),
+                    'has_puncture_repair' => (bool) ($this->tireFlags[$pos]['has_puncture_repair'] ?? false),
+                ],
+                'is_feathering' => (bool) ($this->wearFlags[$pos]['is_feathering'] ?? false),
+                'is_cupped' => (bool) ($this->tireFlags[$pos]['has_cupping'] ?? false),
             ];
         }
 
@@ -192,22 +227,37 @@ new #[Layout('layouts.app')] class extends Component {
                         {{-- Date + Odometer --}}
                         <div class="flex flex-col sm:flex-row gap-4 mb-6">
                             <div class="basis-1/2">
-                                <x-input-label for="rotated_on" :value="__('Rotation Date')" />
-                                <x-text-input wire:model="rotated_on" id="rotated_on" class="block mt-1 w-full" type="date" name="rotated_on" required />
-                                <x-input-error :messages="$errors->get('rotated_on')" class="mt-1" />
+                                <x-treadmark.input
+                                    wire:model="rotated_on"
+                                    id="rotated_on"
+                                    type="date"
+                                    label="Rotation Date"
+                                    name="rotated_on"
+                                    required
+                                    :error="$errors->first('rotated_on')"
+                                />
                             </div>
                             <div class="basis-1/2">
-                                <x-input-label for="odometer" :value="__('Odometer (miles)')" />
-                                <x-text-input wire:model="odometer" id="odometer" class="block mt-1 w-full" type="number" name="odometer" min="1" required />
-                                <x-input-error :messages="$errors->get('odometer')" class="mt-1" />
+                                <x-treadmark.input
+                                    wire:model="odometer"
+                                    id="odometer"
+                                    type="number"
+                                    label="Odometer"
+                                    name="odometer"
+                                    suffix="mi"
+                                    mono
+                                    min="1"
+                                    required
+                                    :error="$errors->first('odometer')"
+                                />
                             </div>
                         </div>
 
                         {{-- Optional rotation note --}}
                         <div class="mb-6">
-                            <x-input-label for="rotation_note" :value="__('Rotation Note (optional)')" />
+                            <label for="rotation_note" class="font-sans font-semibold text-[13px] text-ink-900">Rotation Note <span class="text-ink-300 font-normal ml-1.5 text-[12px]">optional</span></label>
                             <textarea wire:model="rotation_note" id="rotation_note" name="rotation_note"
-                                class="block mt-1 w-full border-gray-300 rounded-md shadow-sm focus:ring-blaze-500/40 focus:border-blaze-500 text-sm"
+                                class="mt-1.5 block w-full border border-ink-200 rounded-control bg-white text-[15px] text-ink-900 px-3 py-2.5 placeholder:text-ink-300 focus:outline-none focus:border-blaze-500 focus:ring-4 focus:ring-blaze-500/40"
                                 rows="2" placeholder="e.g. adjusted tire pressure to 32 PSI"></textarea>
                         </div>
 
@@ -231,67 +281,87 @@ new #[Layout('layouts.app')] class extends Component {
 
                                     {{-- Center tread (required) — text-base prevents iOS zoom on focus --}}
                                     <div class="mb-3">
-                                        <x-input-label :for="'tread_center_'.$pos" value="Center *" />
-                                        <div class="relative">
-                                            <x-text-input
-                                                wire:model="treads.{{ $pos }}.tread_center"
-                                                :id="'tread_center_'.$pos"
-                                                class="block mt-1 w-full pr-12 text-right text-base min-h-[44px]"
-                                                type="number" step="0.5" min="0" max="20" required
-                                                inputmode="decimal"
-                                            />
-                                            <span class="absolute inset-y-0 right-3 flex items-center text-gray-400 text-sm mt-1">/32"</span>
-                                        </div>
-                                        <x-input-error :messages="$errors->get('treads.'.$pos.'.tread_center')" class="mt-1" />
+                                        <x-treadmark.input
+                                            wire:model="treads.{{ $pos }}.tread_center"
+                                            :id="'tread_center_'.$pos"
+                                            type="number"
+                                            label="Center"
+                                            suffix='/32"'
+                                            mono
+                                            step="0.5" min="0" max="20"
+                                            required
+                                            inputmode="decimal"
+                                            :error="$errors->first('treads.'.$pos.'.tread_center')"
+                                        />
                                     </div>
 
                                     {{-- Inner + Outer (optional) --}}
                                     <div class="flex gap-2 mb-3">
                                         <div class="flex-1">
-                                            <x-input-label :for="'tread_inner_'.$pos" value="Inner" />
-                                            <div class="relative">
-                                                <x-text-input
-                                                    wire:model="treads.{{ $pos }}.tread_inner"
-                                                    :id="'tread_inner_'.$pos"
-                                                    class="block mt-1 w-full pr-10 text-right text-base min-h-[44px]"
-                                                    type="number" step="0.5" min="0" max="20"
-                                                    inputmode="decimal"
-                                                />
-                                                <span class="absolute inset-y-0 right-2 flex items-center text-gray-400 text-sm mt-1">/32"</span>
-                                            </div>
+                                            <x-treadmark.input
+                                                wire:model="treads.{{ $pos }}.tread_inner"
+                                                :id="'tread_inner_'.$pos"
+                                                type="number"
+                                                label="Inner"
+                                                suffix='/32"'
+                                                mono
+                                                step="0.5" min="0" max="20"
+                                                inputmode="decimal"
+                                            />
                                         </div>
                                         <div class="flex-1">
-                                            <x-input-label :for="'tread_outer_'.$pos" value="Outer" />
-                                            <div class="relative">
-                                                <x-text-input
-                                                    wire:model="treads.{{ $pos }}.tread_outer"
-                                                    :id="'tread_outer_'.$pos"
-                                                    class="block mt-1 w-full pr-10 text-right text-base min-h-[44px]"
-                                                    type="number" step="0.5" min="0" max="20"
-                                                    inputmode="decimal"
-                                                />
-                                                <span class="absolute inset-y-0 right-2 flex items-center text-gray-400 text-sm mt-1">/32"</span>
-                                            </div>
+                                            <x-treadmark.input
+                                                wire:model="treads.{{ $pos }}.tread_outer"
+                                                :id="'tread_outer_'.$pos"
+                                                type="number"
+                                                label="Outer"
+                                                suffix='/32"'
+                                                mono
+                                                step="0.5" min="0" max="20"
+                                                inputmode="decimal"
+                                            />
                                         </div>
                                     </div>
 
                                     {{-- Note --}}
-                                    <div>
-                                        <x-input-label :for="'note_'.$pos" value="Note (optional)" />
+                                    <div class="mb-3">
+                                        <label :for="'note_'.$pos" class="font-sans font-semibold text-[13px] text-ink-900">Note <span class="text-ink-300 font-normal ml-1.5 text-[12px]">optional</span></label>
                                         <textarea
                                             wire:model="treads.{{ $pos }}.note"
                                             :id="'note_'.$pos"
-                                            class="block mt-1 w-full border-gray-300 rounded-md shadow-sm focus:ring-blaze-500/40 focus:border-blaze-500 text-xs"
+                                            class="mt-1.5 block w-full border border-ink-200 rounded-control bg-white text-[13px] text-ink-900 px-3 py-2 placeholder:text-ink-300 focus:outline-none focus:border-blaze-500 focus:ring-4 focus:ring-blaze-500/40"
                                             rows="2"></textarea>
+                                    </div>
+
+                                    {{-- Condition & wear flags --}}
+                                    <div class="pt-3 border-t border-gray-200 space-y-1.5">
+                                        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Condition</p>
+                                        @foreach ([
+                                            'has_cracking' => 'Cracking / dry rot',
+                                            'has_bulge' => 'Sidewall bulge',
+                                            'has_cupping' => 'Cupping',
+                                            'has_puncture_repair' => 'Plug / patch',
+                                        ] as $flag => $label)
+                                            <label class="flex items-center gap-2 text-xs text-gray-700 cursor-pointer select-none">
+                                                <input type="checkbox" wire:model="tireFlags.{{ $pos }}.{{ $flag }}"
+                                                    class="rounded border-gray-300 text-blaze-600 focus:ring-blaze-500 min-h-[20px] min-w-[20px]">
+                                                {{ $label }}
+                                            </label>
+                                        @endforeach
+                                        <label class="flex items-center gap-2 text-xs text-gray-700 cursor-pointer select-none">
+                                            <input type="checkbox" wire:model="wearFlags.{{ $pos }}.is_feathering"
+                                                class="rounded border-gray-300 text-blaze-600 focus:ring-blaze-500 min-h-[20px] min-w-[20px]">
+                                            Feathering / sawtooth
+                                        </label>
                                     </div>
                                 </div>
                             @endforeach
                         </div>
 
                         <div class="flex items-center justify-end">
-                            <x-primary-button class="min-h-[48px] text-base px-6">
+                            <x-treadmark.button type="submit" size="lg">
                                 {{ __('Next: Assign Positions →') }}
-                            </x-primary-button>
+                            </x-treadmark.button>
                         </div>
                     </form>
                 </div>

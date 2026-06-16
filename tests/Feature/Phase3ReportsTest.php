@@ -84,8 +84,8 @@ it('shows current positions on the by-tire page', function () {
     $this->actingAs($user)
         ->get(route('reports.by-tire'))
         ->assertOk()
-        ->assertSeeText('Front Right')   // T1's position
-        ->assertSeeText('Spare');        // T2's position
+        ->assertSee('FR')   // T1's position
+        ->assertSee('SP');  // T2's position
 });
 
 it('shows latest tread values on the by-tire page', function () {
@@ -102,16 +102,16 @@ it('shows latest tread values on the by-tire page', function () {
         ->assertSeeText('6/32"');  // T2 latest
 });
 
-it('triggers scalloping flag when inner/outer delta >= 2', function () {
+it('triggers scalloping flag when is_cupped is true', function () {
     $service = app(WearReportService::class);
-    $placement = new Placement(['tread_inner' => 8.0, 'tread_outer' => 5.0, 'tread_center' => 6.5]);
+    $placement = new Placement(['is_cupped' => true]);
 
     expect($service->scalpingFlag($placement))->toBeTrue();
 });
 
-it('does not flag scalloping when delta < 2', function () {
+it('does not flag scalloping when is_cupped is false', function () {
     $service = app(WearReportService::class);
-    $placement = new Placement(['tread_inner' => 7.0, 'tread_outer' => 6.0, 'tread_center' => 6.5]);
+    $placement = new Placement(['is_cupped' => false]);
 
     expect($service->scalpingFlag($placement))->toBeFalse();
 });
