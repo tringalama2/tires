@@ -48,7 +48,7 @@ new class extends Component {
 
                     {{-- Reports dropdown --}}
                     <div x-data="{ reportsOpen: false }" class="relative">
-                        <button @click="reportsOpen = !reportsOpen" @click.outside="reportsOpen = false"
+                        <button type="button" @click="reportsOpen = !reportsOpen" @click.outside="reportsOpen = false"
                                 class="{{ $linkBase }} {{ request()->routeIs('reports.*') ? $linkActive : $linkInactive }}">
                             <x-treadmark.icon name="chart-bar" class="w-4 h-4" />
                             Reports
@@ -91,34 +91,31 @@ new class extends Component {
                 {{-- User dropdown --}}
                 <x-dropdown align="right" width="48">
                     <x-slot name="trigger">
-                        <button class="inline-flex items-center gap-1.5 px-3 py-1.5 rounded-control text-sm font-medium text-ink-500 hover:text-ink-900 hover:bg-ink-50 transition-colors border border-transparent hover:border-ink-100">
+                        <x-treadmark.button variant="ghost" size="sm">
                             <x-treadmark.icon name="user" class="w-4 h-4" />
                             <span x-data="{{ json_encode(['first_name' => auth()->user()->first_name]) }}"
                                   x-text="first_name"
                                   x-on:profile-updated.window="first_name = $event.detail.first_name"></span>
                             <x-treadmark.icon name="caret-down" class="w-3 h-3" />
-                        </button>
+                        </x-treadmark.button>
                     </x-slot>
                     <x-slot name="content">
                         <x-dropdown-link :href="route('profile')" wire:navigate>
                             Profile
                         </x-dropdown-link>
-                        <button wire:click="logout" class="w-full text-start">
-                            <x-dropdown-link>Log Out</x-dropdown-link>
-                        </button>
+                        <x-dropdown-link wire:click="logout">Log Out</x-dropdown-link>
                     </x-slot>
                 </x-dropdown>
             </div>
 
             {{-- Mobile hamburger --}}
             <div class="flex items-center sm:hidden">
-                <button @click="open = !open"
-                        class="p-2 rounded-control text-ink-400 hover:text-ink-700 hover:bg-ink-50 transition-colors">
+                <x-treadmark.icon-button @click="open = !open" aria-label="Toggle menu">
                     <svg class="h-5 w-5" stroke="currentColor" fill="none" viewBox="0 0 24 24">
                         <path :class="{'hidden': open, 'inline-flex': !open}" class="inline-flex" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 6h16M4 12h16M4 18h16"/>
                         <path :class="{'hidden': !open, 'inline-flex': open}" class="hidden" stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12"/>
                     </svg>
-                </button>
+                </x-treadmark.icon-button>
             </div>
         </div>
     </div>
@@ -163,9 +160,7 @@ new class extends Component {
                 </x-responsive-nav-link>
             @endif
             <x-responsive-nav-link :href="route('profile')" wire:navigate>Profile</x-responsive-nav-link>
-            <button wire:click="logout" class="w-full text-start">
-                <x-responsive-nav-link>Log Out</x-responsive-nav-link>
-            </button>
+            <x-responsive-nav-link wire:click="logout">Log Out</x-responsive-nav-link>
         </div>
     </div>
 </nav>

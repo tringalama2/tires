@@ -30,13 +30,15 @@
                 {{ $tire->label }} - {{ $tire->tin }}
 
                 <div x-data="{ showPopover: false }" class="inline">
-                    <button
+                    <x-treadmark.icon-button
+                        size="sm"
                         x-transition
                         @mouseover="showPopover = true"
                         @mouseleave="showPopover = false"
-                        class="ml-2 hover:bg-gray-300 font-bold p-0 rounded transition-colors duration-300">
-                        <x-phosphor-list-magnifying-glass class="w-4"/>
-                    </button>
+                        aria-label="Tire history"
+                    >
+                        <x-treadmark.icon name="list" class="w-4 h-4" />
+                    </x-treadmark.icon-button>
 
                     <div x-show="showPopover"
                          x-transition:enter="transition ease-out duration-300"

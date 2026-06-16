@@ -207,9 +207,9 @@ new #[Layout('layouts.app')] class extends Component {
                                 @if (count($row['notes']) > 0)
                                     <p class="text-xs text-ink-500 truncate">{{ $row['notes'][0] }}</p>
                                     @if (count($row['notes']) > 1)
-                                        <button wire:click="toggleNotes('{{ $tire->id }}')" class="text-xs text-steel-600 hover:underline mt-0.5">
+                                        <x-treadmark.button type="button" variant="ghost" size="sm" wire:click="toggleNotes('{{ $tire->id }}')" class="mt-0.5">
                                             {{ $isExpanded ? 'hide' : '+'.( count($row['notes']) - 1).' more' }}
-                                        </button>
+                                        </x-treadmark.button>
                                         @if ($isExpanded)
                                             <div class="mt-1 space-y-0.5">
                                                 @foreach (array_slice($row['notes'], 1) as $note)

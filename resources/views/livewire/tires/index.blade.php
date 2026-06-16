@@ -155,10 +155,9 @@ new #[Layout('layouts.app')] class extends Component {
         <div class="flex justify-between items-center">
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">{{ __('Tires') }}</h2>
             @unless ($showAddForm)
-                <button wire:click="openAddForm"
-                    class="inline-flex items-center px-3 py-1.5 bg-blaze-500 text-white text-sm font-semibold rounded-control hover:bg-blaze-600 transition-colors">
-                    + Add Tire
-                </button>
+                <x-treadmark.button wire:click="openAddForm" size="sm">
+                    <x-treadmark.icon name="plus" class="w-4 h-4" /> Add Tire
+                </x-treadmark.button>
             @endunless
         </div>
     </x-slot>
@@ -192,7 +191,7 @@ new #[Layout('layouts.app')] class extends Component {
                             />
                             <div class="col-span-2 sm:col-span-3 flex gap-3 pt-2">
                                 <x-treadmark.button type="submit">Add Tire</x-treadmark.button>
-                                <button type="button" wire:click="cancelAdd" class="text-sm text-ink-500 hover:underline">Cancel</button>
+                                <x-treadmark.button type="button" variant="ghost" size="sm" wire:click="cancelAdd">Cancel</x-treadmark.button>
                             </div>
                         </form>
                     </div>
@@ -236,11 +235,10 @@ new #[Layout('layouts.app')] class extends Component {
                                             </span>
                                         </td>
                                         <td class="py-3 flex gap-3">
-                                            <a href="{{ route('tires.show', $tire) }}" class="text-sm text-steel-600 hover:text-steel-800 hover:underline">Edit</a>
-                                            <button wire:click="toggleStatus('{{ $tire->id }}')"
-                                                class="text-sm text-gray-500 hover:underline">
+                                            <x-treadmark.button variant="ghost" size="sm" href="{{ route('tires.show', $tire) }}">Edit</x-treadmark.button>
+                                            <x-treadmark.button variant="ghost" size="sm" wire:click="toggleStatus('{{ $tire->id }}')">
                                                 {{ $tire->status === \App\Enums\TireStatus::Active ? 'Retire' : 'Reactivate' }}
-                                            </button>
+                                            </x-treadmark.button>
                                         </td>
                                     </tr>
                                 @endforeach

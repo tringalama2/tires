@@ -51,8 +51,8 @@ new #[Layout('layouts.guest')] class extends Component
             {{ __('Resend Verification Email') }}
         </x-treadmark.button>
 
-        <button wire:click="logout" type="submit" class="underline text-sm text-gray-600 hover:text-gray-900 rounded-md focus:outline-none focus:ring-2 focus:ring-offset-2 focus:ring-blaze-500/40">
+        <x-treadmark.button wire:click="logout" variant="ghost" size="sm">
             {{ __('Log Out') }}
-        </button>
+        </x-treadmark.button>
     </div>
 </div>

@@ -141,7 +141,9 @@ new #[Layout('layouts.app')] class extends Component {
                     <span class="text-gray-400 font-normal text-lg">— {{ $this->currentPosition }}</span>
                 @endif
             </h2>
-            <a href="{{ route('reports.by-tire') }}" class="text-sm text-steel-600 hover:text-steel-800 hover:underline">← Back to report</a>
+            <x-treadmark.button variant="ghost" size="sm" href="{{ route('reports.by-tire') }}">
+                <x-treadmark.icon name="arrow-left" class="w-4 h-4" /> Back to report
+            </x-treadmark.button>
         </div>
     </x-slot>
 
@@ -154,7 +156,9 @@ new #[Layout('layouts.app')] class extends Component {
                     <div class="flex justify-between items-start mb-4">
                         <h3 class="font-semibold text-gray-700">Tire Info</h3>
                         @if (! $editing)
-                            <button wire:click="startEdit" class="text-sm text-steel-600 hover:text-steel-800 hover:underline">Edit</button>
+                            <x-treadmark.button variant="secondary" size="sm" wire:click="startEdit">
+                            <x-treadmark.icon name="pencil-simple" class="w-4 h-4" /> Edit
+                        </x-treadmark.button>
                         @endif
                     </div>
 
@@ -210,7 +214,7 @@ new #[Layout('layouts.app')] class extends Component {
                             </div>
                             <div class="flex items-end gap-2">
                                 <x-treadmark.button type="submit">Save</x-treadmark.button>
-                                <button type="button" wire:click="cancelEdit" class="text-sm text-gray-500 hover:underline">Cancel</button>
+                                <x-treadmark.button type="button" variant="ghost" size="sm" wire:click="cancelEdit">Cancel</x-treadmark.button>
                             </div>
                         </form>
                     @else

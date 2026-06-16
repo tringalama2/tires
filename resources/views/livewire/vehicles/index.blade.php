@@ -85,32 +85,22 @@ new #[Layout('layouts.app')] class extends Component {
                                 <span>Tires Installed</span>
                             </div>
                             @if ($vehicle->loadCount('installedTires')->installed_tires_count < $vehicle->tire_count)
-                                <div>
-                                    <a href="{{ route('vehicles.setuptires.index', $vehicle) }}"
-                                       class="btn-dark-red text-xs ms-4">Finish Setup</a>
-                                </div>
+                                <x-treadmark.button size="sm" href="{{ route('vehicles.setuptires.index', $vehicle) }}" class="mt-1">
+                                    Finish Setup
+                                </x-treadmark.button>
                             @endif
                         </div>
                     </div>
-                    <div class="flex flex-col md:flex-row gap-x-2">
-                        <div class="me-3">
-                            <a href="{{ route('dashboard', $vehicle) }}">
-                                <x-phosphor-tire-duotone class="w-8 h-8 inline text-ink-600"/>
-                                Dashboard
-                            </a>
-                        </div>
-                        <div class="me-3">
-                            <a href="{{ route('rotations.prepare', $vehicle) }}">
-                                <x-phosphor-swap-duotone class="w-8 h-8 inline text-ink-600"/>
-                                Rotate
-                            </a>
-                        </div>
-                        <div>
-                            <a href="{{ route('vehicles.edit', $vehicle) }}">
-                                <x-phosphor-note-pencil-duotone class="w-8 h-8 inline text-ink-600"/>
-                                Edit
-                            </a>
-                        </div>
+                    <div class="flex flex-col md:flex-row gap-2">
+                        <x-treadmark.button variant="ghost" size="sm" href="{{ route('dashboard', $vehicle) }}">
+                            <x-treadmark.icon name="gauge" class="w-4 h-4" /> Dashboard
+                        </x-treadmark.button>
+                        <x-treadmark.button variant="ghost" size="sm" href="{{ route('rotations.prepare', $vehicle) }}">
+                            <x-treadmark.icon name="arrows-clockwise" class="w-4 h-4" /> Rotate
+                        </x-treadmark.button>
+                        <x-treadmark.button variant="ghost" size="sm" href="{{ route('vehicles.edit', $vehicle) }}">
+                            <x-treadmark.icon name="pencil-simple" class="w-4 h-4" /> Edit
+                        </x-treadmark.button>
                     </div>
                 </div>
             </div>

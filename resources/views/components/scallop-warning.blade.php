@@ -1,16 +1,16 @@
 <div x-data="{ show: false }" class="relative inline-flex items-center">
-    <button
-        type="button"
+    <x-treadmark.icon-button
+        size="sm"
         @mouseenter="show = true"
         @mouseleave="show = false"
         @focus="show = true"
         @blur="show = false"
         @touchstart.prevent="show = !show"
-        class="inline-flex items-center text-red-500 hover:text-red-700 focus:outline-none min-w-[44px] min-h-[44px] justify-center"
+        class="text-rust-600 hover:text-rust-700 hover:bg-rust-50"
         aria-label="Uneven wear warning"
     >
-        <x-phosphor-warning-circle-duotone class="w-4 h-4" />
-    </button>
+        <x-treadmark.icon name="warning-circle-fill" class="w-4 h-4" />
+    </x-treadmark.icon-button>
     <div
         x-show="show"
         x-transition:enter="transition ease-out duration-150"

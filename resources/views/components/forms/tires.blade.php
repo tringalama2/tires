@@ -7,77 +7,88 @@
         : route('vehicles.setuptires.store', ['vehicle' => $vehicle, 'tirePosition' => $tirePosition?->value ?? $tirePosition]);
 @endphp
 
-<form method="post" action="{{ $route }}">
+<form method="post" action="{{ $route }}" class="space-y-4">
     @method($method)
     @csrf
 
-    <!-- Label -->
-    <div class="mt-4">
-        <x-input-label for="label" :value="__('Label')"/>
-        <x-text-input :value="old('label', $model?->label)" id="label" class="block mt-1 w-full" type="text" name="label" required autofocus/>
-        <x-forms.input-error for="label" class="mt-2"/>
-    </div>
+    <x-treadmark.input
+        id="label"
+        name="label"
+        type="text"
+        label="Label"
+        :value="old('label', $model?->label)"
+        required
+        autofocus
+        :error="$errors->first('label')"
+    />
 
-    <!-- Brand -->
-    <div class="mt-4">
-        <x-input-label for="brand" :value="__('Brand')"/>
-        <x-text-input :value="old('brand', $model?->brand ?? $existingTire?->brand)" id="brand" class="block mt-1 w-full" type="text" name="brand"/>
-        <x-forms.input-error for="brand" class="mt-2"/>
-    </div>
+    <x-treadmark.input
+        id="brand"
+        name="brand"
+        type="text"
+        label="Brand"
+        :value="old('brand', $model?->brand ?? $existingTire?->brand)"
+        :error="$errors->first('brand')"
+    />
 
-    <!-- Model -->
-    <div class="mt-4">
-        <x-input-label for="model" :value="__('Model')"/>
-        <x-text-input :value="old('model', $model?->model ?? $existingTire?->model)" id="model" class="block mt-1 w-full" type="text" name="model"/>
-        <x-forms.input-error for="model" class="mt-2"/>
-    </div>
+    <x-treadmark.input
+        id="model"
+        name="model"
+        type="text"
+        label="Model"
+        :value="old('model', $model?->model ?? $existingTire?->model)"
+        :error="$errors->first('model')"
+    />
 
-    <!-- Size -->
-    <div class="mt-4">
-        <x-input-label for="size" :value="__('Size')"/>
-        <x-text-input :value="old('size', $model?->size ?? $existingTire?->size)" id="size" class="block mt-1 w-full" type="text" name="size"/>
-        <x-forms.input-error for="size" class="mt-2"/>
-    </div>
+    <x-treadmark.input
+        id="size"
+        name="size"
+        type="text"
+        label="Size"
+        :value="old('size', $model?->size ?? $existingTire?->size)"
+        :error="$errors->first('size')"
+    />
 
-    <!-- TIN -->
-    <div class="mt-4">
-        <x-input-label for="tin" :value="__('TIN')"/>
-        <x-text-input :value="old('tin', $model?->tin ?? $existingTire?->tin)" id="tin" class="block mt-1 w-full" type="text" name="tin"/>
-        <x-forms.input-error for="tin" class="mt-2"/>
-    </div>
+    <x-treadmark.input
+        id="tin"
+        name="tin"
+        type="text"
+        label="TIN"
+        :value="old('tin', $model?->tin ?? $existingTire?->tin)"
+        :error="$errors->first('tin')"
+    />
 
-    <!-- Description -->
-    <div class="mt-4">
-        <x-input-label for="description" :value="__('Description')"/>
-        <x-text-input :value="old('description', $model?->description)" id="description" class="block mt-1 w-full" type="text" name="description"/>
-        <x-forms.input-error for="description" class="mt-2"/>
-    </div>
+    <x-treadmark.input
+        id="description"
+        name="description"
+        type="text"
+        label="Description"
+        :value="old('description', $model?->description)"
+        :error="$errors->first('description')"
+    />
 
-    <!-- Purchase Date -->
-    <div class="mt-4">
-        <x-input-label for="purchased_on" :value="__('Purchase Date')"/>
-        <x-text-input :value="old('purchased_on', $model?->purchased_on?->toDateString() ?? $existingTire?->purchased_on?->toDateString())" id="purchased_on" class="block mt-1 w-full sm:w-48" type="date" name="purchased_on"/>
-        <x-forms.input-error for="purchased_on" class="mt-2"/>
-    </div>
+    <x-treadmark.input
+        id="purchased_on"
+        name="purchased_on"
+        type="date"
+        label="Purchase Date"
+        :value="old('purchased_on', $model?->purchased_on?->toDateString() ?? $existingTire?->purchased_on?->toDateString())"
+        :error="$errors->first('purchased_on')"
+    />
 
-    <!-- Starting Tread -->
-    <div class="mt-4">
-        <x-input-label for="starting_tread" :value="__('Initial Tread Depth')"/>
-        <div class="relative w-full sm:w-24">
-            <x-text-input :value="old('starting_tread')" id="starting_tread" class="text-right block mt-1 w-full pe-12" type="text" name="starting_tread" required/>
-            <div class="absolute inset-y-0 end-0 flex items-center pointer-events-none z-20 pe-4">
-                <span class="text-gray-400 text-sm font-bold">/32"</span>
-            </div>
-        </div>
-        <x-forms.input-error for="starting_tread" class="mt-2"/>
-    </div>
+    <x-treadmark.input
+        id="starting_tread"
+        name="starting_tread"
+        type="text"
+        label="Initial Tread Depth"
+        suffix='/32"'
+        mono
+        :value="old('starting_tread')"
+        required
+        :error="$errors->first('starting_tread')"
+    />
 
-    <div class="flex items-center justify-end mt-4">
-        <x-primary-button class="ms-4">
-            {{ __('Save') }}
-        </x-primary-button>
+    <div class="flex items-center justify-end pt-2">
+        <x-treadmark.button type="submit">{{ __('Save') }}</x-treadmark.button>
     </div>
 </form>
-
-
-

@@ -184,8 +184,8 @@ new #[Layout('layouts.app')] class extends Component {
                         <div class="mb-4 p-4 bg-amber-50 border border-amber-400 rounded">
                             <p class="text-amber-800 font-medium mb-3">Editing this rotation will recalculate all wear rates for subsequent rotations. Continue?</p>
                             <div class="flex gap-3">
-                                <button wire:click="save" class="px-4 py-2 bg-amber-600 text-white rounded text-sm font-medium hover:bg-amber-700">Yes, save changes</button>
-                                <button wire:click="cancelConfirm" class="px-4 py-2 bg-gray-200 text-gray-800 rounded text-sm font-medium hover:bg-gray-300">Cancel</button>
+                                <x-treadmark.button wire:click="save" size="sm">Yes, save changes</x-treadmark.button>
+                                <x-treadmark.button wire:click="cancelConfirm" variant="secondary" size="sm">Cancel</x-treadmark.button>
                             </div>
                         </div>
                     @endif
@@ -200,7 +200,7 @@ new #[Layout('layouts.app')] class extends Component {
                     <div class="flex justify-between mb-4">
                         <div class="text-sm text-gray-500">
                             Drag each tire to its new position, or
-                            <button wire:click="toggleMode" class="text-steel-600 underline hover:text-steel-700">switch to {{ $tableMode ? 'drag' : 'table' }} view</button>.
+                            <button type="button" wire:click="toggleMode" class="text-steel-600 underline hover:text-steel-700 text-sm">switch to {{ $tableMode ? 'drag' : 'table' }} view</button>.
                         </div>
                         <x-treadmark.button wire:click="save">
                             {{ __('Complete Rotation') }}

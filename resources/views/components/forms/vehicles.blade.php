@@ -3,83 +3,104 @@
 @php
     $method = $model ? 'put' : 'post';
     $route = $model ? route('vehicles.update', $model) : route('vehicles.store');
-
 @endphp
-<form method="post" action="{{ $route }}">
+
+<form method="post" action="{{ $route }}" class="space-y-4">
     @method($method)
     @csrf
 
-    <div class="flex flex-col sm:flex-row">
-
-        <!-- Year -->
-        <div class="mt-4 basis-3/12 sm:pe-8">
-            <x-input-label for="year" :value="__('Year')"/>
-            <x-text-input :value="old('year', $model?->year)" id="year" class="block mt-1 w-full" type="number" min="1900" max="9999" name="year" required autofocus/>
-            <x-forms.input-error for="year" class="mt-2"/>
+    <div class="flex flex-col sm:flex-row gap-4">
+        <div class="basis-3/12">
+            <x-treadmark.input
+                id="year"
+                name="year"
+                type="number"
+                label="Year"
+                :value="old('year', $model?->year)"
+                min="1900"
+                max="9999"
+                required
+                autofocus
+                :error="$errors->first('year')"
+            />
         </div>
-
-        <!-- Make -->
-        <div class="mt-4 basis-4/12 sm:pe-8">
-            <x-input-label for="make" :value="__('Make')"/>
-            <x-text-input :value="old('make', $model?->make)" id="make" class="block mt-1 w-full" type="text" name="make" required/>
-            <x-forms.input-error for="make" class="mt-2"/>
+        <div class="basis-4/12">
+            <x-treadmark.input
+                id="make"
+                name="make"
+                type="text"
+                label="Make"
+                :value="old('make', $model?->make)"
+                required
+                :error="$errors->first('make')"
+            />
         </div>
-
-        <!-- Model -->
-        <div class="mt-4 basis-5/12">
-            <x-input-label for="model" :value="__('Model')"/>
-            <x-text-input :value="old('model', $model?->model)" id="model" class="block mt-1 w-full" type="text" name="model" required/>
-            <x-forms.input-error for="model" class="mt-2"/>
+        <div class="basis-5/12">
+            <x-treadmark.input
+                id="model"
+                name="model"
+                type="text"
+                label="Model"
+                :value="old('model', $model?->model)"
+                required
+                :error="$errors->first('model')"
+            />
         </div>
     </div>
 
-    <!-- VIN -->
-    <div class="mt-4">
-        <x-input-label for="vin" :value="__('VIN')"/>
-        <x-text-input :value="old('vin', $model?->vin)" id="vin" class="block mt-1 w-full" type="text" name="vin"/>
-        <x-forms.input-error for="vin" class="mt-2"/>
-    </div>
+    <x-treadmark.input
+        id="vin"
+        name="vin"
+        type="text"
+        label="VIN"
+        :value="old('vin', $model?->vin)"
+        :error="$errors->first('vin')"
+    />
 
-    <!-- Nickname -->
-    <div class="mt-4">
-        <x-input-label for="nickname" :value="__('Nickname')"/>
-        <x-text-input :value="old('nickname', $model?->nickname)" id="nickname" class="block mt-1 w-full" type="text" name="nickname" required/>
-        <x-forms.input-error for="nickname" class="mt-2"/>
-    </div>
+    <x-treadmark.input
+        id="nickname"
+        name="nickname"
+        type="text"
+        label="Nickname"
+        :value="old('nickname', $model?->nickname)"
+        required
+        :error="$errors->first('nickname')"
+    />
 
-    @if($model===null)
-
-        <div class="flex flex-col sm:flex-row">
-            <!-- Tires to Rotate -->
-            <div class="mt-4 basis-1/2 sm:pe-8">
-                <x-input-label for="tire_count">
-                    {{ __('Number of Tires to Rotate') }}
-                    <span class="text-sm text-gray-400 italic ps-4">(4 or 5)</span>
-                </x-input-label>
-                <x-text-input type="number" min="4" max="5" step="1"
-                              :value="old('tire_count')" id="tire_count"
-                              class="block mt-1 w-full" name="tire_count"
-                              required
+    @if ($model === null)
+        <div class="flex flex-col sm:flex-row gap-4">
+            <div class="basis-1/2">
+                <x-treadmark.input
+                    id="tire_count"
+                    name="tire_count"
+                    type="number"
+                    label="Number of Tires to Rotate"
+                    hint="4 standard, 5 includes spare"
+                    :value="old('tire_count')"
+                    min="4"
+                    max="5"
+                    step="1"
+                    required
+                    :error="$errors->first('tire_count')"
                 />
-                <x-forms.input-error for="tire_count" class="mt-2"/>
             </div>
-
-            <!-- Starting Odometer -->
-            <div class="mt-4 basis-1/2">
-                <x-input-label for="size" :value="__('Current Odometer')"/>
-                <x-text-input :value="old('starting_odometer')" id="starting_odometer" class="block mt-1 w-full" type="number" name="starting_odometer" required/>
-                <x-forms.input-error for="starting_odometer" class="mt-2"/>
+            <div class="basis-1/2">
+                <x-treadmark.input
+                    id="starting_odometer"
+                    name="starting_odometer"
+                    type="number"
+                    label="Current Odometer"
+                    suffix="mi"
+                    mono
+                    :value="old('starting_odometer')"
+                    required
+                    :error="$errors->first('starting_odometer')"
+                />
             </div>
         </div>
-
     @endif
 
-    <div class="flex items-center justify-end mt-4">
-        <x-primary-button class="ms-4">
-            {{ __('Save') }}
-        </x-primary-button>
+    <div class="flex items-center justify-end pt-2">
+        <x-treadmark.button type="submit">{{ __('Save') }}</x-treadmark.button>
     </div>
 </form>
-
-
-
