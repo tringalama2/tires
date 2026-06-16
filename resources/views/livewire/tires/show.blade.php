@@ -42,6 +42,8 @@ new #[Layout('layouts.app')] class extends Component {
 
     public function mount(): void
     {
+        $this->authorize('view', $this->tire);
+
         $this->brand = $this->tire->brand;
         $this->model = $this->tire->model;
         $this->tin = $this->tire->tin;
@@ -92,6 +94,7 @@ new #[Layout('layouts.app')] class extends Component {
 
     public function save(): void
     {
+        $this->authorize('update', $this->tire);
         $this->validate();
         $this->tire->update([
             'brand' => $this->brand ?: null,

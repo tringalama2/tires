@@ -14,7 +14,7 @@ class Vehicle extends Model
 {
     use HasFactory, SoftDeletes;
 
-    const MAX_VEHICLES_PER_USER = 5;
+    const int MAX_VEHICLES_PER_USER = 5;
 
     protected $fillable = [
         'user_id',

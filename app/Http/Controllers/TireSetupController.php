@@ -51,7 +51,7 @@ class TireSetupController extends Controller
 
     public function create(Vehicle $vehicle, string $tirePosition): RedirectResponse|View
     {
-        Gate::authorize('create', Tire::class);
+        Gate::authorize('view', $vehicle);
 
         try {
             $position = TirePosition::from($tirePosition);
@@ -74,7 +74,7 @@ class TireSetupController extends Controller
 
     public function store(TireRequest $request, Vehicle $vehicle, string $tirePosition): RedirectResponse
     {
-        Gate::authorize('create', Tire::class);
+        Gate::authorize('view', $vehicle);
 
         try {
             $position = TirePosition::from($tirePosition);

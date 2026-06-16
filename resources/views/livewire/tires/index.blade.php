@@ -7,11 +7,13 @@ use App\Models\Vehicle;
 use App\Services\TireService;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 
 new #[Layout('layouts.app')] class extends Component {
 
+    #[Locked]
     public ?int $vehicle_id;
 
     public bool $showAddForm = false;
@@ -42,6 +44,7 @@ new #[Layout('layouts.app')] class extends Component {
     {
         if (isset($this->vehicle_id)) {
             $vehicle = Vehicle::findOrFail($this->vehicle_id);
+            $this->authorize('view', $vehicle);
             $selectVehicle($vehicle);
         } else {
             $vehicle = session('vehicle');
@@ -93,6 +96,9 @@ new #[Layout('layouts.app')] class extends Component {
     public function addTire(): void
     {
         $this->validate();
+
+        $vehicle = $this->vehicle();
+        $this->authorize('view', $vehicle);
 
         Tire::create([
             'vehicle_id' => $this->vehicle_id,

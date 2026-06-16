@@ -6,10 +6,12 @@ use App\Models\Vehicle;
 use App\Services\WearReportService;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 new #[Layout('layouts.app')] class extends Component {
 
+    #[Locked]
     public ?int $vehicle_id;
     protected Vehicle $vehicle;
 
@@ -17,6 +19,7 @@ new #[Layout('layouts.app')] class extends Component {
     {
         if (isset($this->vehicle_id)) {
             $this->vehicle = Vehicle::findOrFail($this->vehicle_id);
+            $this->authorize('view', $this->vehicle);
             $selectVehicle($this->vehicle);
         } else {
             $this->vehicle = session('vehicle');

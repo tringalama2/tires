@@ -1,6 +1,8 @@
 <?php
 
+use App\Models\Tire;
 use App\Models\User;
+use App\Models\Vehicle;
 use Livewire\Livewire;
 
 test('login screen can be rendered', function () {
@@ -45,10 +47,12 @@ test('users can not authenticate with invalid password', function () {
 
 test('navigation menu can be rendered', function () {
     $user = User::factory()->create();
+    $vehicle = Vehicle::factory()->for($user)->create(['tire_count' => 4]);
+    Tire::factory()->for($vehicle)->count(4)->create();
 
-    $this->actingAs($user);
-
-    $response = $this->get('/dashboard');
+    $response = $this->actingAs($user)
+        ->withSession(['vehicle' => $vehicle])
+        ->get('/dashboard');
 
     $response
         ->assertOk()

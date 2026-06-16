@@ -23,6 +23,7 @@ class RotationDashboard extends Component
     {
         if (isset($this->vehicle_id)) {
             $this->vehicle = Vehicle::findOrFail($this->vehicle_id);
+            $this->authorize('view', $this->vehicle);
             $selectVehicle($this->vehicle);
         } else {
             $this->vehicle = session('vehicle');

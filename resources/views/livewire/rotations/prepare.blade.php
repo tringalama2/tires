@@ -44,6 +44,7 @@ new #[Layout('layouts.app')] class extends Component {
     {
         if (isset($this->vehicle_id)) {
             $this->vehicle = Vehicle::findOrFail($this->vehicle_id);
+            $this->authorize('view', $this->vehicle);
             $selectVehicle($this->vehicle);
         } else {
             $this->vehicle = session('vehicle');
@@ -63,7 +64,7 @@ new #[Layout('layouts.app')] class extends Component {
 
     private function loadExistingRotation(string $rotationId): void
     {
-        $rotation = Rotation::with('placements.tire')->findOrFail($rotationId);
+        $rotation = $this->vehicle->rotations()->with('placements.tire')->findOrFail($rotationId);
         $this->rotated_on = $rotation->rotated_on->toDateString();
         $this->odometer = $rotation->odometer;
         $this->rotation_note = $rotation->note;
