@@ -6,27 +6,6 @@ use App\Models\Rotation;
 use App\Models\Tire;
 use App\Models\Vehicle;
 use App\Services\TireService;
-use Database\Seeders\DatabaseSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
-
-it('returns the correct current position for each seeded tire', function () {
-    $this->seed(DatabaseSeeder::class);
-
-    $vehicle = Vehicle::first();
-    $service = app(TireService::class);
-
-    $position = fn (string $label) => $service->currentPosition(
-        $vehicle->tires()->where('label', $label)->firstOrFail()
-    );
-
-    expect($position('T1'))->toBe(TirePosition::FrontRight)
-        ->and($position('T2'))->toBe(TirePosition::Spare)
-        ->and($position('T3'))->toBe(TirePosition::RearLeft)
-        ->and($position('T4'))->toBe(TirePosition::RearRight)
-        ->and($position('T5'))->toBe(TirePosition::FrontLeft);
-});
 
 it('uses the setup rotation position when no real rotation exists', function () {
     $vehicle = Vehicle::factory()->create(['starting_odometer' => 1000]);

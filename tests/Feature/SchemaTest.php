@@ -1,21 +1,21 @@
 <?php
 
 use App\Models\Placement;
+use App\Models\Rotation;
 use App\Models\Tire;
-use Database\Seeders\DatabaseSeeder;
+use App\Models\Vehicle;
 use Illuminate\Database\UniqueConstraintViolationException;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
 
 it('enforces unique(rotation_id, tire_id) on placements', function () {
-    $this->seed(DatabaseSeeder::class);
+    $vehicle = Vehicle::factory()->create();
+    $tire = Tire::factory()->for($vehicle)->create();
+    $rotation = Rotation::factory()->for($vehicle)->create();
 
-    $placement = Placement::first();
+    Placement::factory()->create(['rotation_id' => $rotation->id, 'tire_id' => $tire->id, 'to_position' => 'FL', 'tread_center' => 10]);
 
     expect(fn () => Placement::create([
-        'rotation_id' => $placement->rotation_id,
-        'tire_id' => $placement->tire_id,
+        'rotation_id' => $rotation->id,
+        'tire_id' => $tire->id,
         'from_position' => 'FL',
         'to_position' => 'RR',
         'tread_center' => 10,
@@ -23,23 +23,18 @@ it('enforces unique(rotation_id, tire_id) on placements', function () {
 });
 
 it('enforces unique(rotation_id, to_position) on placements', function () {
-    $this->seed(DatabaseSeeder::class);
+    $vehicle = Vehicle::factory()->create();
+    $rotation = Rotation::factory()->for($vehicle)->create();
+    $tireA = Tire::factory()->for($vehicle)->create();
+    $tireB = Tire::factory()->for($vehicle)->create();
 
-    $placement = Placement::with('rotation.placements')->first();
-    $rotation = $placement->rotation;
-
-    $usedToPosition = $placement->to_position->value;
-    $unusedTire = Tire::whereNotIn('id', $rotation->placements->pluck('tire_id'))->first();
-
-    if (! $unusedTire) {
-        $this->markTestSkipped('All tires already placed in this rotation.');
-    }
+    Placement::factory()->create(['rotation_id' => $rotation->id, 'tire_id' => $tireA->id, 'to_position' => 'FL', 'tread_center' => 10]);
 
     expect(fn () => Placement::create([
         'rotation_id' => $rotation->id,
-        'tire_id' => $unusedTire->id,
+        'tire_id' => $tireB->id,
         'from_position' => 'SP',
-        'to_position' => $usedToPosition,
+        'to_position' => 'FL',
         'tread_center' => 10,
     ]))->toThrow(UniqueConstraintViolationException::class);
 });

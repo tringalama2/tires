@@ -1,19 +1,15 @@
 <?php
 
 use App\Models\Placement;
+use App\Models\Rotation;
+use App\Models\Tire;
 use App\Models\User;
 use App\Models\Vehicle;
-use Database\Seeders\DatabaseSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyException;
 use Livewire\Livewire;
 
-uses(RefreshDatabase::class);
-
 beforeEach(function () {
-    $this->seed(DatabaseSeeder::class);
-    $this->user = User::first();
-    $this->vehicle = Vehicle::first();
+    [$this->user, $this->vehicle, $this->tires] = vehicleWithHistory();
     session(['vehicle' => $this->vehicle]);
 });
 
@@ -27,37 +23,56 @@ it('renders the by-tire report page', function () {
 });
 
 it('shows current positions on the by-tire page', function () {
+    // vehicleWithHistory: T3@FR, T5@SP
     $this->actingAs($this->user)
         ->get(route('reports.by-tire'))
         ->assertOk()
-        ->assertSee('FR')  // T1's current position
-        ->assertSee('SP'); // T2's current position
+        ->assertSee('FR') // T3's current position
+        ->assertSee('SP'); // T5's current position
 });
 
 it('shows latest tread values', function () {
+    // vehicleWithHistory: T3@FR tread 12, T1@FL tread 8
     $this->actingAs($this->user)
         ->get(route('reports.by-tire'))
         ->assertOk()
-        ->assertSeeText('7/32"')  // T1
-        ->assertSeeText('6/32"'); // T2
+        ->assertSeeText('12/32"') // T3
+        ->assertSeeText('8/32"');  // T1 and T2
 });
 
 it('shows projected replacement mileage for tires with enough data', function () {
+    // Build a separate tire with 3 rotations (2 intervals) so projection is available.
+    $vehicle = Vehicle::factory()->create(['user_id' => $this->user->id, 'tire_count' => 1, 'starting_odometer' => 0]);
+    $tire = Tire::factory()->for($vehicle)->create(['label' => 'TX']);
+
+    $setup = Rotation::factory()->setup()->for($vehicle)->create(['odometer' => 0]);
+    $setup->placements()->create(['tire_id' => $tire->id, 'from_position' => null, 'to_position' => 'FR', 'tread_center' => 12]);
+
+    $rot1 = Rotation::factory()->for($vehicle)->create(['odometer' => 5000]);
+    $rot1->placements()->create(['tire_id' => $tire->id, 'from_position' => 'FR', 'to_position' => 'FR', 'tread_center' => 10]);
+
+    $rot2 = Rotation::factory()->for($vehicle)->create(['odometer' => 10000]);
+    $rot2->placements()->create(['tire_id' => $tire->id, 'from_position' => 'FR', 'to_position' => 'FR', 'tread_center' => 8]);
+
+    $rot3 = Rotation::factory()->for($vehicle)->create(['odometer' => 15000]);
+    $rot3->placements()->create(['tire_id' => $tire->id, 'from_position' => 'FR', 'to_position' => 'FR', 'tread_center' => 6]);
+
+    session(['vehicle' => $vehicle]);
+
     $this->actingAs($this->user)
         ->get(route('reports.by-tire'))
         ->assertOk()
-        ->assertSee('≈'); // projected miles marker
+        ->assertSee('≈');
 });
 
 it('shows the scallop warning when the latest placement is_cupped', function () {
-    $t1 = $this->vehicle->tires()->where('label', 'T1')->firstOrFail();
+    $t1 = $this->tires['T1'];
     $latestPlacement = $t1->placements()
         ->join('rotations', 'rotations.id', '=', 'placements.rotation_id')
         ->where('rotations.is_setup', false)
         ->orderByDesc('rotations.odometer')
         ->first(['placements.*']);
 
-    // Also need inner/outer so the scallop component appears in the template
     $latestPlacement->update([
         'is_cupped' => true,
         'tread_inner' => 5.0,
@@ -67,7 +82,7 @@ it('shows the scallop warning when the latest placement is_cupped', function () 
     $this->actingAs($this->user)
         ->get(route('reports.by-tire'))
         ->assertOk()
-        ->assertSee('Uneven wear warning'); // aria-label on scallop-warning component
+        ->assertSee('Uneven wear warning');
 });
 
 it('does not show the scallop warning when no placement is cupped', function () {

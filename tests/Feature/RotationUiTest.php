@@ -4,15 +4,9 @@ use App\Models\Rotation;
 use App\Models\User;
 use App\Models\Vehicle;
 use App\Services\RotationService;
-use Database\Seeders\DatabaseSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
-
-uses(RefreshDatabase::class);
 
 beforeEach(function () {
-    $this->seed(DatabaseSeeder::class);
-    $this->user = User::first();
-    $this->vehicle = Vehicle::first();
+    [$this->user, $this->vehicle] = vehicleWithHistory();
     session(['vehicle' => $this->vehicle]);
 });
 
@@ -39,11 +33,12 @@ it('shows all 5 tire positions on the prepare page', function () {
 });
 
 it('shows the last known tread as a hint on the prepare page', function () {
-    // T5 is at FL with last tread 9.0
+    // vehicleWithHistory: T3@FR(12), T1@FL(8) — both treads appear as hints
     $this->actingAs($this->user)
         ->get(route('rotations.prepare'))
         ->assertOk()
-        ->assertSeeText('9'); // hint for T5@FL
+        ->assertSeeText('12') // T3@FR hint
+        ->assertSeeText('8'); // T1@FL hint
 });
 
 it('redirects to prepare when update is accessed without session data', function () {
@@ -81,7 +76,7 @@ it('renders the update page when session data is present', function () {
 
     session([
         'rotation.rotated_on' => '2026-12-01',
-        'rotation.odometer' => 125000,
+        'rotation.odometer' => 65000,
         'rotation.note' => null,
         'rotation.placements' => $placements,
         'rotation.rotation_id' => null,

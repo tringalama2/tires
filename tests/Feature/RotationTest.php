@@ -8,7 +8,6 @@ use App\Models\Tire;
 use App\Models\Vehicle;
 use App\Services\RotationService;
 use App\Services\WearReportService;
-use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;
 
@@ -65,9 +64,8 @@ function identityPlacements(Vehicle $vehicle, float $tread = 8.0): array
 // ---------------------------------------------------------------------------
 
 it('startNext returns stubs ordered by canonical position', function () {
-    $this->seed(DatabaseSeeder::class);
+    $vehicle = vehicleWithSetup();
 
-    $vehicle = Vehicle::first();
     $stubs = app(RotationService::class)->startNext($vehicle);
 
     expect($stubs)->toHaveCount(5)
@@ -79,27 +77,27 @@ it('startNext returns stubs ordered by canonical position', function () {
 });
 
 it('startNext pre-fills correct tires at their current positions', function () {
-    $this->seed(DatabaseSeeder::class);
+    // vehicleWithHistory: after rot2 — T1@FL, T2@RR, T3@FR, T4@RL, T5@SP
+    [, $vehicle] = vehicleWithHistory();
 
-    $vehicle = Vehicle::first();
     $byPos = collect(app(RotationService::class)->startNext($vehicle))
         ->keyBy(fn ($s) => $s['from_position']->value);
 
-    expect($byPos['FL']['tire']->label)->toBe('T5')
-        ->and($byPos['FR']['tire']->label)->toBe('T1')
-        ->and($byPos['RL']['tire']->label)->toBe('T3')
-        ->and($byPos['RR']['tire']->label)->toBe('T4')
-        ->and($byPos['SP']['tire']->label)->toBe('T2');
+    expect($byPos['FL']['tire']->label)->toBe('T1')
+        ->and($byPos['FR']['tire']->label)->toBe('T3')
+        ->and($byPos['RL']['tire']->label)->toBe('T4')
+        ->and($byPos['RR']['tire']->label)->toBe('T2')
+        ->and($byPos['SP']['tire']->label)->toBe('T5');
 });
 
 it('startNext includes last tread center as hint', function () {
-    $this->seed(DatabaseSeeder::class);
+    // vehicleWithHistory: T1@FL last tread = 8
+    [, $vehicle] = vehicleWithHistory();
 
-    $vehicle = Vehicle::first();
     $byPos = collect(app(RotationService::class)->startNext($vehicle))
         ->keyBy(fn ($s) => $s['from_position']->value);
 
-    expect($byPos['FL']['last_tread_center'])->toBe(9.0);
+    expect($byPos['FL']['last_tread_center'])->toBe(8.0);
 });
 
 it('startNext excludes retired tires', function () {
@@ -175,14 +173,13 @@ it('save rejects an invalid permutation', function () {
 });
 
 it('save rejects odometer not greater than previous rotation', function () {
-    $this->seed(DatabaseSeeder::class);
-
-    $vehicle = Vehicle::first();
+    // vehicleWithHistory: last real rotation at 60,000 — so 50,000 should be rejected.
+    [, $vehicle] = vehicleWithHistory();
     $placements = identityPlacements($vehicle);
 
     expect(fn () => app(RotationService::class)->save([
         'rotated_on' => '2026-12-01',
-        'odometer' => 100000, // below max (120495)
+        'odometer' => 50000,
         'note' => null,
         'rotation_id' => null,
         'placements' => $placements,
@@ -203,8 +200,6 @@ it('first placement after setup has no wear interval', function () {
 
     $report = app(WearReportService::class)->wearByPosition($vehicle);
 
-    // Only one interval per position exists but it's the first, so no prior reading to diff against.
-    // All positions should have 0 intervals since we only have setup + 1 rotation.
     foreach ($report as $row) {
         expect($row['intervals'])->toBe(0);
     }
@@ -276,9 +271,8 @@ it('save works without tire_flags', function () {
 // ---------------------------------------------------------------------------
 
 it('save edits an existing rotation and replaces its placements', function () {
-    $this->seed(DatabaseSeeder::class);
+    [, $vehicle] = vehicleWithHistory();
 
-    $vehicle = Vehicle::first();
     $rotation = $vehicle->rotations()->where('is_setup', false)->orderByDesc('odometer')->first();
     $originalId = $rotation->id;
     $originalCount = Rotation::where('is_setup', false)->count();

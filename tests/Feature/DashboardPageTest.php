@@ -4,20 +4,14 @@ use App\Models\Placement;
 use App\Models\Rotation;
 use App\Models\User;
 use App\Models\Vehicle;
-use Database\Seeders\DatabaseSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\DB;
 
-uses(RefreshDatabase::class);
-
 it('renders last rotation date, odometer, and days elapsed', function () {
-    $this->seed(DatabaseSeeder::class);
-
-    $user = User::first();
-    $vehicle = Vehicle::first();
+    [$user, $vehicle] = vehicleWithHistory();
     session(['vehicle' => $vehicle]);
 
+    // vehicleWithHistory: last rotation at 60,000 mi on 2025-07-01
     $latest = $vehicle->rotations()->where('is_setup', false)->orderByDesc('odometer')->first();
     $expectedDays = (int) Carbon::parse($latest->rotated_on)->diffInDays(Carbon::today());
 
@@ -30,16 +24,13 @@ it('renders last rotation date, odometer, and days elapsed', function () {
 });
 
 it('shows replacement alert for a tire within 10,000 miles of the 2/32" limit', function () {
-    $this->seed(DatabaseSeeder::class);
-
-    $user = User::first();
-    $vehicle = Vehicle::first();
+    [$user, $vehicle] = vehicleWithHistory();
     session(['vehicle' => $vehicle]);
 
     $latestRot = $vehicle->rotations()->where('is_setup', false)->orderByDesc('odometer')->first();
-    $t2 = $vehicle->tires()->where('label', 'T2')->first();
+    $targetTire = $vehicle->tires()->first();
 
-    // Force very high wear rate by adding a rotation with a tiny odometer delta
+    // Force a high wear rate by creating a new rotation with only a 100mi gap and low tread.
     $newRotation = Rotation::create([
         'vehicle_id' => $vehicle->id,
         'rotated_on' => now()->toDateString(),
@@ -53,7 +44,7 @@ it('shows replacement alert for a tire within 10,000 miles of the 2/32" limit', 
             'tire_id' => $p->tire_id,
             'from_position' => $p->to_position->value,
             'to_position' => $p->to_position->value,
-            'tread_center' => $p->tire_id === $t2->id ? 3.0 : $p->tread_center,
+            'tread_center' => $p->tire_id === $targetTire->id ? 3.0 : $p->tread_center,
         ]);
     }
 
@@ -61,17 +52,14 @@ it('shows replacement alert for a tire within 10,000 miles of the 2/32" limit', 
         ->get(route('dashboard'))
         ->assertOk()
         ->assertSeeText('Tires nearing replacement')
-        ->assertSeeText('T2');
+        ->assertSeeText($targetTire->label);
 });
 
 it('does not show replacement alert when all tires are far from the limit', function () {
-    $this->seed(DatabaseSeeder::class);
-
-    $user = User::first();
-    $vehicle = Vehicle::first();
+    [$user, $vehicle] = vehicleWithHistory();
     session(['vehicle' => $vehicle]);
 
-    // Seed data: T2 latest = 6/32" at ~0.08/1000mi → ≈50k miles remaining, well above 10k
+    // vehicleWithHistory: all tires have tread 8–12, minimal wear → no alert.
     $this->actingAs($user)
         ->get(route('dashboard'))
         ->assertOk()
@@ -83,7 +71,6 @@ it('redirects to vehicle setup when tires are not fully configured', function ()
     $vehicle = Vehicle::factory()->create(['user_id' => $user->id, 'tire_count' => 5]);
     session(['vehicle' => $vehicle]);
 
-    // No tires added yet → ActiveVehicleTiresMiddleware fires
     $this->actingAs($user)
         ->get(route('dashboard'))
         ->assertRedirect(route('vehicles.setuptires.index', $vehicle));
@@ -92,21 +79,17 @@ it('redirects to vehicle setup when tires are not fully configured', function ()
 it('redirects to vehicle creation when no vehicle exists', function () {
     $user = User::factory()->create();
 
-    // No vehicle in session or DB → FirstVehicleMiddleware fires
     $this->actingAs($user)
         ->get(route('dashboard'))
         ->assertRedirect(route('vehicles.create'));
 });
 
 it('cannot access another user\'s dashboard via vehicle_id URL param', function () {
-    $this->seed(DatabaseSeeder::class);
-
-    $attacker = User::first();
+    [$attacker, $attackerVehicle] = vehicleWithHistory();
     $victim = User::factory()->create();
     $victimVehicle = Vehicle::factory()->for($victim)->create(['tire_count' => 0]);
 
-    // Attacker uses their own seeded vehicle in session so middleware passes
-    session(['vehicle' => Vehicle::where('user_id', $attacker->id)->first()]);
+    session(['vehicle' => $attackerVehicle]);
 
     $this->actingAs($attacker)
         ->get(route('dashboard', ['vehicle_id' => $victimVehicle->id]))
@@ -114,18 +97,14 @@ it('cannot access another user\'s dashboard via vehicle_id URL param', function 
 });
 
 it('restores vehicle from DB into session when session is cleared', function () {
-    $this->seed(DatabaseSeeder::class);
+    [$user, $vehicle] = vehicleWithHistory();
 
-    $user = User::first();
-    $vehicle = Vehicle::first();
-    // Use DB directly since last_selected_at is not in $fillable
     DB::table('vehicles')
         ->where('id', $vehicle->id)
         ->update(['last_selected_at' => now(), 'user_id' => $user->id]);
 
-    // Visit without a vehicle in session — middleware should load from DB
     $this->actingAs($user)
-        ->withSession([]) // clear session
+        ->withSession([])
         ->get(route('dashboard'))
         ->assertOk();
 });

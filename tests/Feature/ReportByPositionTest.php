@@ -2,17 +2,11 @@
 
 use App\Models\User;
 use App\Models\Vehicle;
-use Database\Seeders\DatabaseSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyException;
 use Livewire\Livewire;
 
-uses(RefreshDatabase::class);
-
 beforeEach(function () {
-    $this->seed(DatabaseSeeder::class);
-    $this->user = User::first();
-    $this->vehicle = Vehicle::first();
+    [$this->user, $this->vehicle] = vehicleWithHistory();
     session(['vehicle' => $this->vehicle]);
 });
 
@@ -25,11 +19,12 @@ it('renders the by-position report page', function () {
         ->assertSeeText('Spare');
 });
 
-it('shows the known-good FR wear rate', function () {
+it('shows the FR wear rate as the highest', function () {
+    // vehicleWithHistory: FR avg = 0.8/1k
     $this->actingAs($this->user)
         ->get(route('reports.by-position'))
         ->assertOk()
-        ->assertSeeText('0.32');
+        ->assertSeeText('0.80');
 });
 
 it('shows the fastest badge on the highest-wear position', function () {
@@ -39,20 +34,20 @@ it('shows the fastest badge on the highest-wear position', function () {
         ->assertSeeText('fastest');
 });
 
-it('shows an outlier alert when one position wears more than 2x the others', function () {
-    // The seeded FR rate (0.32) is well above others avg (~0.15) — 2x threshold should trigger.
-    $response = $this->actingAs($this->user)->get(route('reports.by-position'))->assertOk();
-
-    // Outlier alert only fires if FR > 2 * avg(others). With seed data it does.
-    $response->assertSeeText('Front Right');
-});
-
-it('shows rotation count and odometer through', function () {
+it('shows an outlier alert when FR wears more than 2x the average of the others', function () {
+    // vehicleWithHistory: FR = 0.8/1k, all others = 0 → FR is a clear outlier.
     $this->actingAs($this->user)
         ->get(route('reports.by-position'))
         ->assertOk()
-        ->assertSeeText('4')  // 4 rotations
-        ->assertSeeText('120,495');  // max odometer from seed
+        ->assertSeeText('Front Right');
+});
+
+it('shows rotation count and max odometer', function () {
+    $this->actingAs($this->user)
+        ->get(route('reports.by-position'))
+        ->assertOk()
+        ->assertSeeText('2')       // 2 real rotations
+        ->assertSeeText('60,000'); // max odometer from rot2
 });
 
 it('redirects unauthenticated users', function () {

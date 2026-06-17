@@ -1,19 +1,14 @@
 <?php
 
+use App\Models\Rotation;
 use App\Models\Tire;
 use App\Models\User;
 use App\Models\Vehicle;
-use Database\Seeders\DatabaseSeeder;
-use Illuminate\Foundation\Testing\RefreshDatabase;
 use Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyException;
 use Livewire\Livewire;
 
-uses(RefreshDatabase::class);
-
 beforeEach(function () {
-    $this->seed(DatabaseSeeder::class);
-    $this->user = User::first();
-    $this->vehicle = Vehicle::first();
+    [$this->user, $this->vehicle, $this->tires] = vehicleWithHistory();
     session(['vehicle' => $this->vehicle]);
 });
 
@@ -30,11 +25,12 @@ it('renders the tires list page with labels', function () {
 });
 
 it('shows current positions and latest tread on the list', function () {
+    // vehicleWithHistory: after rot2 — T3@FR(12), T1@FL(8)
     $this->actingAs($this->user)
         ->get(route('tires.index'))
         ->assertOk()
-        ->assertSeeText('Front Right') // T1
-        ->assertSeeText('7/32"');       // T1 latest tread
+        ->assertSeeText('Front Right') // T3
+        ->assertSeeText('12/32"');      // T3 latest tread
 });
 
 // ---------------------------------------------------------------------------
@@ -61,7 +57,7 @@ it('does not show Add Tire or Retire buttons', function () {
 // ---------------------------------------------------------------------------
 
 it('renders the tire detail page with rotation history', function () {
-    $tire = $this->vehicle->tires()->where('label', 'T1')->firstOrFail();
+    $tire = $this->tires['T1'];
 
     $this->actingAs($this->user)
         ->get(route('tires.show', $tire))
@@ -71,7 +67,23 @@ it('renders the tire detail page with rotation history', function () {
 });
 
 it('shows projected replacement on the detail page for tires with enough data', function () {
-    $tire = $this->vehicle->tires()->where('label', 'T1')->firstOrFail();
+    // Build a tire with 3 rotations (2 intervals) so a projection is available.
+    $vehicle = Vehicle::factory()->create(['user_id' => $this->user->id, 'tire_count' => 1, 'starting_odometer' => 0]);
+    $tire = Tire::factory()->for($vehicle)->create(['label' => 'TX']);
+
+    $setup = Rotation::factory()->setup()->for($vehicle)->create(['odometer' => 0]);
+    $setup->placements()->create(['tire_id' => $tire->id, 'from_position' => null, 'to_position' => 'FR', 'tread_center' => 12]);
+
+    $rot1 = Rotation::factory()->for($vehicle)->create(['odometer' => 5000]);
+    $rot1->placements()->create(['tire_id' => $tire->id, 'from_position' => 'FR', 'to_position' => 'FR', 'tread_center' => 10]);
+
+    $rot2 = Rotation::factory()->for($vehicle)->create(['odometer' => 10000]);
+    $rot2->placements()->create(['tire_id' => $tire->id, 'from_position' => 'FR', 'to_position' => 'FR', 'tread_center' => 8]);
+
+    $rot3 = Rotation::factory()->for($vehicle)->create(['odometer' => 15000]);
+    $rot3->placements()->create(['tire_id' => $tire->id, 'from_position' => 'FR', 'to_position' => 'FR', 'tread_center' => 6]);
+
+    session(['vehicle' => $vehicle]);
 
     $this->actingAs($this->user)
         ->get(route('tires.show', $tire))
@@ -84,7 +96,7 @@ it('shows projected replacement on the detail page for tires with enough data', 
 // ---------------------------------------------------------------------------
 
 it('shows condition badges when flags are set on the tire', function () {
-    $tire = $this->vehicle->tires()->first();
+    $tire = $this->tires['T1'];
     $tire->update(['has_cracking' => true, 'has_bulge' => true]);
 
     $this->actingAs($this->user)
@@ -95,7 +107,7 @@ it('shows condition badges when flags are set on the tire', function () {
 });
 
 it('does not show condition badges when all flags are false', function () {
-    $tire = $this->vehicle->tires()->first();
+    $tire = $this->tires['T1'];
     $tire->update([
         'has_cracking' => false,
         'has_bulge' => false,
