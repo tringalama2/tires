@@ -1,87 +1,47 @@
 # CLAUDE.md
 
-This file provides guidance to Claude Code (claude.ai/code) when working with code in this repository.
+This file provides guidance to Claude Code (claude.ai/code) when working with this repository.
 
-> Handoff from a spreadsheet prototype. This file is the entry point for Claude Code.
-> Read `docs/business-logic.md` BEFORE building any reporting or rotation-entry code —
-> it contains three non-obvious rules the spreadsheet prototype already solved. Do not
-> re-derive them from scratch.
+> Read `docs/business-logic.md` before touching any reporting or rotation-entry code.
+> Read `docs/domain-model.md` for the full schema.
 
 ## 1. Purpose
 
-A small personal web app to track tire rotations and tread wear for a Toyota 4Runner whose
-spare tire is part of the rotation — so there are 5 tires moving across 5 positions
-(Front L, Front R, Rear L, Rear R, Spare).
+A personal web app to track tire rotations and tread wear for a Toyota 4Runner with 5 tires
+in rotation (FL, FR, RL, RR, SPARE). Migrated from a spreadsheet prototype.
 
-It must answer two questions the owner cares about:
+Two core questions:
+1. **By position** — which positions wear fastest?
+2. **By tire** — current location, tread depth, wear rate, notes history.
 
-1. By position — which positions wear fastest? (e.g., is the right front eating tires?)
-2. By tire — for each physical tire: where is it now, what's its tread, how fast is it
-   wearing, and what notes were logged about it over time.
-
-Secondary goal: make data entry at each rotation as fast as possible (it happens in a
-driveway/garage, often on a phone).
+Data entry happens in a driveway on a phone, so speed and mobile UX matter.
 
 ## 2. Stack
 
-- Backend: Laravel 13, PHP 8.4. DB: SQLite for dev, Postgres for prod.
-- Frontend: pick ONE (domain logic stays in services so this is swappable):
-    - Livewire 4 — recommended. Fastest path for a CRUD-ish personal app, server-rendered,
-      trivially mobile-responsive. Best if the app is used in a mobile browser.
-- Tests: Pest. The wear math and rotation integrity are the crux — cover them first.
+- **Backend:** Laravel 13, PHP 8.4. SQLite (dev), Postgres (prod).
+- **Frontend:** Livewire 4. SFC-style components (see architecture below).
+- **Tests:** Pest 4. `docs/seed-data.md` provides the regression baseline.
 
-## 3. Domain model (full detail in docs/domain-model.md)
+## 3. Domain overview
 
-- tire — a physical tire (T1…Tn). Brand/model, DOT serial, purchase + install info, new-tread
-  depth, active/retired status. Identity is explicit and persistent — the single most important
-  upgrade over the spreadsheet.
-- rotation — one rotation event: date + odometer (+ optional general note).
-- placement — the fact table: one row per tire per rotation. Records the tire, from_position,
-  to_position, the tread reading(s) taken at removal, and a tire-specific note. All reporting
-  derives from this table.
-- position — fixed set: FL, FR, RL, RR, SPARE. Model as an enum (owner does not need
-  left/right/front/rear roll-ups).
+Full schema: `docs/domain-model.md`. Full business rules: `docs/business-logic.md`.
 
-## 4. The three non-obvious rules (details in docs/business-logic.md)
+- **tire** — a physical tire. `label` is required; everything else optional. Lifecycle: Active or Retired. Identity is explicit — every placement references a `tire_id`.
+- **rotation** — one event: date + odometer + optional note. Three types: setup (`is_setup`), normal, or swap (`is_swap`).
+- **placement** — fact table: one row per tire per rotation. Holds `from_position`, `to_position`, tread readings (center required; inner/outer optional), and a per-tire note. All reporting derives from this table.
+- **position** — `TirePosition` enum: `FL`, `FR`, `RL`, `RR`, `SPARE`.
 
-1. Tire identity is explicit. The spreadsheet had to infer which physical tire was which by
-   chaining each rotation's to_position into the next rotation's from_position. In the app this
-   is solved for free: every placement references a tire_id. Never infer identity.
-2. Wear is attributed to the from_position. A tread reading is taken when a tire is removed (at
-   its from_position). Wear for an interval = (same tire's previous center reading) − (this
-   reading), charged to the from_position it just occupied, normalized to per-1,000-miles using
-   the odometer delta between the two rotations. A tire's first placement has no prior → no wear row.
-3. The next rotation auto-seeds itself. When the user starts a new rotation, pre-fill, for each
-   active tire, from_position = that tire's current position (= to_position of its latest
-   placement). The user then only picks each to_position and enters tread. Integrity check: the
-   set of to_positions in one rotation must be a permutation of the from_positions.
+Tread depths are in 32nds of an inch, stored as `decimal(4,1)` to allow halves.
 
-## 5. Conventions
-
-- Tread depths are in 32nds of an inch, stored as decimals to allow halves. tread_center is
-  required; tread_inner / tread_outer are optional (capture the inner-vs-outer scalloped wear).
-- Keep derived logic (current position, wear rates, report aggregation, next-rotation seeding)
-  in service classes (RotationService, WearReportService), not controllers/Blade. Mirror the
-  spreadsheet formulas there.
-- Measurements are hand-gauged and noisy (±1/32"). Prefer multi-rotation averages; don't present
-  single-interval wear as precise. Spare should show ~0 wear — sanity check in tests.
-- Design for multiple vehicles later (nullable vehicle_id now) but don't build vehicle UI yet.
-
-## 6. Build order
-
-See docs/roadmap.md. Short version: migrations + models + seeder (historical data) → rotation
-entry with auto-seed → wear/report services → the two reports → polish/mobile. Write Pest tests
-against the known-good outputs in docs/seed-data.md as you go.
-
-## 6a. Commands
+## 4. Commands
 
 ```bash
 # Run all tests
 php artisan test --compact
 
-# Run a specific test file or filter by name
-php artisan test --compact --filter=Phase2
-php artisan test --compact tests/Feature/Phase1ServicesTest.php
+# Run a specific test file or filter
+php artisan test --compact --filter=RotationTest
+php artisan test --compact tests/Feature/TireServiceTest.php
 
 # Format changed PHP files (required after every PHP edit)
 vendor/bin/pint --dirty --format agent
@@ -89,14 +49,13 @@ vendor/bin/pint --dirty --format agent
 # Inspect routes
 php artisan route:list --except-vendor
 
-# Read-only DB queries (prefer over tinker for data checks)
-# Use the Laravel Boost MCP tool: database-query
+# Read-only DB queries — use the Laravel Boost MCP tool: database-query
 
-# Asset bundling (Herd serves the site; run this if CSS/JS changes aren't visible)
+# Asset bundling (Herd serves the site; run if CSS/JS changes aren't visible)
 npm run build
 ```
 
-## 6b. Architecture
+## 5. Architecture
 
 ### Route → middleware → component flow
 
@@ -166,7 +125,7 @@ When a tire is retired it is always immediately replaced. This creates a **swap 
 a real rotation with `is_swap = true` that contains only the replaced pair(s), not all 5 tires.
 The permutation integrity check is skipped for swap rotations.
 
-Full spec: `docs/spec-tire-swap.md`. Key invariants:
+Key invariants:
 - The retiring tire gets a placement with `to_position = null` (leaves the vehicle).
 - The replacement tire gets a placement with `from_position = null`, `to_position = <vacated position>`.
 - Both placements share the swap rotation. All changes are atomic via `RotationService::saveSwap()`.
@@ -179,12 +138,6 @@ Full spec: `docs/spec-tire-swap.md`. Key invariants:
 Two separate Livewire SFCs handle rotation entry:
 - `rotations/prepare.blade.php` — new rotation wizard, also handles edit when `edit_rotation_id` is set. Calls `RotationService::startNext()` to pre-seed `from_position` stubs; user sets `to_position` and tread per tire.
 - `rotations/update.blade.php` — confirmation/review screen after save.
-
-## 7. Where the data came from
-
-The owner ran this as an Excel/Google-Sheets model first. docs/seed-data.md contains the 4 real
-historical rotations (already resolved to tire IDs) and the report values the app must reproduce.
-Load it in DatabaseSeeder so the app boots with real data and the tests have ground truth.
 
 <laravel-boost-guidelines>
 === foundation rules ===

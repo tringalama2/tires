@@ -1,77 +1,87 @@
 # Business Logic
 
-Each rule shows the spreadsheet formula that proved it out, then the backend equivalent.
-Reproduce the behavior; the formulas are the spec.
+Domain rules for wear calculation and rotation management. Read this before touching any
+reporting or rotation-entry code.
 
-## A. Current position of a tire
+## Rule A — Current position of a tire
 
-The to_position of its latest placement (highest rotation odometer).
-Spreadsheet: INDEX(To, MATCH(tire & ""|"" & MAXIFS(odometer, tireId, tire), toKey, 0))
-Backend:
-$tire->placements()->join('rotations','rotations.id','placements.rotation_id')
-->orderByDesc('rotations.odometer')->value('to_position');
-Known-good after 4 seeded rotations: T1->FR, T2->SPARE, T3->RL, T4->RR, T5->FL.
+The `to_position` of the tire's most recent placement (highest odometer rotation, any type).
 
-## B. Wear attribution (key metric)
+```php
+$tire->placements()
+    ->join('rotations', 'rotations.id', 'placements.rotation_id')
+    ->orderByDesc('rotations.odometer')
+    ->value('to_position');
+```
 
-A tread reading is taken when a tire is removed (describes wear at its from_position).
+Known-good after 4 seeded rotations: T1→FR, T2→SPARE, T3→RL, T4→RR, T5→FL.
+
+## Rule B — Wear attribution
+
+A tread reading is taken when a tire is removed, describing wear at its `from_position`.
 For each placement with a prior reading for the same tire:
-interval_miles  = this.odometer - prev.odometer
-center_wear_32  = prev.tread_center - this.tread_center      // positive = wore down
-wear_per_1000mi = center_wear_32 / interval_miles * 1000     // charged to this.from_position
-prev = same tire's placement at the previous rotation (next-lower odometer).
-A tire's first placement has no prev -> no wear row.
 
-Spreadsheet helper columns:
-PrevMileage   = MAXIFS(odometer, tireId, thisTire, odometer, ""<"" & thisOdometer)
-MilesInterval = thisOdometer - PrevMileage
-CenterWear    = (prev center for thisTire at PrevMileage) - thisCenter
-Wear/1000mi   = CenterWear / MilesInterval * 1000
+```
+interval_miles  = this.odometer − prev.odometer
+center_wear_32  = prev.tread_center − this.tread_center   (positive = wore down)
+wear_per_1000mi = center_wear_32 / interval_miles * 1000  (charged to this.from_position)
+```
 
-Backend: in WearReportService, order each tire's placements by odometer, zip consecutive
-pairs, attribute each pair's wear to the LATER placement's from_position.
-Noise: readings are hand-gauged (+/-1/32""). Spare legitimately shows ~0.08/1000mi from noise.
-Always report averages over multiple intervals.
+`prev` = same tire's placement at the previous rotation (next-lower odometer).
+A tire's first placement has no prev → no wear row.
 
-## C. Report 1 - Wear by position
+`WearReportService::buildIntervals()` orders each tire's placements by odometer, zips consecutive
+pairs, and attributes each pair's wear to the later placement's `from_position`. Includes swap
+rotations in the sequence — they are natural endpoints and anchors. Skips intervals where
+`from_position` is null (replacement tire's swap placement is a start anchor, not an endpoint).
 
-For each position P, over all valid intervals where from_position = P:
-# intervals; avg_wear_per_1000mi; avg_tread_at_removal (avg tread_center removed from P).
-Known-good (avg wear /1000mi): Front R 0.32 (fastest) > Rear L 0.26 > Rear R 0.13 >
-Front L 0.12 > Spare 0.08.
+Readings are hand-gauged (±1/32"). Always report averages over multiple intervals, never
+single-interval wear as precise data.
 
-## D. Report 2 - By tire
+## Rule C — Wear by position
 
-Per tire: current position (rule A), latest center tread, lifetime avg_wear_per_1000mi
-(rule B averaged), and all notes as 'date: note' lines.
+For each position P, over all valid intervals where `from_position = P`:
+- count of intervals
+- avg wear per 1,000 miles
+- avg tread at removal
+
+Known-good (avg wear /1000mi): FR 0.32 > RL 0.26 > RR 0.13 > FL 0.12 > SPARE 0.08.
+
+## Rule D — Wear by tire
+
+Per tire: current position (Rule A), latest center tread, lifetime avg wear/1,000 mi (Rule B
+averaged), and all per-placement notes as "date: note" lines.
+
 Known-good current position / latest center: T1 FR/7, T2 SPARE/6, T3 RL/12, T4 RR/10, T5 FL/9.
 Note counts: T1=1, T2=2, T3=1, T4=0, T5=1.
 
-## E. Starting a new rotation (auto-seed) + integrity
+## Rule E — Auto-seed next rotation + integrity
 
-On new rotation, generate one placement stub per active tire with from_position = that tire's
-current position (rule A), in Position::order(). User fills only to_position and tread.
-Spreadsheet equivalent (fires when new row odometer entered):
-From   = CHOOSE(rowInBlock, ""Front L"",""Front R"",""Rear L"",""Rear R"",""Spare"")
-TireID = INDEX(tireId, MATCH(From & ""|"" & MAXIFS(odometer, To, From, odometer, ""<"" thisOdo), toKey, 0))
-i.e. 'the tire most recently moved TO this position, before this rotation.'
-Integrity rules on save (spreadsheet could not enforce):
+`RotationService::startNext()` generates one placement stub per **active** tire, where
+`from_position` = that tire's current position (Rule A), ordered by `TirePosition::order()`
+(FL, FR, RL, RR, SPARE). The user fills `to_position` and tread readings only.
+
+Integrity rules enforced on save:
 1. Exactly one placement per active tire.
-2. Multiset of to_positions == multiset of from_positions (a permutation across the 5 positions).
-3. tread_center required, sane range (0-20 /32"").
-4. New rotation odometer > previous rotation odometer.
+2. Multiset of `to_positions` == multiset of `from_positions` (a permutation).
+3. `tread_center` required, range 0–20 (32nds).
+4. Rotation odometer > all previous rotation odometers.
 
-## F. Tire replacement (swap workflow — implemented)
+Expected auto-seed from current seeded state: T5@FL, T1@FR, T3@RL, T4@RR, T2@SPARE.
 
-When a tire is retired it is always immediately replaced in the same atomic operation via
-`RotationService::saveSwap()`. A swap rotation (`is_swap = true`) is created. The retiring
-tire gets a placement with `to_position = null`; the replacement gets one with `from_position = null`.
+## Rule F — Tire swap (retire + replace)
 
-Identity stays explicit: both tires have their own `tire_id`. The retiring tire's wear history
-ends at the swap placement; the replacement's wear history starts there.
+When a tire is retired it is always immediately replaced in one atomic operation via
+`RotationService::saveSwap()`. A swap rotation (`is_swap = true`) is created with only the
+replaced pair(s) — the permutation check is skipped.
 
-Wear calculation in `buildIntervals()` naturally handles swap placements — they are included
-in the per-tire odometer-ordered sequence alongside real rotation placements. The only guard
-is skipping intervals where `from_position = null` (replacement tire's anchor placement).
+- Retiring tire: placement with `from_position = currentPos`, `to_position = null`.
+- Replacement tire: new `Tire` record (Active), placement with `from_position = null`,
+  `to_position = currentPos`.
+- Retiring tire's `status` is set to `TireStatus::Retired` in the same transaction.
 
-Full spec: `docs/spec-tire-swap.md`.
+`buildIntervals()` naturally handles this — the retiring tire's swap placement is its final
+interval endpoint; the replacement tire's swap placement is its first anchor. No special
+casing needed beyond skipping `from_position = null` intervals.
+
+`startNext()` calls `$vehicle->activeTires()`, so retired tires never appear as stubs.
