@@ -41,9 +41,10 @@ outputs as you complete each phase.
 ## Phase 5 - Polish / mobile / future
 
 - Mobile-first entry (large tap targets; used in a garage).
-- Tire detail page (history + notes timeline).
-- Inner/outer tread capture + wear-pattern flag (inner vs outer delta).
-- Later: multi-vehicle, tire replacement workflow, export/backup, auth (Sanctum).
+- Tire detail page (history + notes timeline). ✓
+- Inner/outer tread capture + wear-pattern flag (inner vs outer delta). ✓
+- Tire replacement (retire + replace swap workflow). ✓
+- Later: multi-vehicle, export/backup.
 
 ## Guardrails
 

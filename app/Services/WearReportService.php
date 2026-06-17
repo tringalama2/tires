@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\TirePosition;
+use App\Enums\TireStatus;
 use App\Models\Placement;
 use App\Models\Tire;
 use App\Models\Vehicle;
@@ -53,12 +54,17 @@ class WearReportService
      * Returns a Collection of arrays, one per tire, with:
      *   tire, current_position, latest_tread_center, latest_tread_inner,
      *   latest_tread_outer, lifetime_avg_wear_per_1000mi, notes
+     *
+     * @param  TireStatus|null  $filterStatus  null = all tires, Active = active only, Retired = retired only
      */
-    public function wearByTire(?Vehicle $vehicle): Collection
+    public function wearByTire(?Vehicle $vehicle, ?TireStatus $filterStatus = null): Collection
     {
         $query = Tire::query();
         if ($vehicle) {
             $query->where('vehicle_id', $vehicle->id);
+        }
+        if ($filterStatus !== null) {
+            $query->where('status', $filterStatus);
         }
 
         $tires = $query->with(['placements' => function ($q) {

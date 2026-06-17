@@ -80,11 +80,11 @@ new #[Layout('layouts.app')] class extends Component {
                         <div class="w-48">
                             <div>
                                     <span class="text-lg font-bold text-gray-700 p-2 border-b-gray-300">
-                                        {{ $vehicle->loadCount('installedTires')->installed_tires_count }}
+                                        {{ $vehicle->loadCount('activeTires')->active_tires_count }}
                                     </span>
-                                <span>Tires Installed</span>
+                                <span>Active Tires</span>
                             </div>
-                            @if ($vehicle->loadCount('installedTires')->installed_tires_count < $vehicle->tire_count)
+                            @if (! $vehicle->isSetupComplete())
                                 <x-treadmark.button size="sm" href="{{ route('vehicles.setuptires.index', $vehicle) }}" class="mt-1">
                                     Finish Setup
                                 </x-treadmark.button>
@@ -97,6 +97,9 @@ new #[Layout('layouts.app')] class extends Component {
                         </x-treadmark.button>
                         <x-treadmark.button variant="ghost" size="sm" href="{{ route('rotations.prepare', $vehicle) }}">
                             <x-treadmark.icon name="arrows-clockwise" class="w-4 h-4" /> Rotate
+                        </x-treadmark.button>
+                        <x-treadmark.button variant="ghost" size="sm" href="{{ route('rotations.swap', $vehicle->id) }}">
+                            <x-treadmark.icon name="wrench" class="w-4 h-4" /> Swap
                         </x-treadmark.button>
                         <x-treadmark.button variant="ghost" size="sm" href="{{ route('vehicles.edit', $vehicle) }}">
                             <x-treadmark.icon name="pencil-simple" class="w-4 h-4" /> Edit

@@ -1,13 +1,17 @@
 <?php
 
 use App\Enums\TirePosition;
+use App\Enums\TireStatus;
+use App\Livewire\RotationDashboard;
 use App\Models\Placement;
 use App\Models\Rotation;
 use App\Models\Tire;
+use App\Models\User;
 use App\Models\Vehicle;
 use App\Services\WearReportService;
 use Database\Seeders\DatabaseSeeder;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
 
@@ -198,4 +202,59 @@ it('does not flag scalloping when is_cupped is false', function () {
     $placement = new Placement(['is_cupped' => false]);
 
     expect(app(WearReportService::class)->scalpingFlag($placement))->toBeFalse();
+});
+
+// ---------------------------------------------------------------------------
+// wearByTire — filterStatus parameter
+// ---------------------------------------------------------------------------
+
+it('wearByTire with TireStatus::Active excludes retired tires', function () {
+    $this->seed(DatabaseSeeder::class);
+    $vehicle = Vehicle::first();
+
+    // Retire one tire
+    $vehicle->tires()->where('label', 'T1')->update(['status' => TireStatus::Retired]);
+
+    $report = app(WearReportService::class)->wearByTire($vehicle, TireStatus::Active);
+    $labels = $report->pluck('tire')->pluck('label')->all();
+
+    expect($labels)->not->toContain('T1');
+});
+
+it('wearByTire with TireStatus::Retired includes only retired tires', function () {
+    $this->seed(DatabaseSeeder::class);
+    $vehicle = Vehicle::first();
+
+    $vehicle->tires()->where('label', 'T1')->update(['status' => TireStatus::Retired]);
+
+    $report = app(WearReportService::class)->wearByTire($vehicle, TireStatus::Retired);
+    $labels = $report->pluck('tire')->pluck('label')->all();
+
+    expect($labels)->toContain('T1')
+        ->and(count($labels))->toBe(1);
+});
+
+it('wearByTire with null filterStatus returns all tires', function () {
+    $this->seed(DatabaseSeeder::class);
+    $vehicle = Vehicle::first();
+
+    $vehicle->tires()->where('label', 'T1')->update(['status' => TireStatus::Retired]);
+
+    $report = app(WearReportService::class)->wearByTire($vehicle, null);
+
+    expect($report->count())->toBe($vehicle->tires()->count());
+});
+
+it('dashboard replacement alerts exclude retired tires', function () {
+    $this->seed(DatabaseSeeder::class);
+    $user = User::first();
+    $vehicle = Vehicle::first();
+    session(['vehicle' => $vehicle]);
+
+    // Retire a tire that would otherwise appear in alerts
+    $vehicle->tires()->where('label', 'T1')->update(['status' => TireStatus::Retired]);
+
+    Livewire::actingAs($user)
+        ->test(RotationDashboard::class, ['vehicle_id' => $vehicle->id])
+        ->assertDontSeeHtml('T1');
 });

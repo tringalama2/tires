@@ -47,6 +47,25 @@ class DatabaseSeeder extends Seeder
             $tires[$tireDef['label']] = $tire;
         }
 
+        // Create the is_setup rotation using the from_positions of the first real rotation
+        // as the initial tire locations (placed one odometer unit before the first rotation
+        // so TireService::currentPosition always prefers real rotations in odometer-desc order).
+        $firstRotation = $data['rotations'][0];
+        $setupRotation = Rotation::create([
+            'vehicle_id' => $vehicle->id,
+            'rotated_on' => $firstRotation['rotated_at'],
+            'odometer' => $vehicle->starting_odometer - 1,
+            'is_setup' => true,
+        ]);
+        foreach ($firstRotation['placements'] as $p) {
+            $setupRotation->placements()->create([
+                'tire_id' => $tires[$p['tire']]->id,
+                'from_position' => null,
+                'to_position' => $p['from'],
+                'tread_center' => $p['center'],
+            ]);
+        }
+
         // Create rotations and placements
         foreach ($data['rotations'] as $rotationDef) {
             $rotation = Rotation::create([

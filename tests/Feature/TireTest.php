@@ -1,6 +1,5 @@
 <?php
 
-use App\Enums\TireStatus;
 use App\Models\Tire;
 use App\Models\User;
 use App\Models\Vehicle;
@@ -39,56 +38,22 @@ it('shows current positions and latest tread on the list', function () {
 });
 
 // ---------------------------------------------------------------------------
-// Add tire via Livewire
+// Tires list — read-only roster (no add/retire actions on this page)
 // ---------------------------------------------------------------------------
 
-it('can add a tire via the tires list component', function () {
-    $before = $this->vehicle->tires()->count();
-
-    Livewire::actingAs($this->user)
-        ->test('tires.index', ['vehicle_id' => $this->vehicle->id])
-        ->call('openAddForm')
-        ->set('label', 'T6')
-        ->set('brand', 'Michelin')
-        ->call('addTire')
-        ->assertHasNoErrors();
-
-    expect($this->vehicle->fresh()->tires()->count())->toBe($before + 1)
-        ->and($this->vehicle->tires()->where('label', 'T6')->exists())->toBeTrue();
+it('shows a View link for each tire', function () {
+    $this->actingAs($this->user)
+        ->get(route('tires.index'))
+        ->assertOk()
+        ->assertSeeText('View');
 });
 
-it('requires a label when adding a tire', function () {
-    Livewire::actingAs($this->user)
-        ->test('tires.index', ['vehicle_id' => $this->vehicle->id])
-        ->call('openAddForm')
-        ->set('label', '')
-        ->call('addTire')
-        ->assertHasErrors(['label']);
-});
-
-// ---------------------------------------------------------------------------
-// Status toggle
-// ---------------------------------------------------------------------------
-
-it('can toggle a tire to Retired', function () {
-    $tire = $this->vehicle->tires()->where('label', 'T1')->first();
-
-    Livewire::actingAs($this->user)
-        ->test('tires.index', ['vehicle_id' => $this->vehicle->id])
-        ->call('toggleStatus', $tire->id);
-
-    expect($tire->fresh()->status)->toBe(TireStatus::Retired);
-});
-
-it('can toggle a Retired tire back to Active', function () {
-    $tire = $this->vehicle->tires()->where('label', 'T1')->first();
-    $tire->update(['status' => TireStatus::Retired]);
-
-    Livewire::actingAs($this->user)
-        ->test('tires.index', ['vehicle_id' => $this->vehicle->id])
-        ->call('toggleStatus', $tire->id);
-
-    expect($tire->fresh()->status)->toBe(TireStatus::Active);
+it('does not show Add Tire or Retire buttons', function () {
+    $this->actingAs($this->user)
+        ->get(route('tires.index'))
+        ->assertOk()
+        ->assertDontSeeText('Add Tire')
+        ->assertDontSeeText('Retire');
 });
 
 // ---------------------------------------------------------------------------

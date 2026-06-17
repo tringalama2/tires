@@ -8,37 +8,13 @@ use App\Services\TireService;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Locked;
-use Livewire\Attributes\Validate;
 use Livewire\Component;
 
-new #[Layout('layouts.app')] class extends Component {
+new #[Layout('layouts.app')]
+class extends Component {
 
     #[Locked]
     public ?int $vehicle_id;
-
-    public bool $showAddForm = false;
-
-    // Add-tire form fields
-    #[Validate('required|string|max:50')]
-    public string $label = '';
-
-    #[Validate('nullable|string|max:50')]
-    public ?string $brand = null;
-
-    #[Validate('nullable|string|max:50')]
-    public ?string $model = null;
-
-    #[Validate('nullable|string|max:12')]
-    public ?string $tin = null;
-
-    #[Validate('nullable|string|max:30')]
-    public ?string $size = null;
-
-    #[Validate('nullable|date')]
-    public ?string $purchased_on = null;
-
-    #[Validate('required|integer|in:1,2')]
-    public int $status = TireStatus::Active->value;
 
     public function mount(SelectVehicle $selectVehicle): void
     {
@@ -63,6 +39,8 @@ new #[Layout('layouts.app')] class extends Component {
         $tireService = app(TireService::class);
 
         return $this->vehicle()->tires()
+            ->orderBy('status')
+            ->orderByDesc('purchased_on')
             ->orderBy('label')
             ->get()
             ->map(function (Tire $tire) use ($tireService) {
@@ -81,67 +59,6 @@ new #[Layout('layouts.app')] class extends Component {
             });
     }
 
-    public function openAddForm(): void
-    {
-        $this->resetAddForm();
-        $this->showAddForm = true;
-    }
-
-    public function cancelAdd(): void
-    {
-        $this->showAddForm = false;
-        $this->resetAddForm();
-    }
-
-    public function addTire(): void
-    {
-        $this->validate();
-
-        $vehicle = $this->vehicle();
-        $this->authorize('view', $vehicle);
-
-        Tire::create([
-            'vehicle_id' => $this->vehicle_id,
-            'label' => $this->label,
-            'brand' => $this->brand ?: null,
-            'model' => $this->model ?: null,
-            'tin' => $this->tin ?: null,
-            'size' => $this->size ?: null,
-            'purchased_on' => $this->purchased_on ?: null,
-            'status' => TireStatus::from((int) $this->status),
-        ]);
-
-        $this->showAddForm = false;
-        $this->resetAddForm();
-        unset($this->tires);
-    }
-
-    public function toggleStatus(string $tireId): void
-    {
-        $tire = Tire::findOrFail($tireId);
-        $this->authorize('update', $tire);
-
-        $tire->update([
-            'status' => $tire->status === TireStatus::Active
-                ? TireStatus::Retired
-                : TireStatus::Active,
-        ]);
-
-        unset($this->tires);
-    }
-
-    private function resetAddForm(): void
-    {
-        $this->label = '';
-        $this->brand = null;
-        $this->model = null;
-        $this->tin = null;
-        $this->size = null;
-        $this->purchased_on = null;
-        $this->status = TireStatus::Active->value;
-        $this->resetValidation();
-    }
-
     public function render(): \Illuminate\View\View
     {
         return view('livewire.tires.index');
@@ -152,53 +69,18 @@ new #[Layout('layouts.app')] class extends Component {
 
 <div>
     <x-slot name="header">
-        <div class="flex justify-between items-center">
+        <div class="flex items-center justify-between">
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">{{ __('Tires') }}</h2>
-            @unless ($showAddForm)
-                <x-treadmark.button wire:click="openAddForm" size="sm">
-                    <x-treadmark.icon name="plus" class="w-4 h-4" /> Add Tire
-                </x-treadmark.button>
-            @endunless
+            <x-treadmark.button href="{{ route('rotations.swap', $vehicle_id) }}" wire:navigate size="sm">
+                <x-treadmark.icon name="wrench" class="w-4 h-4"/>
+                Swap Tire
+            </x-treadmark.button>
         </div>
     </x-slot>
 
     <div class="py-12">
-        <div class="max-w-5xl mx-auto sm:px-6 lg:px-8 space-y-6">
+        <div class="max-w-5xl mx-auto sm:px-6 lg:px-8">
 
-            {{-- Add tire form --}}
-            @if ($showAddForm)
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                    <div class="p-6">
-                        <h3 class="font-semibold text-gray-700 mb-4">Add Tire</h3>
-                        <form wire:submit="addTire" class="grid grid-cols-2 sm:grid-cols-3 gap-4">
-                            <x-treadmark.input
-                                wire:model="label"
-                                type="text"
-                                label="Label"
-                                placeholder="T6"
-                                required
-                                :error="$errors->first('label')"
-                            />
-                            <x-treadmark.input wire:model="brand" type="text" label="Brand" />
-                            <x-treadmark.input wire:model="model" type="text" label="Model" />
-                            <x-treadmark.input wire:model="tin" type="text" label="DOT / TIN" maxlength="12" />
-                            <x-treadmark.input wire:model="size" type="text" label="Size" placeholder="275/70R18" />
-                            <x-treadmark.input wire:model="purchased_on" type="date" label="Purchase Date" />
-                            <x-treadmark.select
-                                wire:model="status"
-                                label="Status"
-                                :options="[TireStatus::Active->value => 'Active', TireStatus::Retired->value => 'Retired']"
-                            />
-                            <div class="col-span-2 sm:col-span-3 flex gap-3 pt-2">
-                                <x-treadmark.button type="submit">Add Tire</x-treadmark.button>
-                                <x-treadmark.button type="button" variant="ghost" size="sm" wire:click="cancelAdd">Cancel</x-treadmark.button>
-                            </div>
-                        </form>
-                    </div>
-                </div>
-            @endif
-
-            {{-- Tire list --}}
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 overflow-x-auto">
                     @if ($this->tires->isEmpty())
@@ -206,42 +88,41 @@ new #[Layout('layouts.app')] class extends Component {
                     @else
                         <table class="w-full text-sm">
                             <thead>
-                                <tr class="text-left border-b border-gray-200">
-                                    <th class="pb-3 font-semibold text-gray-600">Label</th>
-                                    <th class="pb-3 font-semibold text-gray-600">Brand / Model</th>
-                                    <th class="pb-3 font-semibold text-gray-600">Position</th>
-                                    <th class="pb-3 font-semibold text-gray-600 text-right">Latest Tread</th>
-                                    <th class="pb-3 font-semibold text-gray-600">Status</th>
-                                    <th class="pb-3 font-semibold text-gray-600">Actions</th>
-                                </tr>
+                            <tr class="text-left border-b border-gray-200">
+                                <th class="pb-3 font-semibold text-gray-600">Label</th>
+                                <th class="pb-3 font-semibold text-gray-600">Brand / Model</th>
+                                <th class="pb-3 font-semibold text-gray-600">Position</th>
+                                <th class="pb-3 font-semibold text-gray-600 text-right">Latest Tread</th>
+                                <th class="pb-3 font-semibold text-gray-600">Status</th>
+                                <th class="pb-3 font-semibold text-gray-600"></th>
+                            </tr>
                             </thead>
                             <tbody class="divide-y divide-gray-100">
-                                @foreach ($this->tires as $row)
-                                    @php $tire = $row['tire']; @endphp
-                                    <tr class="hover:bg-gray-50 {{ $tire->status === \App\Enums\TireStatus::Retired ? 'opacity-60' : '' }}">
-                                        <td class="py-3 font-bold text-ink-900">
-                                            <a href="{{ route('tires.show', $tire) }}" class="hover:underline">{{ $tire->label }}</a>
-                                        </td>
-                                        <td class="py-3 text-gray-700">
-                                            {{ implode(' ', array_filter([$tire->brand, $tire->model])) ?: '—' }}
-                                        </td>
-                                        <td class="py-3 text-gray-600">{{ $row['current_position'] }}</td>
-                                        <td class="py-3 text-right font-mono text-gray-700">
-                                            {{ $row['latest_tread'] !== null ? $row['latest_tread'].'/32"' : '—' }}
-                                        </td>
-                                        <td class="py-3">
-                                            <span class="px-2 py-0.5 rounded text-xs font-medium {{ $tire->status === \App\Enums\TireStatus::Active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500' }}">
+                            @foreach ($this->tires as $row)
+                                @php $tire = $row['tire']; @endphp
+                                <tr class="hover:bg-gray-50 {{ $tire->status === TireStatus::Retired ? 'opacity-60' : '' }}">
+                                    <td class="py-3 font-bold text-ink-900">
+                                        <a href="{{ route('tires.show', $tire) }}" class="hover:underline">{{ $tire->label }}</a>
+                                    </td>
+                                    <td class="py-3 text-gray-700">
+                                        {{ implode(' ', array_filter([$tire->brand, $tire->model])) ?: '—' }}
+                                    </td>
+                                    <td class="py-3 text-gray-600">{{ $row['current_position'] }}</td>
+                                    <td class="py-3 text-right font-mono text-gray-700">
+                                        {{ $row['latest_tread'] !== null ? $row['latest_tread'].'/32"' : '—' }}
+                                    </td>
+                                    <td class="py-3">
+                                            <span class="px-2 py-0.5 rounded text-xs font-medium {{ $tire->status === TireStatus::Active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500' }}">
                                                 {{ $tire->status->label() }}
                                             </span>
-                                        </td>
-                                        <td class="py-3 flex gap-3">
-                                            <x-treadmark.button variant="ghost" size="sm" href="{{ route('tires.show', $tire) }}">Edit</x-treadmark.button>
-                                            <x-treadmark.button variant="ghost" size="sm" wire:click="toggleStatus('{{ $tire->id }}')">
-                                                {{ $tire->status === \App\Enums\TireStatus::Active ? 'Retire' : 'Reactivate' }}
-                                            </x-treadmark.button>
-                                        </td>
-                                    </tr>
-                                @endforeach
+                                    </td>
+                                    <td class="py-3 text-right">
+                                        <x-treadmark.button variant="ghost" size="sm" href="{{ route('tires.show', $tire) }}">
+                                            View
+                                        </x-treadmark.button>
+                                    </td>
+                                </tr>
+                            @endforeach
                             </tbody>
                         </table>
                     @endif

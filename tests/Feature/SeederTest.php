@@ -15,7 +15,8 @@ it('seeds the correct counts', function () {
 
     expect(Tire::count())->toBe(5)
         ->and(Rotation::where('is_setup', false)->count())->toBe(4)
-        ->and(Placement::count())->toBe(20);
+        ->and(Rotation::where('is_setup', true)->count())->toBe(1)
+        ->and(Placement::count())->toBe(25); // 20 real + 5 setup placements
 });
 
 it('seeds known-good current positions', function () {

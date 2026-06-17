@@ -18,6 +18,7 @@
             name="label"
             type="text"
             label="Label"
+            placeholder="T6"
             :value="old('label', $model?->label)"
             required
             autofocus
@@ -30,6 +31,7 @@
                 name="brand"
                 type="text"
                 label="Brand"
+                placeholder="BF Goodrich"
                 :value="old('brand', $model?->brand ?? $existingTire?->brand)"
                 :error="$errors->first('brand')"
                 optional
@@ -39,6 +41,7 @@
                 name="model"
                 type="text"
                 label="Model"
+                placeholder="KO2"
                 :value="old('model', $model?->model ?? $existingTire?->model)"
                 :error="$errors->first('model')"
                 optional
@@ -51,6 +54,7 @@
                 name="size"
                 type="text"
                 label="Size"
+                placeholder="275/70R18"
                 :value="old('size', $model?->size ?? $existingTire?->size)"
                 :error="$errors->first('size')"
                 optional
@@ -70,7 +74,8 @@
             id="tin"
             name="tin"
             type="text"
-            label="DOT serial (TIN)"
+            label="DOT / TIN"
+            placeholder="DOT XXXX XXXX XX"
             :value="old('tin', $model?->tin ?? $existingTire?->tin)"
             :error="$errors->first('tin')"
             optional

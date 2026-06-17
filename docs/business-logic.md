@@ -61,7 +61,17 @@ Integrity rules on save (spreadsheet could not enforce):
 3. tread_center required, sane range (0-20 /32"").
 4. New rotation odometer > previous rotation odometer.
 
-## F. Tire replacement (future)
+## F. Tire replacement (swap workflow — implemented)
 
-Retire old tire (status=retired), create new tire row, let it enter at a position. Identity is
-explicit so history stays intact; new tire's first placement simply has no prior reading."
+When a tire is retired it is always immediately replaced in the same atomic operation via
+`RotationService::saveSwap()`. A swap rotation (`is_swap = true`) is created. The retiring
+tire gets a placement with `to_position = null`; the replacement gets one with `from_position = null`.
+
+Identity stays explicit: both tires have their own `tire_id`. The retiring tire's wear history
+ends at the swap placement; the replacement's wear history starts there.
+
+Wear calculation in `buildIntervals()` naturally handles swap placements — they are included
+in the per-tire odometer-ordered sequence alongside real rotation placements. The only guard
+is skipping intervals where `from_position = null` (replacement tire's anchor placement).
+
+Full spec: `docs/spec-tire-swap.md`.

@@ -3,6 +3,7 @@
 namespace App\Services;
 
 use App\Enums\TirePosition;
+use App\Enums\TireStatus;
 use App\Models\Placement;
 use App\Models\Rotation;
 use App\Models\Tire;
@@ -135,6 +136,99 @@ class RotationService
                 if (! empty($p['tire_flags'])) {
                     Tire::where('id', $p['tire_id'])->update($p['tire_flags']);
                 }
+            }
+
+            return $rotation;
+        });
+    }
+
+    /**
+     * Persist a tire swap atomically.
+     *
+     * Creates a swap rotation (is_swap = true), retires each outgoing tire,
+     * creates each replacement tire, and records placements for both sides.
+     *
+     * $data shape:
+     *   rotated_on  string (date)
+     *   odometer    int   (>= last rotation odometer)
+     *   swaps       array of:
+     *     retiring_tire_id    string UUID
+     *     retiring_tread      float|null
+     *     replacement_label        string
+     *     replacement_brand        string|null
+     *     replacement_model        string|null
+     *     replacement_tread        float
+     *     replacement_tin          string|null
+     *     replacement_size         string|null
+     *     replacement_purchased_on string|null
+     *
+     * @throws ValidationException
+     */
+    public function saveSwap(array $data, Vehicle $vehicle): Rotation
+    {
+        $maxOdometer = $vehicle->rotations()->max('odometer');
+        if ($maxOdometer !== null && $data['odometer'] < $maxOdometer) {
+            throw ValidationException::withMessages([
+                'odometer' => 'Odometer must be at least the previous rotation ('.number_format($maxOdometer).' mi).',
+            ]);
+        }
+
+        foreach ($data['swaps'] as $swap) {
+            if (! empty($swap['replacement_tin']) && strlen($swap['replacement_tin']) > 12) {
+                throw ValidationException::withMessages([
+                    'replacement_tin' => 'DOT/TIN must be 12 characters or fewer.',
+                ]);
+            }
+            if (! empty($swap['replacement_purchased_on']) && ! strtotime($swap['replacement_purchased_on'])) {
+                throw ValidationException::withMessages([
+                    'replacement_purchased_on' => 'Purchase date is not a valid date.',
+                ]);
+            }
+        }
+
+        return DB::transaction(function () use ($data, $vehicle) {
+            $rotation = Rotation::create([
+                'vehicle_id' => $vehicle->id,
+                'rotated_on' => $data['rotated_on'],
+                'odometer' => $data['odometer'],
+                'is_setup' => false,
+                'is_swap' => true,
+            ]);
+
+            foreach ($data['swaps'] as $swap) {
+                $retiring = Tire::findOrFail($swap['retiring_tire_id']);
+                $position = $this->tireService->currentPosition($retiring);
+
+                // Retiring tire placement — leaves the vehicle
+                Placement::create([
+                    'rotation_id' => $rotation->id,
+                    'tire_id' => $retiring->id,
+                    'from_position' => $position,
+                    'to_position' => null,
+                    'tread_center' => $swap['retiring_tread'] ?? null,
+                ]);
+
+                $retiring->update(['status' => TireStatus::Retired]);
+
+                // Replacement tire — enters the vehicle at the vacated position
+                $replacement = Tire::create([
+                    'vehicle_id' => $vehicle->id,
+                    'label' => $swap['replacement_label'],
+                    'brand' => $swap['replacement_brand'] ?? null,
+                    'model' => $swap['replacement_model'] ?? null,
+                    'tin' => $swap['replacement_tin'] ?? null,
+                    'size' => $swap['replacement_size'] ?? null,
+                    'purchased_on' => $swap['replacement_purchased_on'] ?? null,
+                    'status' => TireStatus::Active,
+                ]);
+
+                Placement::create([
+                    'rotation_id' => $rotation->id,
+                    'tire_id' => $replacement->id,
+                    'from_position' => null,
+                    'to_position' => $position,
+                    'tread_center' => $swap['replacement_tread'],
+                ]);
             }
 
             return $rotation;

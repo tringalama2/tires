@@ -103,7 +103,7 @@ npm run build
 Routes in `routes/web.php` are layered through two custom middlewares:
 
 1. `firstVehicleExists` — redirects to vehicle creation if the session has no vehicle.
-2. `activeVehicleTires` — redirects to `vehicles.setuptires.index` if the active vehicle's tire count doesn't match `vehicle->tire_count`. All dashboard/rotation/report routes sit behind this gate.
+2. `activeVehicleTires` — redirects to `vehicles.setuptires.index` if the vehicle's setup rotation doesn't have `tire_count` filled positions. All dashboard/rotation/report routes sit behind this gate. **Do not** use `activeTires()->count()` here — a vehicle with a retired tire still has all positions filled and must not be redirected to setup.
 
 The `activeVehicle` is stored in the session via `App\Actions\SelectVehicle` and re-hydrated on each component mount.
 
@@ -111,14 +111,43 @@ The `activeVehicle` is stored in the session via `App\Actions\SelectVehicle` and
 
 All feature components use Livewire 4's **Single-File Component (SFC)** style — the PHP class is defined inline at the top of the Blade file with `new #[Layout('layouts.app')] class extends Component { ... };`. Class-based components in `app/Livewire/` are the exception (only `RotationDashboard` and the Breeze auth components use that pattern).
 
+**Never use `protected Vehicle $vehicle` in SFC components.** Livewire only calls `mount()` on the initial page load; subsequent requests (wire:click, wire:model changes) re-hydrate public properties from the serialized snapshot but do NOT call `mount()` again. A `protected` property set in `mount()` will be uninitialized on every subsequent request, causing a PHP 8 typed-property error. The correct pattern is a private `vehicle()` method:
+
+```php
+private function vehicle(): Vehicle
+{
+    return Vehicle::findOrFail($this->vehicle_id);
+}
+```
+
+Use this method in all `#[Computed]` properties and actions. `$vehicle_id` is a `#[Locked]` public property and survives re-hydration correctly.
+
+### Tire status vs. installation — two orthogonal concepts
+
+`status` (Active/Retired) is a **lifecycle** attribute on the tire itself. "Installed" is a **positional** fact derived from placements — does this tire currently occupy a vehicle position? They are independent:
+
+| | Installed (has a current position) | Not installed |
+|---|---|---|
+| **Active** | Normal — tire is on the vehicle and in rotation | Purchased but not yet placed, or in storage |
+| **Retired** | Transitional — flagged for replacement but not yet swapped out | End state — off the vehicle, done |
+
+Consequences:
+- `Vehicle::activeTires()` — lifecycle query. Use for "how many tires are still in service."
+- `Vehicle::isSetupComplete()` — positional invariant. Use for the setup gate; checks that all `tire_count` slots have a placement in the setup rotation. **Never** use `activeTires()->count()` for this — a vehicle with a retired tire still has all positions filled.
+- `TireService::currentPosition()` — derives the positional fact for a single tire from its most recent placement.
+
 ### The `is_setup` rotation
 
 Every vehicle has at most one `Rotation` with `is_setup = true`, created during tire setup. It establishes each tire's starting position (`to_position`) and initial tread reading. It is excluded from wear calculations (`WearReportService`, `buildIntervals()`) but **included** in `TireService::currentPosition()` — the setup placement is the source of truth for position until the first real rotation overwrites it.
 
+The setup rotation is also the gating signal for `activeVehicleTires` middleware: that middleware counts placements in the setup rotation to decide if setup is complete — **not** active tire count. This matters when a tire is retired: retiring a tire reduces `activeTires()->count()` but does not affect setup rotation placements, so the gate should not trigger.
+
+**Test helper pattern**: when writing tests for routes behind `activeVehicleTires`, create a setup rotation with one placement per position. Failing to do so causes a 302 redirect even if the test vehicle has the correct number of active tires.
+
 ### Service layer responsibilities
 
 - **`TireService`** — single method: `currentPosition(Tire)` returns the `to_position` of the tire's most recent placement (any rotation, ordered by odometer desc).
-- **`WearReportService`** — all reporting. `buildIntervals()` is the core: for each tire, it zips consecutive non-setup placements and attributes wear to the later placement's `from_position`. `wearByPosition()` and `wearByTire()` aggregate from intervals.
+- **`WearReportService`** — all reporting. `buildIntervals()` is the core: for each tire, it zips consecutive non-setup placements and attributes wear to the later placement's `from_position`. `wearByPosition()` and `wearByTire(?Vehicle, ?TireStatus $filterStatus = null)` aggregate from intervals. Pass `TireStatus::Active` or `TireStatus::Retired` to scope the tire set; `null` returns all. The dashboard and by-tire report both use this parameter — the dashboard always passes `TireStatus::Active`.
 - **`RotationService`** — `startNext()` seeds stubs for a new rotation using current positions; `save()` validates the permutation constraint and persists atomically.
 
 ### Treadmark component library
@@ -130,6 +159,20 @@ All UI uses a custom design system in `resources/views/components/treadmark/`. K
 - `<x-treadmark.button>` / `<x-treadmark.alert tone="danger|warn">` — standard controls
 
 Design tokens live in `resources/design/tokens/colors.css`. The skill at `.claude/skills/treadmark-design.md` documents the full system — activate it before any UI work.
+
+### Tire swap (retire + replace)
+
+When a tire is retired it is always immediately replaced. This creates a **swap rotation** —
+a real rotation with `is_swap = true` that contains only the replaced pair(s), not all 5 tires.
+The permutation integrity check is skipped for swap rotations.
+
+Full spec: `docs/spec-tire-swap.md`. Key invariants:
+- The retiring tire gets a placement with `to_position = null` (leaves the vehicle).
+- The replacement tire gets a placement with `from_position = null`, `to_position = <vacated position>`.
+- Both placements share the swap rotation. All changes are atomic via `RotationService::saveSwap()`.
+- `WearReportService::buildIntervals()` includes swap placements — they are the final endpoint
+  for a retiring tire's wear history and the starting anchor for a replacement tire's.
+- `startNext()` already filters to `activeTires()`, so retired tires never appear as stubs.
 
 ### Rotation entry (prepare vs update)
 

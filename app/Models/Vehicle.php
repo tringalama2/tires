@@ -56,14 +56,16 @@ class Vehicle extends Model
         return $this->hasMany(Tire::class)->where('status', TireStatus::Active);
     }
 
-    /** @deprecated Use activeTires(). Kept for middleware compatibility. */
-    public function installedTires(): HasMany
-    {
-        return $this->activeTires();
-    }
-
     public function rotations(): HasMany
     {
         return $this->hasMany(Rotation::class);
+    }
+
+    public function isSetupComplete(): bool
+    {
+        $setupRotation = $this->rotations()->where('is_setup', true)->first();
+
+        return $setupRotation !== null
+            && $setupRotation->placements()->whereNotNull('to_position')->count() === $this->tire_count;
     }
 }

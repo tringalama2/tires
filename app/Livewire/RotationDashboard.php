@@ -3,6 +3,7 @@
 namespace App\Livewire;
 
 use App\Actions\SelectVehicle;
+use App\Enums\TireStatus;
 use App\Models\Rotation;
 use App\Models\Vehicle;
 use App\Services\WearReportService;
@@ -79,7 +80,7 @@ class RotationDashboard extends Component
     #[Computed]
     public function allTiresSortedByMilesLeft(): Collection
     {
-        return app(WearReportService::class)->wearByTire($this->vehicle)
+        return app(WearReportService::class)->wearByTire($this->vehicle, TireStatus::Active)
             ->sortBy(fn ($r) => $r['projected_miles'] ?? PHP_INT_MAX)
             ->values();
     }
@@ -90,7 +91,7 @@ class RotationDashboard extends Component
     #[Computed]
     public function currentPositions(): Collection
     {
-        return app(WearReportService::class)->wearByTire($this->vehicle)
+        return app(WearReportService::class)->wearByTire($this->vehicle, TireStatus::Active)
             ->filter(fn ($r) => $r['current_position'] !== null)
             ->sortBy(fn ($r) => array_search($r['current_position']->value, ['FL', 'FR', 'RL', 'RR', 'SP']))
             ->values();

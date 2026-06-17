@@ -135,115 +135,123 @@ new #[Layout('layouts.app')] class extends Component {
 <div>
     <x-slot name="header">
         <div class="flex justify-between items-center">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">
-                Tire {{ $tire->label }}
-                @if ($this->currentPosition)
-                    <span class="text-gray-400 font-normal text-lg">— {{ $this->currentPosition }}</span>
-                @endif
-            </h2>
+            <h1 class="font-display font-semibold uppercase text-2xl tracking-wider text-ink-900">Tire {{ $tire->label }}</h1>
             <x-treadmark.button variant="ghost" size="sm" href="{{ route('reports.by-tire') }}">
                 <x-treadmark.icon name="arrow-left" class="w-4 h-4" /> Back to report
             </x-treadmark.button>
         </div>
     </x-slot>
 
-    <div class="py-12">
-        <div class="max-w-4xl mx-auto sm:px-6 lg:px-8 space-y-6">
+    <div class="py-8">
+        <div class="max-w-4xl mx-auto px-4 sm:px-6 lg:px-8 space-y-4">
 
             {{-- Tire info card --}}
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6">
-                    <div class="flex justify-between items-start mb-4">
-                        <h3 class="font-semibold text-gray-700">Tire Info</h3>
+            <div class="bg-white border border-ink-100 rounded-card shadow-tm-md overflow-hidden">
+
+                {{-- Dark header --}}
+                <div class="flex items-center justify-between gap-4 px-8 py-6 bg-ink-900">
+                    <div>
+                        <div class="font-display font-semibold uppercase tracking-wider text-xl text-white">
+                            {{ $tire->brand ? $tire->brand.' '.($tire->model ?? '') : 'Tire '.$tire->label }}
+                        </div>
+                        <div class="font-mono text-xs tracking-widest text-ink-300 mt-1 uppercase">
+                            @if ($tire->size) {{ $tire->size }} · @endif
+                            @if ($tire->tin) DOT {{ $tire->tin }} · @endif
+                            @if ($tire->purchased_on) purchased {{ $tire->purchased_on->format('M Y') }} @endif
+                        </div>
+                    </div>
+                    <div class="flex items-center gap-3">
+                        @php
+                            $isActive = $tire->status->value === 'active';
+                        @endphp
+                        <x-treadmark.badge :tone="$isActive ? 'success' : 'neutral'" dot>
+                            {{ $tire->status->label() }}
+                        </x-treadmark.badge>
                         @if (! $editing)
-                            <x-treadmark.button variant="secondary" size="sm" wire:click="startEdit">
-                            <x-treadmark.icon name="pencil-simple" class="w-4 h-4" /> Edit
-                        </x-treadmark.button>
+                            <x-treadmark.button variant="inverse" size="sm" wire:click="startEdit">
+                                <x-treadmark.icon name="pencil-simple" class="w-4 h-4" /> Edit
+                            </x-treadmark.button>
                         @endif
                     </div>
+                </div>
 
-                    @if ($editing)
-                        <form wire:submit="save" class="grid grid-cols-2 gap-4">
-                            <x-treadmark.input
-                                wire:model="brand"
-                                type="text"
-                                label="Brand"
-                                :error="$errors->first('brand')"
-                            />
-                            <x-treadmark.input
-                                wire:model="model"
-                                type="text"
-                                label="Model"
-                                :error="$errors->first('model')"
-                            />
-                            <x-treadmark.input
-                                wire:model="tin"
-                                type="text"
-                                label="DOT / TIN"
-                                maxlength="12"
-                                :error="$errors->first('tin')"
-                            />
-                            <x-treadmark.input
-                                wire:model="size"
-                                type="text"
-                                label="Size"
-                                :error="$errors->first('size')"
-                            />
-                            <x-treadmark.input
-                                wire:model="purchased_on"
-                                type="date"
-                                label="Purchase Date"
-                                :error="$errors->first('purchased_on')"
-                            />
-                            <div class="col-span-2">
-                                <p class="text-sm font-medium text-gray-600 mb-2">Condition</p>
-                                <div class="flex flex-wrap gap-x-6 gap-y-2">
-                                    @foreach ([
-                                        'has_cracking' => 'Cracking / dry rot',
-                                        'has_bulge' => 'Sidewall bulge',
-                                        'has_cupping' => 'Cupping',
-                                        'has_puncture_repair' => 'Plug / patch',
-                                    ] as $field => $label)
-                                        <label class="flex items-center gap-2 text-sm text-gray-700 cursor-pointer select-none">
-                                            <input type="checkbox" wire:model="{{ $field }}"
-                                                class="rounded border-gray-300 text-blaze-600 focus:ring-blaze-500">
-                                            {{ $label }}
-                                        </label>
-                                    @endforeach
+                @if ($editing)
+                    {{-- Edit form --}}
+                    <form wire:submit="save" class="px-8 py-6 grid grid-cols-2 gap-4">
+                        <x-treadmark.input wire:model="brand" type="text" label="Brand" placeholder="BF Goodrich" :error="$errors->first('brand')" />
+                        <x-treadmark.input wire:model="model" type="text" label="Model" placeholder="KO2" :error="$errors->first('model')" />
+                        <x-treadmark.input wire:model="tin" type="text" label="DOT / TIN" placeholder="DOT XXXX XXXX XX" maxlength="12" :error="$errors->first('tin')" />
+                        <x-treadmark.input wire:model="size" type="text" label="Size" placeholder="275/70R18" :error="$errors->first('size')" />
+                        <x-treadmark.input wire:model="purchased_on" type="date" label="Purchase Date" :error="$errors->first('purchased_on')" />
+                        <div class="col-span-2">
+                            <p class="font-mono text-[11px] tracking-widest uppercase text-ink-400 mb-2">Condition Flags</p>
+                            <div class="flex flex-wrap gap-x-6 gap-y-2">
+                                @foreach ([
+                                    'has_cracking' => 'Cracking / dry rot',
+                                    'has_bulge' => 'Sidewall bulge',
+                                    'has_cupping' => 'Cupping',
+                                    'has_puncture_repair' => 'Plug / patch',
+                                ] as $field => $label)
+                                    <label class="flex items-center gap-2 text-sm text-ink-700 cursor-pointer select-none">
+                                        <input type="checkbox" wire:model="{{ $field }}" class="rounded border-ink-300 text-blaze-600 focus:ring-blaze-500">
+                                        {{ $label }}
+                                    </label>
+                                @endforeach
+                            </div>
+                        </div>
+                        <div class="flex items-end gap-2">
+                            <x-treadmark.button type="submit">Save</x-treadmark.button>
+                            <x-treadmark.button type="button" variant="ghost" size="sm" wire:click="cancelEdit">Cancel</x-treadmark.button>
+                        </div>
+                    </form>
+                @else
+                    {{-- Stat row --}}
+                    <div class="grid grid-cols-3 gap-px bg-ink-100 border-b border-ink-100">
+                        <div class="bg-white px-6 py-4">
+                            <div class="flex flex-col gap-1">
+                                <span class="font-mono uppercase tracking-caps text-[11px] text-ink-400">Current Position</span>
+                                <div class="mt-0.5">
+                                    @if ($this->currentPosition)
+                                        @php
+                                            $pos = app(\App\Services\TireService::class)->currentPosition($tire);
+                                        @endphp
+                                        <x-treadmark.position-tag :position="$pos->value" size="md" show-label />
+                                    @else
+                                        <span class="font-display font-semibold text-[21px] text-ink-300">—</span>
+                                    @endif
                                 </div>
                             </div>
-                            <div class="flex items-end gap-2">
-                                <x-treadmark.button type="submit">Save</x-treadmark.button>
-                                <x-treadmark.button type="button" variant="ghost" size="sm" wire:click="cancelEdit">Cancel</x-treadmark.button>
-                            </div>
-                        </form>
-                    @else
-                        <dl class="grid grid-cols-2 sm:grid-cols-3 gap-x-6 gap-y-3 text-sm">
-                            <div>
-                                <dt class="text-gray-500">Brand</dt>
-                                <dd class="font-medium text-gray-800">{{ $tire->brand ?? '—' }}</dd>
-                            </div>
-                            <div>
-                                <dt class="text-gray-500">Model</dt>
-                                <dd class="font-medium text-gray-800">{{ $tire->model ?? '—' }}</dd>
-                            </div>
-                            <div>
-                                <dt class="text-gray-500">DOT / TIN</dt>
-                                <dd class="font-medium text-gray-800">{{ $tire->tin ?? '—' }}</dd>
-                            </div>
-                            <div>
-                                <dt class="text-gray-500">Size</dt>
-                                <dd class="font-medium text-gray-800">{{ $tire->size ?? '—' }}</dd>
-                            </div>
-                            <div>
-                                <dt class="text-gray-500">Purchased</dt>
-                                <dd class="font-medium text-gray-800">{{ $tire->purchased_on?->format('M j, Y') ?? '—' }}</dd>
-                            </div>
-                            <div>
-                                <dt class="text-gray-500">Status</dt>
-                                <dd class="font-medium text-gray-800">{{ $tire->status->label() }}</dd>
-                            </div>
+                        </div>
+                        <div class="bg-white px-6 py-4">
+                            @php
+                                $latestPlacement = $this->history->last();
+                                $latestTread = $latestPlacement?->tread_center;
+                            @endphp
+                            <x-treadmark.stat-tile size="sm" label="Latest Tread" :value="$latestTread !== null ? (string) $latestTread : '—'" unit='/32"' mono />
+                        </div>
+                        <div class="bg-white px-6 py-4">
+                            <x-treadmark.stat-tile size="sm" label='Projected replacement' :value="$this->projectedMiles !== null ? '≈ '.number_format($this->projectedMiles) : '—'" unit="mi" mono />
+                        </div>
+                    </div>
+
+                    {{-- Details grid --}}
+                    <div class="px-8 py-6">
+                        <dl class="grid grid-cols-2 sm:grid-cols-3 gap-x-8 gap-y-4">
+                            @foreach ([
+                                'Brand' => $tire->brand,
+                                'Model' => $tire->model,
+                                'DOT / TIN' => $tire->tin,
+                                'Size' => $tire->size,
+                                'Purchased' => $tire->purchased_on?->format('M j, Y'),
+                                'Rotations' => (string) $this->history->count(),
+                            ] as $dtLabel => $dtValue)
+                                <div>
+                                    <dt class="font-mono text-[10px] tracking-widest uppercase text-ink-400">{{ $dtLabel }}</dt>
+                                    <dd class="mt-0.5 font-medium text-ink-800 text-sm">{{ $dtValue ?? '—' }}</dd>
+                                </div>
+                            @endforeach
                         </dl>
+
                         @php
                             $activeConditions = array_filter([
                                 $tire->has_cracking ? 'Cracking' : null,
@@ -253,104 +261,123 @@ new #[Layout('layouts.app')] class extends Component {
                             ]);
                         @endphp
                         @if ($activeConditions)
-                            <div class="mt-3 flex flex-wrap gap-1">
+                            <div class="mt-4 flex flex-wrap gap-1.5">
                                 @foreach ($activeConditions as $condition)
-                                    <span class="inline-flex items-center px-2 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800">{{ $condition }}</span>
+                                    <x-treadmark.badge tone="gold" size="sm">{{ $condition }}</x-treadmark.badge>
                                 @endforeach
                             </div>
                         @endif
-                    @endif
-
-                    @if ($this->projectedMiles !== null)
-                        <div class="mt-4 pt-4 border-t border-gray-100 text-sm text-gray-700">
-                            Projected replacement: <span class="font-semibold">≈ {{ number_format($this->projectedMiles) }} miles to 2/32"</span>
-                        </div>
-                    @endif
-                </div>
+                    </div>
+                @endif
             </div>
 
             {{-- Rotation history table --}}
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6">
-                    <h3 class="font-semibold text-gray-700 mb-4">Rotation History</h3>
-                    @if ($this->history->isEmpty())
-                        <p class="text-sm text-gray-400">No rotation history yet.</p>
-                    @else
-                        <div class="overflow-x-auto">
-                            <table class="w-full text-sm">
-                                <thead>
-                                    <tr class="text-left border-b border-gray-200">
-                                        <th class="pb-2 font-semibold text-gray-600">Date</th>
-                                        <th class="pb-2 font-semibold text-gray-600 text-right">Odometer</th>
-                                        <th class="pb-2 font-semibold text-gray-600">From</th>
-                                        <th class="pb-2 font-semibold text-gray-600">To</th>
-                                        <th class="pb-2 font-semibold text-gray-600 text-right">Center</th>
-                                        <th class="pb-2 font-semibold text-gray-600 text-right">Inner / Outer</th>
-                                        <th class="pb-2 font-semibold text-gray-600">Wear Pattern</th>
-                                        <th class="pb-2 font-semibold text-gray-600">Note</th>
-                                    </tr>
-                                </thead>
-                                <tbody class="divide-y divide-gray-100">
-                                    @foreach ($this->history as $p)
-                                        @php
-                                            $scalloped = $p->is_cupped;
-                                            $wearTags = array_filter([
-                                                $p->isCenterWear() ? 'Center' : null,
-                                                $p->isEdgeWear() ? 'Edge' : null,
-                                                $p->is_feathering ? 'Feathering' : null,
-                                                $p->is_cupped ? 'Cupping' : null,
-                                            ]);
-                                        @endphp
-                                        <tr class="hover:bg-gray-50">
-                                            <td class="py-2 text-gray-700 whitespace-nowrap">{{ \Carbon\Carbon::parse($p->rotated_on)->format('M j, Y') }}</td>
-                                            <td class="py-2 text-right text-gray-600 font-mono">{{ number_format($p->rotation_odometer) }}</td>
-                                            <td class="py-2 text-gray-600">{{ $p->from_position?->label() ?? '—' }}</td>
-                                            <td class="py-2 text-gray-600">{{ $p->to_position->label() }}</td>
-                                            <td class="py-2 text-right font-mono text-gray-700">{{ $p->tread_center }}/32"</td>
-                                            <td class="py-2 text-right">
-                                                @if ($p->tread_inner !== null || $p->tread_outer !== null)
-                                                    <span class="{{ $scalloped ? 'text-red-600 font-semibold' : 'text-gray-600' }}">
-                                                        {{ $p->tread_inner ?? '?' }} / {{ $p->tread_outer ?? '?' }}
-                                                    </span>
-                                                    @if ($scalloped)
-                                                        <x-scallop-warning />
-                                                    @endif
-                                                @else
-                                                    <span class="text-gray-400">—</span>
-                                                @endif
-                                            </td>
-                                            <td class="py-2">
-                                                @if ($wearTags)
-                                                    <div class="flex flex-wrap gap-1">
-                                                        @foreach ($wearTags as $tag)
-                                                            <span class="inline-flex items-center px-1.5 py-0.5 rounded text-xs font-medium bg-amber-100 text-amber-800">{{ $tag }}</span>
-                                                        @endforeach
-                                                    </div>
-                                                @else
-                                                    <span class="text-gray-400 text-xs">—</span>
-                                                @endif
-                                            </td>
-                                            <td class="py-2 text-gray-600 max-w-xs text-xs">{{ $p->note ?? '' }}</td>
-                                        </tr>
-                                    @endforeach
-                                </tbody>
-                            </table>
-                        </div>
-                    @endif
+            <div class="bg-white border border-ink-100 rounded-card shadow-tm-sm overflow-hidden">
+                <div class="px-8 py-4 border-b border-ink-100">
+                    <div class="font-display font-semibold uppercase tracking-wider text-sm text-ink-900">Rotation History</div>
                 </div>
+
+                @if ($this->history->isEmpty())
+                    <div class="px-8 py-6 text-sm text-ink-400">No rotation history yet.</div>
+                @else
+                    <div class="px-8 py-4 overflow-x-auto">
+                        <div class="grid grid-cols-[1fr_0.9fr_0.5fr_0.5fr_0.8fr_0.8fr_1fr_1.2fr] min-w-[680px]">
+
+                            {{-- Header row --}}
+                            @php $hdr = 'pb-2 border-b border-ink-200 font-mono text-[10px] tracking-widest uppercase text-ink-400'; @endphp
+                            <div class="{{ $hdr }}">Date</div>
+                            <div class="{{ $hdr }} text-right">Odometer</div>
+                            <div class="{{ $hdr }}">From</div>
+                            <div class="{{ $hdr }}">To</div>
+                            <div class="{{ $hdr }}">Tread</div>
+                            <div class="{{ $hdr }}">Inner / Outer</div>
+                            <div class="{{ $hdr }}">Wear Pattern</div>
+                            <div class="{{ $hdr }}">Note</div>
+
+                            {{-- Data rows --}}
+                            @foreach ($this->history as $p)
+                                @php
+                                    $scalloped = $p->is_cupped;
+                                    $wearTags = array_filter([
+                                        $p->isCenterWear() ? 'Center' : null,
+                                        $p->isEdgeWear() ? 'Edge' : null,
+                                        $p->is_feathering ? 'Feathering' : null,
+                                        $p->is_cupped ? 'Cupping' : null,
+                                    ]);
+                                    $rowBorder = $loop->last ? 'py-3' : 'py-3 border-b border-ink-100';
+                                @endphp
+
+                                <div class="{{ $rowBorder }} text-sm text-ink-700 whitespace-nowrap">
+                                    {{ \Carbon\Carbon::parse($p->rotated_on)->format('M j, Y') }}
+                                </div>
+                                <div class="{{ $rowBorder }} text-right font-mono text-sm text-ink-500">
+                                    {{ number_format($p->rotation_odometer) }}
+                                </div>
+                                <div class="{{ $rowBorder }}">
+                                    @if ($p->from_position)
+                                        <x-treadmark.position-tag :position="$p->from_position->value" size="sm" />
+                                    @else
+                                        <span class="text-ink-300 text-xs">—</span>
+                                    @endif
+                                </div>
+                                <div class="{{ $rowBorder }}">
+                                    @if ($p->to_position)
+                                        <x-treadmark.position-tag :position="$p->to_position->value" size="sm" />
+                                    @else
+                                        <span class="text-ink-300 text-xs">—</span>
+                                    @endif
+                                </div>
+                                <div class="{{ $rowBorder }} pr-2">
+                                    @if ($p->tread_center !== null)
+                                        <x-treadmark.tread-gauge :depth="$p->tread_center" size="sm" />
+                                    @else
+                                        <span class="text-ink-300 font-mono text-xs">—</span>
+                                    @endif
+                                </div>
+                                <div class="{{ $rowBorder }}">
+                                    @if ($p->tread_inner !== null || $p->tread_outer !== null)
+                                        <span class="font-mono text-xs {{ $scalloped ? 'text-rust-600 font-semibold' : 'text-ink-400' }}">
+                                            {{ $p->tread_inner ?? '?' }} / {{ $p->tread_outer ?? '?' }}
+                                        </span>
+                                        @if ($scalloped)
+                                            <x-scallop-warning />
+                                        @endif
+                                    @else
+                                        <span class="text-ink-300 text-xs">—</span>
+                                    @endif
+                                </div>
+                                <div class="{{ $rowBorder }}">
+                                    @if ($wearTags)
+                                        <div class="flex flex-wrap gap-1">
+                                            @foreach ($wearTags as $tag)
+                                                <x-treadmark.badge tone="gold" size="sm">{{ $tag }}</x-treadmark.badge>
+                                            @endforeach
+                                        </div>
+                                    @else
+                                        <span class="text-ink-300 text-xs">—</span>
+                                    @endif
+                                </div>
+                                <div class="{{ $rowBorder }} text-ink-500 text-xs leading-snug">{{ $p->note ?? '' }}</div>
+
+                            @endforeach
+                        </div>
+                    </div>
+                @endif
             </div>
 
             {{-- Tread chart --}}
             @if (count($this->chartPoints) >= 2)
-                <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
+                <div class="bg-white border border-ink-100 rounded-card shadow-tm-sm overflow-hidden">
+                    <div class="px-8 py-4 border-b border-ink-100 font-display font-semibold uppercase tracking-wider text-sm text-ink-900">
+                        Tread Depth Over Time
+                    </div>
                     <div class="p-6">
-                        <h3 class="font-semibold text-gray-700 mb-4">Tread Depth Over Time</h3>
                         @php
                             $pts = $this->chartPoints;
                             $minOdo = collect($pts)->min('odometer');
                             $maxOdo = collect($pts)->max('odometer');
                             $maxTread = max(collect($pts)->max('tread'), 16);
-                            $w = 500; $h = 180; $pad = ['t' => 10, 'r' => 20, 'b' => 30, 'l' => 32];
+                            $w = 600; $h = 200; $pad = ['t' => 10, 'r' => 20, 'b' => 36, 'l' => 36];
                             $innerW = $w - $pad['l'] - $pad['r'];
                             $innerH = $h - $pad['t'] - $pad['b'];
                             $xScale = fn ($o) => $innerW > 0 && $maxOdo > $minOdo
@@ -359,23 +386,38 @@ new #[Layout('layouts.app')] class extends Component {
                             $polyline = collect($pts)->map(fn ($p) => $xScale($p['odometer']).' '.$yScale($p['tread']))->join(' ');
                         @endphp
                         <svg viewBox="0 0 {{ $w }} {{ $h }}" class="w-full" xmlns="http://www.w3.org/2000/svg">
+                            {{-- 2/32" limit line --}}
                             <line x1="{{ $pad['l'] }}" y1="{{ $yScale(2) }}" x2="{{ $w - $pad['r'] }}" y2="{{ $yScale(2) }}"
-                                stroke="#ef4444" stroke-width="1" stroke-dasharray="4,3" />
-                            <text x="{{ $pad['l'] + 2 }}" y="{{ $yScale(2) - 3 }}" fill="#ef4444" font-size="8">2/32"</text>
-                            <polyline points="{{ $polyline }}" fill="none" stroke="#2563eb" stroke-width="2.5" stroke-linejoin="round"/>
-                            @foreach ($pts as $p)
-                                <circle cx="{{ $xScale($p['odometer']) }}" cy="{{ $yScale($p['tread']) }}" r="4" fill="#2563eb"/>
-                                <text x="{{ $xScale($p['odometer']) }}" y="{{ $yScale($p['tread']) - 6 }}" text-anchor="middle" fill="#1d4ed8" font-size="8">{{ $p['tread'] }}</text>
-                            @endforeach
-                            <line x1="{{ $pad['l'] }}" y1="{{ $pad['t'] }}" x2="{{ $pad['l'] }}" y2="{{ $pad['t'] + $innerH }}" stroke="#d1d5db" stroke-width="1"/>
-                            <line x1="{{ $pad['l'] }}" y1="{{ $pad['t'] + $innerH }}" x2="{{ $pad['l'] + $innerW }}" y2="{{ $pad['t'] + $innerH }}" stroke="#d1d5db" stroke-width="1"/>
-                            @foreach ([4, 8, 12, 16] as $tick)
+                                stroke="#C42B22" stroke-width="1" stroke-dasharray="4,3" />
+                            <text x="{{ $pad['l'] + 2 }}" y="{{ $yScale(2) - 3 }}" fill="#C42B22" font-size="9">2/32" limit</text>
+
+                            {{-- Y axis ticks --}}
+                            @foreach ([2, 4, 6, 8, 10, 12, 14, 16] as $tick)
                                 @if ($tick <= $maxTread)
-                                    <text x="{{ $pad['l'] - 4 }}" y="{{ $yScale($tick) + 3 }}" text-anchor="end" fill="#6b7280" font-size="8">{{ $tick }}</text>
+                                    <line x1="{{ $pad['l'] - 4 }}" y1="{{ $yScale($tick) }}" x2="{{ $pad['l'] }}" y2="{{ $yScale($tick) }}" stroke="#C9D1C8" stroke-width="1"/>
+                                    <text x="{{ $pad['l'] - 6 }}" y="{{ $yScale($tick) + 3 }}" text-anchor="end" fill="#7C877B" font-size="9">{{ $tick }}</text>
                                 @endif
                             @endforeach
-                            <text x="{{ $xScale($minOdo) }}" y="{{ $h - 4 }}" text-anchor="middle" fill="#6b7280" font-size="8">{{ number_format($minOdo) }}</text>
-                            <text x="{{ $xScale($maxOdo) }}" y="{{ $h - 4 }}" text-anchor="middle" fill="#6b7280" font-size="8">{{ number_format($maxOdo) }}</text>
+
+                            {{-- Tread line --}}
+                            <polyline points="{{ $polyline }}" fill="none" stroke="#FF5400" stroke-width="2.5" stroke-linejoin="round"/>
+                            @foreach ($pts as $p)
+                                <circle cx="{{ $xScale($p['odometer']) }}" cy="{{ $yScale($p['tread']) }}" r="4" fill="#FF5400"/>
+                                <text x="{{ $xScale($p['odometer']) }}" y="{{ $yScale($p['tread']) - 7 }}" text-anchor="middle" fill="#CC4300" font-size="9">{{ $p['tread'] }}</text>
+                            @endforeach
+
+                            {{-- Axes --}}
+                            <line x1="{{ $pad['l'] }}" y1="{{ $pad['t'] }}" x2="{{ $pad['l'] }}" y2="{{ $pad['t'] + $innerH }}" stroke="#C9D1C8" stroke-width="1"/>
+                            <line x1="{{ $pad['l'] }}" y1="{{ $pad['t'] + $innerH }}" x2="{{ $pad['l'] + $innerW }}" y2="{{ $pad['t'] + $innerH }}" stroke="#C9D1C8" stroke-width="1"/>
+
+                            @if ($maxOdo > $minOdo)
+                                <text x="{{ $xScale($minOdo) }}" y="{{ $pad['t'] + $innerH + 12 }}" text-anchor="middle" fill="#7C877B" font-size="9">{{ number_format($minOdo) }}</text>
+                                <text x="{{ $xScale($maxOdo) }}" y="{{ $pad['t'] + $innerH + 12 }}" text-anchor="middle" fill="#7C877B" font-size="9">{{ number_format($maxOdo) }}</text>
+                            @endif
+
+                            <text x="10" y="{{ $pad['t'] + $innerH / 2 }}"
+                                transform="rotate(-90 10 {{ $pad['t'] + $innerH / 2 }})"
+                                text-anchor="middle" fill="#7C877B" font-size="9">tread (32nds)</text>
                         </svg>
                     </div>
                 </div>

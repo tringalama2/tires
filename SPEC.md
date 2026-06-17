@@ -142,7 +142,7 @@ Keep all derived logic in services, not controllers or Livewire components.
 
 ### `WearReportService`
 - `wearByPosition(?Vehicle): Collection` — Rule C. Returns per-position: count, avg_wear_per_1000mi, avg_tread_at_removal.
-- `wearByTire(?Vehicle): Collection` — Rule D. Returns per-tire: current position, latest tread (center/inner/outer), lifetime avg wear/1000mi, notes.
+- `wearByTire(?Vehicle, ?TireStatus $filterStatus = null): Collection` — Rule D. Returns per-tire: current position, latest tread (center/inner/outer), lifetime avg wear/1000mi, notes. Pass `TireStatus::Active` or `TireStatus::Retired` to scope; `null` returns all tires.
 - `projectedReplacementMileage(Tire, float $limitTread = 2.0): ?float` — Using avg wear rate and latest tread, estimate miles until `limitTread` reached (2/32" default). Returns null if insufficient data.
 - `scalpingFlag(Placement): bool` — True when `|tread_inner − tread_outer| ≥ 2` and both are non-null.
 
@@ -268,9 +268,11 @@ Per-tire table (one row per tire):
 - Projected miles to 2/32" replacement threshold
 - Notes (most recent note shown inline; expand for full history)
 
+**Active / Retired toggle:** A button in the report header switches between showing active tires (default) and retired tires. The table and tread chart both follow the filter. Only one group is shown at a time.
+
 **Scalloping flag:** When inner/outer delta ≥ 2/32", show warning icon with tooltip: "Uneven wear detected. Check tire pressure (target 30 PSI) and inspect alignment."
 
-**Tread over time chart:** Below the table (or on tire detail), line chart: x = odometer, y = tread center (32nds), one line per tire. Shows wear trajectory visually.
+**Tread over time chart:** Below the table (or on tire detail), line chart: x = odometer, y = tread center (32nds), one line per tire. Follows the active/retired toggle — only shows tires matching the current filter.
 
 **Tire detail page (`/tires/{tire}`):**
 - Full rotation history table: date | odometer | from_pos | to_pos | tread (C/I/O) | note
@@ -284,7 +286,7 @@ Per-tire table (one row per tire):
 
 Shows after login:
 - **Last rotation card:** Date, odometer, miles driven since (current odometer unknown so show days elapsed instead).
-- **Tires nearing replacement:** Any tire projected to hit 2/32" within 10,000 miles flagged with projected mileage.
+- **Tires nearing replacement:** Any **active** tire projected to hit 2/32" within 10,000 miles flagged with projected mileage. Retired tires are excluded.
 
 Does NOT show: current position diagram (too much noise for the dashboard), fastest-wearing position (that's in the report).
 
@@ -296,7 +298,10 @@ Simple list + add/edit.
 
 **List:** Table of all tires (active + retired). Columns: Label | Brand/Model | Current Position | Latest Tread | Status | Actions.
 
-**Add tire form:** Label (required), Brand, Model, TIN, Size, Purchase Date (all optional), Status (Active/Retired).
+- Active tire Actions: **Edit** (navigates to tire detail) | **Retire** (navigates to swap page).
+- Retired tire Actions: **Edit** only. Retirement is permanent; there is no reactivate.
+
+**Add tire form:** Label (required), Brand, Model, DOT/TIN (max 12 chars), Size, Purchase Date (all optional), Status (Active/Retired). Placeholders: Brand → "BF Goodrich", Model → "KO2", Size → "275/70R18", DOT/TIN → "DOT XXXX XXXX XX".
 
 **Tire identity:** Tires are tracked by label (T1–T5). Users identify physical tires by position history, not markings. Label is purely logical.
 
@@ -327,7 +332,11 @@ Show as "≈ X,XXX miles to replacement" on By Tire report and tire detail. Show
 
 ## 11. Mid-cycle tire replacement
 
-Handled by natural flow: retire the old tire, create a new tire. New tire enters at its first `to_position` in the next rotation. Its first placement has no prior → no wear interval generated. No special UI needed.
+Handled via the **tire swap workflow** (`rotations/swap`). When a tire is retired it is always immediately replaced in one atomic operation. A swap rotation (`is_swap = true`) is created containing only the replaced pair(s) — the permutation check is skipped.
+
+The replacement tire form captures: Label (required), Brand, Model, Starting tread (required), DOT/TIN (optional, max 12 chars), Size (optional), Purchase Date (optional, pre-populated with today).
+
+Full spec: `docs/spec-tire-swap.md`. Retirement is permanent — there is no reactivate action.
 
 ---
 

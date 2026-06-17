@@ -1,6 +1,7 @@
 <?php
 
 use App\Actions\SelectVehicle;
+use App\Enums\TireStatus;
 use App\Models\Placement;
 use App\Models\Vehicle;
 use App\Services\WearReportService;
@@ -9,67 +10,78 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 
-new #[Layout('layouts.app')] class extends Component {
+new #[Layout('layouts.app')]
+class extends Component {
 
     #[Locked]
     public ?int $vehicle_id;
-    protected Vehicle $vehicle;
 
-    /** Tracks which tire's notes are expanded. */
-    public array $expanded = [];
+    /** Toggle between active and retired tires. */
+    public bool $showRetired = false;
 
     public function mount(SelectVehicle $selectVehicle): void
     {
-        if (isset($this->vehicle_id)) {
-            $this->vehicle = Vehicle::findOrFail($this->vehicle_id);
-            $this->authorize('view', $this->vehicle);
-            $selectVehicle($this->vehicle);
-        } else {
-            $this->vehicle = session('vehicle');
-        }
-        $this->vehicle_id = $this->vehicle->id;
+        $vehicle = isset($this->vehicle_id)
+            ? Vehicle::findOrFail($this->vehicle_id)
+            : session('vehicle');
+
+        $this->authorize('view', $vehicle);
+        $selectVehicle($vehicle);
+        $this->vehicle_id = $vehicle->id;
+    }
+
+    private function vehicle(): Vehicle
+    {
+        return Vehicle::findOrFail($this->vehicle_id);
     }
 
     #[Computed]
     public function report(): \Illuminate\Support\Collection
     {
-        return app(WearReportService::class)->wearByTire($this->vehicle);
+        $status = $this->showRetired ? TireStatus::Retired : TireStatus::Active;
+
+        return app(WearReportService::class)->wearByTire($this->vehicle(), $status);
+    }
+
+    public function toggleRetired(): void
+    {
+        $this->showRetired = !$this->showRetired;
+        unset($this->report, $this->chartData);
     }
 
     #[Computed]
     public function odometerThrough(): ?int
     {
-        return $this->vehicle->rotations()->where('is_setup', false)->max('odometer');
+        return $this->vehicle()->rotations()->where('is_setup', false)->max('odometer');
     }
 
     #[Computed]
     public function rotationCount(): int
     {
-        return $this->vehicle->rotations()->where('is_setup', false)->count();
+        return $this->vehicle()->rotations()->where('is_setup', false)->count();
     }
 
     #[Computed]
     public function chartData(): array
     {
-        $tires = $this->vehicle->tires()->with(['placements' => function ($q) {
-            $q->join('rotations', 'rotations.id', '=', 'placements.rotation_id')
-                ->where('rotations.is_setup', false)
-                ->orderBy('rotations.odometer')
-                ->select('placements.*', 'rotations.odometer as rotation_odometer');
-        }])->get();
+        $status = $this->showRetired ? TireStatus::Retired : TireStatus::Active;
 
-        return $tires->map(fn ($tire) => [
+        $tires = $this->vehicle()->tires()->where('status', $status)->with([
+            'placements' => function ($q) {
+                $q->join('rotations', 'rotations.id', '=', 'placements.rotation_id')
+                    ->where('rotations.is_setup', false)
+                    ->orderBy('rotations.odometer')
+                    ->select('placements.*', 'rotations.odometer as rotation_odometer');
+            }
+        ])->get();
+
+        return $tires->map(fn($tire) => [
             'label' => $tire->label,
-            'points' => $tire->placements->map(fn ($p) => [
+            'points' => $tire->placements->map(fn($p) => [
                 'odometer' => (int) $p->rotation_odometer,
                 'tread' => (float) $p->tread_center,
             ])->values()->all(),
         ])->values()->all();
-    }
-
-    public function toggleNotes(string $tireId): void
-    {
-        $this->expanded[$tireId] = ! ($this->expanded[$tireId] ?? false);
     }
 
     public function render(): \Illuminate\View\View
@@ -94,7 +106,9 @@ new #[Layout('layouts.app')] class extends Component {
                 {{-- Dark header --}}
                 <div class="flex items-center justify-between gap-4 px-8 py-6 bg-ink-900">
                     <div>
-                        <div class="font-display font-semibold uppercase tracking-wider text-xl text-white">Wear Report</div>
+                        <div class="font-display font-semibold uppercase tracking-wider text-xl text-white">Wear
+                                                                                                            Report
+                        </div>
                         <div class="font-mono text-xs tracking-widest text-ink-300 mt-1 uppercase">
                             {{ session('vehicle')?->year }} {{ session('vehicle')?->make }} {{ session('vehicle')?->model }}
                             @if ($this->odometerThrough)
@@ -102,48 +116,61 @@ new #[Layout('layouts.app')] class extends Component {
                             @endif
                         </div>
                     </div>
-                    <x-treadmark.icon name="tire" class="w-8 h-8 text-ink-500 flex-none" />
+                    <div class="flex items-center gap-3">
+                        <button
+                            type="button"
+                            wire:click="toggleRetired"
+                            class="inline-flex items-center gap-1.5 font-display font-semibold uppercase tracking-wider text-[11px] px-3 py-1.5 rounded-control border transition-colors
+                                {{ $showRetired
+                                    ? 'bg-ink-600 border-ink-500 text-white'
+                                    : 'bg-ink-800 border-ink-600 text-ink-300 hover:bg-ink-700 hover:text-white' }}"
+                        >
+                            {{ $showRetired ? 'Retired tires' : 'Active tires' }}
+                        </button>
+                        <x-treadmark.icon name="tire" class="w-8 h-8 text-ink-500 flex-none"/>
+                    </div>
                 </div>
 
                 {{-- Stat row --}}
                 <div class="grid grid-cols-3 gap-px bg-ink-100 border-b border-ink-100">
                     <div class="bg-white px-6 py-4">
-                        <x-treadmark.stat-tile size="sm" label="Odometer" :value="$this->odometerThrough ? number_format($this->odometerThrough) : '—'" unit="mi" mono />
+                        <x-treadmark.stat-tile size="sm" label="Odometer" :value="$this->odometerThrough ? number_format($this->odometerThrough) : '—'" unit="mi" mono/>
                     </div>
                     <div class="bg-white px-6 py-4">
-                        <x-treadmark.stat-tile size="sm" label="Rotations" :value="(string) $this->rotationCount" sub="since install" />
+                        <x-treadmark.stat-tile size="sm" label="Rotations" :value="(string) $this->rotationCount" sub="since install"/>
                     </div>
                     <div class="bg-white px-6 py-4">
-                        <x-treadmark.stat-tile size="sm" label="Tires tracked" :value="(string) $this->report->count()" />
+                        <x-treadmark.stat-tile size="sm" label="Tires tracked" :value="(string) $this->report->count()"/>
                     </div>
                 </div>
 
                 {{-- Table --}}
                 <div class="px-8 py-6 overflow-x-auto">
-                    <div class="font-display font-semibold uppercase tracking-wider text-sm text-ink-900 mb-4">Wear by tire</div>
-
-                    <div class="grid grid-cols-[0.7fr_0.5fr_1.4fr_0.8fr_0.9fr_1fr] pb-2 border-b border-ink-200 font-mono text-[10px] tracking-widest uppercase text-ink-400 min-w-[560px]">
-                        <span>Tire</span>
-                        <span>Pos</span>
-                        <span>Tread</span>
-                        <span class="text-right">Avg /1k</span>
-                        <span class="text-right">To 2/32"</span>
-                        <span>Notes</span>
+                    <div class="font-display font-semibold uppercase tracking-wider text-sm text-ink-900 mb-4">Wear by
+                                                                                                               tire
                     </div>
 
-                    @foreach ($this->report as $row)
-                        @php
-                            $tire = $row['tire'];
-                            $isExpanded = $this->expanded[$tire->id] ?? false;
-                            $hasScallop = $row['latest_is_cupped'];
-                        @endphp
-                        <div class="grid grid-cols-[0.7fr_0.5fr_1.4fr_0.8fr_0.9fr_1fr] items-start py-3 border-b border-ink-100 last:border-0 min-w-[560px]">
+                    <div class="grid grid-cols-[0.7fr_0.5fr_1.4fr_0.8fr_0.9fr] min-w-[480px]">
+
+                        {{-- Header row --}}
+                        @php $hdr = 'pb-2 border-b border-ink-200 font-mono text-[10px] tracking-widest uppercase text-ink-400'; @endphp
+                        <div class="{{ $hdr }}">Tire</div>
+                        <div class="{{ $hdr }}">Pos</div>
+                        <div class="{{ $hdr }}">Tread</div>
+                        <div class="{{ $hdr }} text-right">Avg /1k</div>
+                        <div class="{{ $hdr }} text-right">To 2/32"</div>
+
+                        {{-- Data rows --}}
+                        @foreach ($this->report as $row)
+                            @php
+                                $tire = $row['tire'];
+                                $hasScallop = $row['latest_is_cupped'];
+                                $rowBorder = $loop->last ? 'py-3 flex flex-col justify-center items-start' : 'py-3 border-b border-ink-100 flex flex-col justify-center items-start';
+                            @endphp
 
                             {{-- Tire label --}}
-                            <div>
-                                <a href="{{ route('tires.show', $tire) }}" class="font-mono font-semibold text-sm text-ink-900 hover:text-steel-600 hover:underline">
-                                    {{ $tire->label }}
-                                </a>
+                            <div class="{{ $rowBorder }}">
+                                <a href="{{ route('tires.show', $tire) }}" class="inline-flex items-center font-display font-semibold uppercase tracking-wider text-[13px] px-[13px] py-0.5 rounded-control border border-ink-200 text-ink-900 hover:bg-ink-50 hover:border-ink-300 transition-colors">{{ $tire->label }}</a>
                                 @if ($tire->brand)
                                     <div class="text-xs text-ink-400">{{ $tire->brand }}</div>
                                 @endif
@@ -161,18 +188,18 @@ new #[Layout('layouts.app')] class extends Component {
                             </div>
 
                             {{-- Position tag --}}
-                            <div class="pt-0.5">
+                            <div class="{{ $rowBorder }} pt-0.5">
                                 @if ($row['current_position'])
-                                    <x-treadmark.position-tag :position="$row['current_position']->value" size="sm" />
+                                    <x-treadmark.position-tag :position="$row['current_position']->value" size="sm"/>
                                 @else
                                     <span class="text-ink-300 text-xs">—</span>
                                 @endif
                             </div>
 
                             {{-- Tread gauge + inner/outer --}}
-                            <div class="pr-4 pt-0.5">
+                            <div class="{{ $rowBorder }} pr-4 pt-0.5">
                                 @if ($row['latest_tread_center'] !== null)
-                                    <x-treadmark.tread-gauge :depth="$row['latest_tread_center']" size="sm" />
+                                    <x-treadmark.tread-gauge :depth="$row['latest_tread_center']" size="sm"/>
                                 @else
                                     <span class="text-ink-300 font-mono text-xs">—</span>
                                 @endif
@@ -182,52 +209,32 @@ new #[Layout('layouts.app')] class extends Component {
                                             {{ $row['latest_tread_inner'] ?? '?' }} / {{ $row['latest_tread_outer'] ?? '?' }}
                                         </span>
                                         @if ($hasScallop)
-                                            <x-scallop-warning />
+                                            <x-scallop-warning/>
                                         @endif
                                     </div>
                                 @endif
                             </div>
 
                             {{-- Avg wear --}}
-                            <span class="text-right font-mono text-sm text-ink-600 pt-0.5">
+                            <div class="{{ $rowBorder }} !items-end font-mono text-sm text-ink-600 pt-0.5">
                                 {{ $row['lifetime_avg_wear_per_1000mi'] !== null ? number_format($row['lifetime_avg_wear_per_1000mi'], 2) : '—' }}
-                            </span>
+                            </div>
 
                             {{-- Projected miles --}}
-                            <span class="text-right font-mono text-sm text-ink-500 pt-0.5">
+                            <div class="{{ $rowBorder }} !items-end font-mono text-sm text-ink-500 pt-0.5">
                                 @if ($row['projected_miles'] !== null)
                                     ≈ {{ number_format($row['projected_miles']) }}
                                 @else
                                     <span class="text-ink-300">—</span>
                                 @endif
-                            </span>
-
-                            {{-- Notes --}}
-                            <div class="max-w-xs pt-0.5">
-                                @if (count($row['notes']) > 0)
-                                    <p class="text-xs text-ink-500 truncate">{{ $row['notes'][0] }}</p>
-                                    @if (count($row['notes']) > 1)
-                                        <x-treadmark.button type="button" variant="ghost" size="sm" wire:click="toggleNotes('{{ $tire->id }}')" class="mt-0.5">
-                                            {{ $isExpanded ? 'hide' : '+'.( count($row['notes']) - 1).' more' }}
-                                        </x-treadmark.button>
-                                        @if ($isExpanded)
-                                            <div class="mt-1 space-y-0.5">
-                                                @foreach (array_slice($row['notes'], 1) as $note)
-                                                    <p class="text-xs text-ink-500">{{ $note }}</p>
-                                                @endforeach
-                                            </div>
-                                        @endif
-                                    @endif
-                                @else
-                                    <span class="text-ink-300 text-xs">—</span>
-                                @endif
                             </div>
 
-                        </div>
-                    @endforeach
+                        @endforeach
+
+                    </div>
 
                     <p class="mt-4 text-xs text-ink-400 leading-relaxed">
-                        <x-treadmark.icon name="warning-circle-fill" class="w-3.5 h-3.5 inline text-rust-400 align-middle" />
+                        <x-treadmark.icon name="warning-circle-fill" class="w-3.5 h-3.5 inline text-rust-400 align-middle"/>
                         = uneven inner/outer wear ≥ 2/32". Check pressure and alignment.
                         Projection to 2/32" requires ≥ 2 wear intervals. Readings are hand-gauged (±1/32").
                     </p>
@@ -260,8 +267,10 @@ new #[Layout('layouts.app')] class extends Component {
                         {{-- 2/32" threshold line --}}
                         <line x1="{{ $pad['l'] }}" y1="{{ $yScale(2) }}"
                               x2="{{ $w - $pad['r'] }}" y2="{{ $yScale(2) }}"
-                              stroke="#C42B22" stroke-width="1" stroke-dasharray="4,3" />
-                        <text x="{{ $pad['l'] + 2 }}" y="{{ $yScale(2) - 3 }}" fill="#C42B22" font-size="9">2/32" limit</text>
+                              stroke="#C42B22" stroke-width="1" stroke-dasharray="4,3"/>
+                        <text x="{{ $pad['l'] + 2 }}" y="{{ $yScale(2) - 3 }}" fill="#C42B22" font-size="9">2/32"
+                                                                                                            limit
+                        </text>
 
                         {{-- Y axis ticks --}}
                         @foreach ([2, 4, 6, 8, 10, 12, 14, 16] as $tick)
@@ -308,7 +317,8 @@ new #[Layout('layouts.app')] class extends Component {
 
                         <text x="10" y="{{ $pad['t'] + $innerH / 2 }}"
                               transform="rotate(-90 10 {{ $pad['t'] + $innerH / 2 }})"
-                              text-anchor="middle" fill="#7C877B" font-size="9">tread (32nds)</text>
+                              text-anchor="middle" fill="#7C877B" font-size="9">tread (32nds)
+                        </text>
                     </svg>
                 </div>
             </div>

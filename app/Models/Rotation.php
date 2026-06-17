@@ -19,6 +19,7 @@ class Rotation extends Model
         return [
             'rotated_on' => 'date:Y-m-d',
             'is_setup' => 'boolean',
+            'is_swap' => 'boolean',
         ];
     }
 

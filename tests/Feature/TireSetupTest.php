@@ -1,6 +1,7 @@
 <?php
 
 use App\Enums\TirePosition;
+use App\Enums\TireStatus;
 use App\Models\Placement;
 use App\Models\Rotation;
 use App\Models\User;
@@ -60,5 +61,51 @@ it('redirects away when position is already occupied in setup', function () {
 
     $this->actingAs($user)
         ->get(route('vehicles.setuptires.create', ['vehicle' => $vehicle, 'tirePosition' => 'FL']))
+        ->assertRedirect(route('vehicles.setuptires.index', $vehicle));
+});
+
+// --- Retire-tire middleware regression ---
+// Bug: ActiveVehicleTiresMiddleware counted active (non-retired) tires against
+// tire_count. Retiring any tire dropped the count below tire_count and sent the
+// user into an infinite redirect loop on the setup page.
+// Fix: middleware must count filled setup-rotation positions, not tire status.
+
+it('does not redirect to setup when a tire is retired but all positions are filled', function () {
+    $user = User::factory()->create();
+    $vehicle = Vehicle::factory()->create(['user_id' => $user->id, 'tire_count' => 5, 'starting_odometer' => 50000]);
+
+    // Seed all 5 positions via the setup controller so a real setup rotation exists.
+    $positions = ['FL', 'FR', 'RL', 'RR', 'SP'];
+    foreach ($positions as $i => $pos) {
+        $this->actingAs($user)
+            ->post(route('vehicles.setuptires.store', ['vehicle' => $vehicle, 'tirePosition' => $pos]), [
+                'label' => 'T'.($i + 1), 'starting_tread' => 10,
+            ]);
+    }
+
+    // Retire one tire.
+    $vehicle->tires()->first()->update(['status' => TireStatus::Retired]);
+
+    // Dashboard is behind activeVehicleTires — must not redirect to setup.
+    $this->actingAs($user)
+        ->get(route('dashboard', $vehicle))
+        ->assertOk();
+});
+
+it('does redirect to setup when a position has no tire at all', function () {
+    $user = User::factory()->create();
+    $vehicle = Vehicle::factory()->create(['user_id' => $user->id, 'tire_count' => 5, 'starting_odometer' => 50000]);
+
+    // Only 4 of 5 positions filled.
+    $positions = ['FL', 'FR', 'RL', 'RR'];
+    foreach ($positions as $i => $pos) {
+        $this->actingAs($user)
+            ->post(route('vehicles.setuptires.store', ['vehicle' => $vehicle, 'tirePosition' => $pos]), [
+                'label' => 'T'.($i + 1), 'starting_tread' => 10,
+            ]);
+    }
+
+    $this->actingAs($user)
+        ->get(route('dashboard', $vehicle))
         ->assertRedirect(route('vehicles.setuptires.index', $vehicle));
 });
