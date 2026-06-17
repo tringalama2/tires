@@ -12,8 +12,8 @@
 @php
     $id = $id ?? 'tm-in-'.\Illuminate\Support\Str::random(6);
     $ring = $error
-        ? 'border-rust-600 focus-within:ring-rust-600/30'
-        : 'border-ink-200 focus-within:border-blaze-500 focus-within:ring-blaze-500/40';
+        ? 'ring-1 ring-rust-600 focus-within:ring-4 focus-within:ring-rust-600/30'
+        : 'ring-1 ring-ink-200 focus-within:ring-4 focus-within:ring-blaze-500/40';
     $inputCls = 'flex-1 min-w-0 border-0 outline-none bg-transparent text-[15px] text-ink-900 placeholder:text-ink-300 px-3 py-2.5'
         .($mono ? ' font-mono text-right text-[13px]' : '');
 @endphp
@@ -26,7 +26,7 @@
             @if ($optional)<span class="text-ink-300 font-normal ml-1.5 text-[12px]">optional</span>@endif
         </label>
     @endif
-    <div class="flex items-center bg-white border rounded-control transition focus-within:ring-4 {{ $ring }}">
+    <div class="flex items-center bg-white rounded-control overflow-hidden transition {{ $ring }}">
         @if ($prefix)<span class="flex-none font-mono text-[13px] text-ink-400 pl-3">{{ $prefix }}</span>@endif
         <input id="{{ $id }}" {{ $attributes->merge(['class' => $inputCls]) }} />
         @if ($suffix)<span class="flex-none font-mono text-[13px] text-ink-400 px-3 whitespace-nowrap">{{ $suffix }}</span>@endif

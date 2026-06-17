@@ -10,17 +10,17 @@
 @php
     $id = $id ?? 'tm-sel-'.\Illuminate\Support\Str::random(6);
     $ring = $error
-        ? 'border-rust-600 focus-within:ring-rust-600/30'
-        : 'border-ink-200 focus-within:border-blaze-500 focus-within:ring-blaze-500/40';
+        ? 'ring-1 ring-rust-600 focus-within:ring-4 focus-within:ring-rust-600/30'
+        : 'ring-1 ring-ink-200 focus-within:ring-4 focus-within:ring-blaze-500/40';
 @endphp
 
 <div class="flex flex-col gap-1.5">
     @if ($label)
-        <label for="{{ $id }}" class="font-sans font-semibold text-[13px] text-ink-900">
+        <label for="{{ $id }}" class="font-sans font-semibold text-[13px]">
             {{ $label }}@if ($required)<span class="text-blaze-500 ml-0.5">*</span>@endif
         </label>
     @endif
-    <div class="relative flex items-center bg-white border rounded-control transition focus-within:ring-4 {{ $ring }}">
+    <div class="relative flex items-center bg-white rounded-control overflow-hidden transition {{ $ring }}">
         <select id="{{ $id }}" {{ $attributes->merge(['class' => 'appearance-none flex-1 min-w-0 border-0 outline-none bg-transparent text-[15px] text-ink-900 pl-3 pr-9 py-2.5 cursor-pointer rounded-control']) }}>
             @if ($placeholder)<option value="" disabled selected>{{ $placeholder }}</option>@endif
             @foreach ($options as $key => $opt)

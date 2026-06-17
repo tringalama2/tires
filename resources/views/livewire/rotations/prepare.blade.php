@@ -260,7 +260,7 @@ new #[Layout('layouts.app')] class extends Component {
                         <div class="mb-6">
                             <label for="rotation_note" class="font-sans font-semibold text-[13px] text-ink-900">Rotation Note <span class="text-ink-300 font-normal ml-1.5 text-[12px]">optional</span></label>
                             <textarea wire:model="rotation_note" id="rotation_note" name="rotation_note"
-                                class="mt-1.5 block w-full border border-ink-200 rounded-control bg-white text-[15px] text-ink-900 px-3 py-2.5 placeholder:text-ink-300 focus:outline-none focus:border-blaze-500 focus:ring-4 focus:ring-blaze-500/40"
+                                class="mt-1.5 block w-full ring-1 ring-ink-200 rounded-control bg-white text-[15px] text-ink-900 px-3 py-2.5 placeholder:text-ink-300 focus:outline-none focus:ring-4 focus:ring-blaze-500/40"
                                 rows="2" placeholder="e.g. adjusted tire pressure to 32 PSI"></textarea>
                         </div>
 
@@ -332,7 +332,7 @@ new #[Layout('layouts.app')] class extends Component {
                                         <textarea
                                             wire:model="treads.{{ $pos }}.note"
                                             :id="'note_'.$pos"
-                                            class="mt-1.5 block w-full border border-ink-200 rounded-control bg-white text-[13px] text-ink-900 px-3 py-2 placeholder:text-ink-300 focus:outline-none focus:border-blaze-500 focus:ring-4 focus:ring-blaze-500/40"
+                                            class="mt-1.5 block w-full ring-1 ring-ink-200 rounded-control bg-white text-[13px] text-ink-900 px-3 py-2 placeholder:text-ink-300 focus:outline-none focus:ring-4 focus:ring-blaze-500/40"
                                             rows="2"></textarea>
                                     </div>
 
