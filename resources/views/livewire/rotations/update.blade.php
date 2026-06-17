@@ -11,7 +11,7 @@ use Livewire\Component;
 
 new #[Layout('layouts.app')] class extends Component {
 
-    public ?int $vehicle_id;
+    public string|int|null $vehicle_id = null;
 
     protected Vehicle $vehicle;
 
@@ -21,7 +21,7 @@ new #[Layout('layouts.app')] class extends Component {
     /** to_position assignments keyed by from_position value. */
     public array $toPositions = [];
 
-    public ?string $rotationId = null;
+    public ?int $rotationId = null;
     public bool $isEdit = false;
     public bool $isLatestRotation = true;
     public bool $confirmEdit = false;
@@ -40,7 +40,8 @@ new #[Layout('layouts.app')] class extends Component {
         }
 
         if (isset($this->vehicle_id)) {
-            $this->vehicle = Vehicle::findOrFail($this->vehicle_id);
+            $id = is_string($this->vehicle_id) ? hashid_decode($this->vehicle_id) : $this->vehicle_id;
+            $this->vehicle = Vehicle::findOrFail($id);
             $this->authorize('view', $this->vehicle);
             $selectVehicle($this->vehicle);
         } else {

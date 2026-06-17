@@ -71,7 +71,7 @@ class extends Component {
     <x-slot name="header">
         <div class="flex items-center justify-between">
             <h2 class="font-semibold text-xl text-gray-800 leading-tight">{{ __('Tires') }}</h2>
-            <x-treadmark.button href="{{ route('rotations.swap', $vehicle_id) }}" wire:navigate size="sm">
+            <x-treadmark.button href="{{ route('rotations.swap', hashid_encode($vehicle_id)) }}" wire:navigate size="sm">
                 <x-treadmark.icon name="wrench" class="w-4 h-4"/>
                 Swap Tire
             </x-treadmark.button>

@@ -15,6 +15,7 @@
         "laravel/tinker": "^3.0",
         "livewire/livewire": "^4.0",
         "staudenmeir/belongs-to-through": "^2.16",
+        "vinkla/hashids": "^14.0",
         "wire-elements/modal": "^3.0"
     },
     "require-dev": {

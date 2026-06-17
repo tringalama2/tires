@@ -16,14 +16,15 @@ use Livewire\Component;
 
 class RotationDashboard extends Component
 {
-    public ?int $vehicle_id;
+    public string|int|null $vehicle_id = null;
 
     protected Vehicle $vehicle;
 
     public function mount(SelectVehicle $selectVehicle): void
     {
         if (isset($this->vehicle_id)) {
-            $this->vehicle = Vehicle::findOrFail($this->vehicle_id);
+            $id = is_string($this->vehicle_id) ? hashid_decode($this->vehicle_id) : $this->vehicle_id;
+            $this->vehicle = Vehicle::findOrFail($id);
             $this->authorize('view', $this->vehicle);
             $selectVehicle($this->vehicle);
         } else {

@@ -14,7 +14,7 @@ use Livewire\Component;
 new #[Layout('layouts.app')] class extends Component {
 
     #[Locked]
-    public ?int $vehicle_id = null;
+    public string|int|null $vehicle_id = null;
 
     public string $step = 'entry'; // 'entry' | 'review'
 
@@ -42,7 +42,8 @@ new #[Layout('layouts.app')] class extends Component {
     public function mount(SelectVehicle $selectVehicle, TireService $tireService): void
     {
         if (isset($this->vehicle_id)) {
-            $this->vehicle = Vehicle::findOrFail($this->vehicle_id);
+            $id = is_string($this->vehicle_id) ? hashid_decode($this->vehicle_id) : $this->vehicle_id;
+            $this->vehicle = Vehicle::findOrFail($id);
             $this->authorize('view', $this->vehicle);
             $selectVehicle($this->vehicle);
         } else {
@@ -169,7 +170,7 @@ new #[Layout('layouts.app')] class extends Component {
             return;
         }
 
-        $this->redirect(route('dashboard', $this->vehicle_id), navigate: true);
+        $this->redirect(route('dashboard', hashid_encode($this->vehicle_id)), navigate: true);
     }
 
     private function vehicle(): Vehicle
@@ -339,7 +340,7 @@ new #[Layout('layouts.app')] class extends Component {
 
                 {{-- Footer --}}
                 <div class="flex items-center justify-between gap-3">
-                    <x-treadmark.button variant="ghost" href="{{ route('dashboard', $vehicle_id) }}" wire:navigate>
+                    <x-treadmark.button variant="ghost" href="{{ route('dashboard', hashid_encode($vehicle_id)) }}" wire:navigate>
                         Cancel
                     </x-treadmark.button>
                     <x-treadmark.button wire:click="toReview" variant="primary">

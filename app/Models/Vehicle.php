@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use App\Concerns\HasHashid;
 use App\Enums\TireStatus;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -12,7 +13,7 @@ use Illuminate\Database\Eloquent\SoftDeletes;
 
 class Vehicle extends Model
 {
-    use HasFactory, SoftDeletes;
+    use HasFactory, HasHashid, SoftDeletes;
 
     const int MAX_VEHICLES_PER_USER = 5;
 

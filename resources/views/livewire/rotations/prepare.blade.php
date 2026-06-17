@@ -12,7 +12,7 @@ use Livewire\Component;
 
 new #[Layout('layouts.app')] class extends Component {
 
-    public ?int $vehicle_id;
+    public string|int|null $vehicle_id = null;
     public ?string $edit_rotation_id = null;
 
     protected Vehicle $vehicle;
@@ -43,7 +43,8 @@ new #[Layout('layouts.app')] class extends Component {
     public function mount(SelectVehicle $selectVehicle, RotationService $rotationService): void
     {
         if (isset($this->vehicle_id)) {
-            $this->vehicle = Vehicle::findOrFail($this->vehicle_id);
+            $id = is_string($this->vehicle_id) ? hashid_decode($this->vehicle_id) : $this->vehicle_id;
+            $this->vehicle = Vehicle::findOrFail($id);
             $this->authorize('view', $this->vehicle);
             $selectVehicle($this->vehicle);
         } else {
@@ -54,7 +55,8 @@ new #[Layout('layouts.app')] class extends Component {
 
         if ($this->edit_rotation_id) {
             $this->isEdit = true;
-            $this->loadExistingRotation($this->edit_rotation_id);
+            $rotationId = hashid_decode($this->edit_rotation_id) ?? $this->edit_rotation_id;
+            $this->loadExistingRotation($rotationId);
         } else {
             $this->rotated_on = Carbon::today()->toDateString();
             $this->stubs = $rotationService->startNext($this->vehicle);
@@ -62,7 +64,7 @@ new #[Layout('layouts.app')] class extends Component {
         }
     }
 
-    private function loadExistingRotation(string $rotationId): void
+    private function loadExistingRotation(string|int $rotationId): void
     {
         $rotation = $this->vehicle->rotations()->with('placements.tire')->findOrFail($rotationId);
         $this->rotated_on = $rotation->rotated_on->toDateString();
@@ -181,7 +183,7 @@ new #[Layout('layouts.app')] class extends Component {
             'rotation.odometer' => $this->odometer,
             'rotation.note' => $this->rotation_note ?: null,
             'rotation.placements' => $placements,
-            'rotation.rotation_id' => $this->edit_rotation_id,
+            'rotation.rotation_id' => $this->edit_rotation_id ? hashid_decode($this->edit_rotation_id) : null,
         ]);
 
         $this->redirect(route('rotations.update'), navigate: true);

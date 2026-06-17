@@ -66,7 +66,7 @@ new #[Layout('layouts.app')] class extends Component {
 
 
                     <div class="max-w-xl flex flex-row gap-x-8">
-                        <a wire:click="changeVehicle({{$vehicle->id}})" class="cursor-pointer">
+                        <a wire:click="changeVehicle('{{ $vehicle->getRouteKey() }}')" class="cursor-pointer">
                             <div class="@if($vehicle->is(session('vehicle'))) text-blaze-500 @else text-ink-200 @endif">
                                 <x-phosphor-check-circle-duotone class="w-8 h-8 inline"/>
                             </div>
@@ -98,7 +98,7 @@ new #[Layout('layouts.app')] class extends Component {
                         <x-treadmark.button variant="ghost" size="sm" href="{{ route('rotations.prepare', $vehicle) }}">
                             <x-treadmark.icon name="arrows-clockwise" class="w-4 h-4" /> Rotate
                         </x-treadmark.button>
-                        <x-treadmark.button variant="ghost" size="sm" href="{{ route('rotations.swap', $vehicle->id) }}">
+                        <x-treadmark.button variant="ghost" size="sm" href="{{ route('rotations.swap', $vehicle) }}">
                             <x-treadmark.icon name="wrench" class="w-4 h-4" /> Swap
                         </x-treadmark.button>
                         <x-treadmark.button variant="ghost" size="sm" href="{{ route('vehicles.edit', $vehicle) }}">

@@ -269,7 +269,7 @@ it('saves and redirects to dashboard on confirm', function () {
         ->set("swaps.{$retiring->id}.replacement_tread", '15')
         ->call('toReview')
         ->call('save')
-        ->assertRedirect(route('dashboard', $vehicle->id));
+        ->assertRedirect(route('dashboard', $vehicle));
 
     expect($retiring->fresh()->status)->toBe(TireStatus::Retired)
         ->and($vehicle->tires()->where('label', 'T6')->exists())->toBeTrue();
