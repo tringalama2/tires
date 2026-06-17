@@ -20,7 +20,7 @@
 
 <div class="flex flex-col gap-1.5">
     @if ($label)
-        <label for="{{ $id }}" class="font-sans font-semibold text-[13px] text-ink-900">
+        <label for="{{ $id }}" class="font-sans font-semibold text-[13px]">
             {{ $label }}
             @if ($required)<span class="text-blaze-500 ml-0.5">*</span>@endif
             @if ($optional)<span class="text-ink-300 font-normal ml-1.5 text-[12px]">optional</span>@endif

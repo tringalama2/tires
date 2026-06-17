@@ -35,7 +35,7 @@
         <x-treadmark.logo tone="onDark" />
     </a>
 
-    <div class="w-full max-w-sm bg-ink-800 border border-ink-600 rounded-card shadow-tm-lg overflow-hidden">
+    <div class="w-full max-w-sm bg-ink-800 border border-ink-600 rounded-card shadow-tm-lg overflow-hidden text-ink-100">
         <div class="px-6 py-7">
             {{ $slot }}
         </div>
