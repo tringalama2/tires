@@ -9,7 +9,7 @@
                 </p>
             </div>
             <x-treadmark.button href="{{ route('rotations.prepare') }}" size="sm">
-                <x-treadmark.icon name="arrows-clockwise" class="w-4 h-4" />
+                <x-treadmark.icon name="arrows-clockwise" class="w-4 h-4"/>
                 Log Rotation
             </x-treadmark.button>
         </div>
@@ -67,7 +67,7 @@
                         @foreach ($this->replacementAlerts as $alert)
                             <li>
                                 <a href="{{ route('tires.show', $alert['tire']) }}"
-                                   class="font-semibold underline underline-offset-2">{{ $alert['tire']->label }}</a>
+                                   class="font-mono font-semibold underline underline-offset-2">{{ $alert['tire']->label }}</a>
                                 ({{ $alert['current_position']?->label() ?? '—' }})
                                 — ≈ {{ number_format($alert['projected_miles']) }} miles to 2/32"
                             </li>
@@ -108,28 +108,28 @@
                                 @php $fl = $this->currentPositions->firstWhere('current_position.value', 'FL'); @endphp
                                 <div class="flex flex-col items-center gap-1.5">
                                     <div class="flex items-center gap-1.5">
-                                        <x-treadmark.position-tag position="FL" size="sm" />
+                                        <x-treadmark.position-tag position="FL" size="sm"/>
                                         <span class="font-mono font-semibold text-sm text-ink-700">{{ $fl['tire']->label ?? '—' }}</span>
                                     </div>
                                     @if ($fl && $fl['latest_tread_center'] !== null)
-                                        <x-treadmark.tread-gauge :depth="$fl['latest_tread_center']" size="sm" class="w-full" />
+                                        <x-treadmark.tread-gauge :depth="$fl['latest_tread_center']" size="sm" class="w-full"/>
                                     @endif
                                 </div>
 
                                 {{-- Car silhouette (spans 2 rows) --}}
                                 <div class="row-span-2 flex items-center justify-center">
-                                    <x-img.car-top-view class="w-12 fill-ink-200" aria-hidden="true" />
+                                    <x-img.car-top-view class="w-12 fill-ink-200" aria-hidden="true"/>
                                 </div>
 
                                 {{-- FR --}}
                                 @php $fr = $this->currentPositions->firstWhere('current_position.value', 'FR'); @endphp
                                 <div class="flex flex-col items-center gap-1.5">
                                     <div class="flex items-center gap-1.5">
-                                        <x-treadmark.position-tag position="FR" size="sm" />
+                                        <x-treadmark.position-tag position="FR" size="sm"/>
                                         <span class="font-mono font-semibold text-sm text-ink-700">{{ $fr['tire']->label ?? '—' }}</span>
                                     </div>
                                     @if ($fr && $fr['latest_tread_center'] !== null)
-                                        <x-treadmark.tread-gauge :depth="$fr['latest_tread_center']" size="sm" class="w-full" />
+                                        <x-treadmark.tread-gauge :depth="$fr['latest_tread_center']" size="sm" class="w-full"/>
                                     @endif
                                 </div>
 
@@ -137,11 +137,11 @@
                                 @php $rl = $this->currentPositions->firstWhere('current_position.value', 'RL'); @endphp
                                 <div class="flex flex-col items-center gap-1.5">
                                     <div class="flex items-center gap-1.5">
-                                        <x-treadmark.position-tag position="RL" size="sm" />
+                                        <x-treadmark.position-tag position="RL" size="sm"/>
                                         <span class="font-mono font-semibold text-sm text-ink-700">{{ $rl['tire']->label ?? '—' }}</span>
                                     </div>
                                     @if ($rl && $rl['latest_tread_center'] !== null)
-                                        <x-treadmark.tread-gauge :depth="$rl['latest_tread_center']" size="sm" class="w-full" />
+                                        <x-treadmark.tread-gauge :depth="$rl['latest_tread_center']" size="sm" class="w-full"/>
                                     @endif
                                 </div>
 
@@ -149,11 +149,11 @@
                                 @php $rr = $this->currentPositions->firstWhere('current_position.value', 'RR'); @endphp
                                 <div class="flex flex-col items-center gap-1.5">
                                     <div class="flex items-center gap-1.5">
-                                        <x-treadmark.position-tag position="RR" size="sm" />
+                                        <x-treadmark.position-tag position="RR" size="sm"/>
                                         <span class="font-mono font-semibold text-sm text-ink-700">{{ $rr['tire']->label ?? '—' }}</span>
                                     </div>
                                     @if ($rr && $rr['latest_tread_center'] !== null)
-                                        <x-treadmark.tread-gauge :depth="$rr['latest_tread_center']" size="sm" class="w-full" />
+                                        <x-treadmark.tread-gauge :depth="$rr['latest_tread_center']" size="sm" class="w-full"/>
                                     @endif
                                 </div>
 
@@ -162,13 +162,13 @@
                                 @if ($sp)
                                     <div class="col-span-3 flex flex-col items-center gap-1.5 pt-1 border-t border-ink-100">
                                         <div class="flex items-center gap-1.5">
-                                            <x-treadmark.position-tag position="SP" size="sm" />
+                                            <x-treadmark.position-tag position="SP" size="sm"/>
                                             <span class="font-mono font-semibold text-sm text-ink-700">{{ $sp['tire']->label }}</span>
                                             <span class="text-xs text-ink-400 font-mono">spare</span>
                                         </div>
                                         @if ($sp['latest_tread_center'] !== null)
                                             <div class="w-32">
-                                                <x-treadmark.tread-gauge :depth="$sp['latest_tread_center']" size="sm" />
+                                                <x-treadmark.tread-gauge :depth="$sp['latest_tread_center']" size="sm"/>
                                             </div>
                                         @endif
                                     </div>
@@ -201,15 +201,17 @@
                                         <span class="font-mono font-semibold text-sm text-ink-900">
                                             {{ $t['tire']->label }}
                                             @if ($t['current_position'])
-                                                <span class="text-ink-400 font-normal">· {{ $t['current_position']->value }}</span>
+                                                <span class="text-ink-400 font-normal">·</span>
+                                                <x-treadmark.position-tag position="{{ $t['current_position']->value }}" size="sm"/>
                                             @endif
                                         </span>
                                         <span class="font-mono text-xs text-ink-500">≈ {{ number_format($t['projected_miles']) }} mi</span>
                                     </div>
-                                    <x-treadmark.tread-gauge :depth="$t['latest_tread_center']" size="sm" />
+                                    <x-treadmark.tread-gauge :depth="$t['latest_tread_center']" size="sm"/>
                                 </div>
                             @empty
-                                <p class="text-sm text-ink-400 text-center py-4">Need 2+ rotations per tire for projections.</p>
+                                <p class="text-sm text-ink-400 text-center py-4">Need 2+ rotations per tire for
+                                                                                 projections.</p>
                             @endforelse
 
                             <div class="mt-auto pt-4 border-t border-ink-100 flex flex-col gap-2">
@@ -228,4 +230,11 @@
 
         </div>
     </div>
+
+    {{-- FAB: always-accessible Log Rotation on mobile --}}
+    <a href="{{ route('rotations.prepare') }}"
+       class="sm:hidden fixed bottom-6 right-4 z-10 inline-flex items-center gap-2 bg-blaze-500 hover:bg-blaze-600 active:bg-blaze-700 text-white font-display font-semibold uppercase tracking-wider2 rounded-full px-5 py-3 shadow-lg transition-colors duration-150">
+        <x-treadmark.icon name="arrows-clockwise" class="w-4 h-4"/>
+        Log Rotation
+    </a>
 </div>

@@ -135,7 +135,7 @@ new #[Layout('layouts.app')] class extends Component {
 <div>
     <x-slot name="header">
         <div class="flex justify-between items-center">
-            <h1 class="font-display font-semibold uppercase text-2xl tracking-wider text-ink-900">Tire {{ $tire->label }}</h1>
+            <h1 class="font-display font-semibold uppercase text-2xl tracking-wider text-ink-900">Tire <span class="font-mono">{{ $tire->label }}</span></h1>
             <x-treadmark.button variant="ghost" size="sm" href="{{ route('reports.by-tire') }}">
                 <x-treadmark.icon name="arrow-left" class="w-4 h-4" /> Back to report
             </x-treadmark.button>
@@ -199,9 +199,9 @@ new #[Layout('layouts.app')] class extends Component {
                                 @endforeach
                             </div>
                         </div>
-                        <div class="flex items-end gap-2">
-                            <x-treadmark.button type="submit">Save</x-treadmark.button>
+                        <div class="flex items-end justify-between gap-2">
                             <x-treadmark.button type="button" variant="ghost" size="sm" wire:click="cancelEdit">Cancel</x-treadmark.button>
+                            <x-treadmark.button type="submit">Save</x-treadmark.button>
                         </div>
                     </form>
                 @else

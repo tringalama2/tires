@@ -74,7 +74,7 @@
                             <div class="flex-1 min-w-0">
                                 @if($tire)
                                     <div class="font-semibold text-[14px] text-ink-900 truncate">
-                                        {{ $tire->label }}
+                                        <span class="font-mono">{{ $tire->label }}</span>
                                         @if($tire->brand || $tire->model)
                                             <span class="font-normal text-ink-500">&middot; {{ trim($tire->brand . ' ' . $tire->model) }}</span>
                                         @endif

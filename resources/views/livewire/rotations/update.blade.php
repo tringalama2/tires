@@ -173,10 +173,10 @@ new #[Layout('layouts.app')] class extends Component {
         </h2>
     </x-slot>
 
-    <div class="py-12">
+    <div class="py-6 pb-28 sm:py-12 sm:pb-12">
         <div class="max-w-5xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-ink-900">
+            <div class="bg-white shadow-sm sm:rounded-lg">
+                <div class="p-4 sm:p-6 text-ink-900">
 
                     {{-- Edit warning --}}
                     @if ($isEdit && ! $isLatestRotation)
@@ -203,79 +203,86 @@ new #[Layout('layouts.app')] class extends Component {
                         </div>
                     @endif
 
-                    <div class="flex justify-between mb-4">
-                        <div class="text-sm text-ink-500">
-                            Drag each tire to its new position, or
-                            <button type="button" wire:click="toggleMode" class="text-steel-600 underline hover:text-steel-700 text-sm">switch to {{ $tableMode ? 'drag' : 'table' }} view</button>.
-                        </div>
-                        <x-treadmark.button wire:click="save">
-                            {{ __('Complete Rotation') }}
-                        </x-treadmark.button>
+                    <div class="mb-4 text-sm text-ink-500">
+                        Drag each tire to its new position, or
+                        <button type="button" wire:click="toggleMode" class="text-steel-600 underline hover:text-steel-700 text-sm">switch to {{ $tableMode ? 'drag' : 'table' }} view</button>.
                     </div>
 
                     @if ($tableMode)
-                        {{-- Table fallback --}}
-                        <table class="w-full border-collapse text-sm">
-                            <thead>
-                                <tr class="bg-ink-50 text-left">
-                                    <th class="p-3 border border-ink-200">Tire</th>
-                                    <th class="p-3 border border-ink-200">From</th>
-                                    <th class="p-3 border border-ink-200">To</th>
-                                    <th class="p-3 border border-ink-200">Tread (C/I/O)</th>
-                                </tr>
-                            </thead>
-                            <tbody>
-                                @foreach ($placements as $fromPos => $p)
-                                    <tr class="odd:bg-white even:bg-ink-50">
-                                        <td class="p-3 border border-ink-200 font-bold text-ink-900">{{ $p['tire_label'] ?? $fromPos }}</td>
-                                        <td class="p-3 border border-ink-200">{{ TirePosition::from($fromPos)->label() }}</td>
-                                        <td class="p-3 border border-ink-200">
-                                            <select wire:model.live="toPositions.{{ $fromPos }}" class="border-ink-200 rounded-control text-sm w-full">
-                                                @foreach (TirePosition::order() as $pos)
-                                                    <option value="{{ $pos->value }}">{{ $pos->label() }}</option>
-                                                @endforeach
-                                            </select>
-                                        </td>
-                                        <td class="p-3 border border-ink-200 text-ink-500">
-                                            {{ $p['tread_center'] }}/32"
-                                            @if ($p['tread_inner'] ?? null) · i:{{ $p['tread_inner'] }} @endif
-                                            @if ($p['tread_outer'] ?? null) · o:{{ $p['tread_outer'] }} @endif
-                                        </td>
+                        {{-- Table view --}}
+                        <div class="border border-ink-200 rounded-card overflow-hidden">
+                            <table class="w-full text-sm">
+                                <thead>
+                                    <tr class="bg-ink-50 border-b border-ink-200">
+                                        <th class="px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wide text-ink-400">Tire</th>
+                                        <th class="px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wide text-ink-400">From</th>
+                                        <th class="px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wide text-ink-400">To Position</th>
+                                        <th class="px-4 py-2.5 text-left text-[11px] font-semibold uppercase tracking-wide text-ink-400">Tread</th>
                                     </tr>
-                                @endforeach
-                            </tbody>
-                        </table>
+                                </thead>
+                                <tbody class="divide-y divide-ink-100">
+                                    @foreach ($placements as $fromPos => $p)
+                                        <tr class="bg-white">
+                                            <td class="px-4 py-3 font-mono font-bold text-ink-900">{{ $p['tire_label'] ?? $fromPos }}</td>
+                                            <td class="px-4 py-3">
+                                                <x-treadmark.position-tag :position="$fromPos" size="sm" />
+                                            </td>
+                                            <td class="px-4 py-3">
+                                                <div class="relative flex items-center bg-white rounded-control overflow-hidden ring-1 ring-ink-200 focus-within:ring-4 focus-within:ring-blaze-500/40 transition max-w-[11rem]">
+                                                    <select wire:model.live="toPositions.{{ $fromPos }}"
+                                                            class="appearance-none flex-1 min-w-0 border-0 outline-none bg-transparent text-[15px] text-ink-900 pl-3 pr-9 py-2.5 cursor-pointer">
+                                                        @foreach (TirePosition::order() as $pos)
+                                                            <option value="{{ $pos->value }}">{{ $pos->label() }}</option>
+                                                        @endforeach
+                                                    </select>
+                                                    <span class="absolute right-3 pointer-events-none text-ink-400">
+                                                        <x-treadmark.icon name="caret-down" class="w-4 h-4" />
+                                                    </span>
+                                                </div>
+                                            </td>
+                                            <td class="px-4 py-3 font-mono text-[13px] text-ink-700">
+                                                {{ $p['tread_center'] }}/32"
+                                                @if ($p['tread_inner'] ?? null)
+                                                    <span class="text-ink-400 ml-1">i:{{ $p['tread_inner'] }}</span>
+                                                @endif
+                                                @if ($p['tread_outer'] ?? null)
+                                                    <span class="text-ink-400 ml-1">o:{{ $p['tread_outer'] }}</span>
+                                                @endif
+                                            </td>
+                                        </tr>
+                                    @endforeach
+                                </tbody>
+                            </table>
+                        </div>
                     @else
                         {{-- Drag-and-drop layout --}}
+                        @php
+                            $zoneBase = 'justify-self-center border-2 rounded-card p-2 w-44 min-h-40 transition-colors';
+                            $garageBase = 'row-span-3 justify-self-center border-2 border-dashed rounded-card p-3 w-44 min-h-48 transition-colors';
+                        @endphp
                         <div
                             id="drag-root"
                             x-data="rotationDrag(@js($placements), @js($toPositions))"
                             class="grid grid-cols-4 grid-rows-3 gap-3"
                         >
                             {{-- FL --}}
-                            <div
-                                x-bind:class="dropZoneClass('FL')"
-                                x-on:dragover.prevent="onDragOver('FL')"
-                                x-on:dragleave="onDragLeave('FL')"
-                                x-on:drop.prevent="onDrop('FL')"
-                                x-on:touchmove.prevent="onTouchMove($event)"
-                                x-on:touchend.prevent="onTouchEnd('FL')"
-                                data-position="FL"
-                                class="justify-self-center border-2 rounded-lg p-2 w-44 min-h-40 transition-colors"
-                            >
-                                <div class="text-xs font-semibold text-ink-400 uppercase tracking-wide mb-1 border-b border-ink-200 pb-1">Front Left</div>
+                            <div x-bind:class="dropZoneClass('FL')"
+                                 x-on:dragover.prevent="onDragOver('FL')" x-on:dragleave="onDragLeave('FL')"
+                                 x-on:drop.prevent="onDrop('FL')" x-on:touchmove.prevent="onTouchMove($event)"
+                                 x-on:touchend.prevent="onTouchEnd('FL')" data-position="FL"
+                                 class="{{ $zoneBase }}">
+                                <div class="mb-2 pb-1.5 border-b border-ink-200">
+                                    <x-treadmark.position-tag position="FL" size="sm" show-label />
+                                </div>
                                 <template x-for="(p, fromPos) in placements" :key="fromPos">
-                                    <div
-                                        x-show="currentPositions[fromPos] === 'FL'"
-                                        draggable="true"
-                                        x-on:dragstart="onDragStart(fromPos, $event)"
-                                        x-on:touchstart.prevent="onTouchStart(fromPos, $event)"
-                                        class="cursor-grab select-none flex flex-col items-center mt-1"
-                                    >
-                                        <x-phosphor-tire-duotone class="w-12 h-12 text-ink-600" />
-                                        <span class="text-xs font-bold text-ink-900" x-text="p.tire_label"></span>
-                                        <span class="text-xs text-ink-400">from <span x-text="p.from_position_label"></span></span>
-                                        <span class="text-xs text-ink-700" x-text="p.tread_center + '/32&quot;'"></span>
+                                    <div x-show="currentPositions[fromPos] === 'FL'" draggable="true"
+                                         x-on:dragstart="onDragStart(fromPos, $event)"
+                                         x-on:touchstart.prevent="onTouchStart(fromPos, $event)"
+                                         class="cursor-grab select-none bg-white border border-ink-200 rounded-control px-2 py-2 mt-1 flex flex-col items-center gap-0.5 shadow-sm">
+                                        <x-phosphor-tire-duotone class="w-9 h-9 text-ink-500" />
+                                        <span class="font-mono text-xs font-bold text-ink-900" x-text="p.tire_label"></span>
+                                        <span class="text-[10px] text-ink-400">from <span x-text="p.from_position_label"></span></span>
+                                        <span class="font-mono text-[11px] text-ink-600" x-text="p.tread_center + '/32&quot;'"></span>
                                     </div>
                                 </template>
                             </div>
@@ -286,153 +293,126 @@ new #[Layout('layouts.app')] class extends Component {
                             </div>
 
                             {{-- FR --}}
-                            <div
-                                x-bind:class="dropZoneClass('FR')"
-                                x-on:dragover.prevent="onDragOver('FR')"
-                                x-on:dragleave="onDragLeave('FR')"
-                                x-on:drop.prevent="onDrop('FR')"
-                                x-on:touchmove.prevent="onTouchMove($event)"
-                                x-on:touchend.prevent="onTouchEnd('FR')"
-                                data-position="FR"
-                                class="justify-self-center border-2 rounded-lg p-2 w-44 min-h-40 transition-colors"
-                            >
-                                <div class="text-xs font-semibold text-ink-400 uppercase tracking-wide mb-1 border-b border-ink-200 pb-1">Front Right</div>
+                            <div x-bind:class="dropZoneClass('FR')"
+                                 x-on:dragover.prevent="onDragOver('FR')" x-on:dragleave="onDragLeave('FR')"
+                                 x-on:drop.prevent="onDrop('FR')" x-on:touchmove.prevent="onTouchMove($event)"
+                                 x-on:touchend.prevent="onTouchEnd('FR')" data-position="FR"
+                                 class="{{ $zoneBase }}">
+                                <div class="mb-2 pb-1.5 border-b border-ink-200">
+                                    <x-treadmark.position-tag position="FR" size="sm" show-label />
+                                </div>
                                 <template x-for="(p, fromPos) in placements" :key="fromPos">
-                                    <div
-                                        x-show="currentPositions[fromPos] === 'FR'"
-                                        draggable="true"
-                                        x-on:dragstart="onDragStart(fromPos, $event)"
-                                        x-on:touchstart.prevent="onTouchStart(fromPos, $event)"
-                                        class="cursor-grab select-none flex flex-col items-center mt-1"
-                                    >
-                                        <x-phosphor-tire-duotone class="w-12 h-12 text-ink-600" />
-                                        <span class="text-xs font-bold text-ink-900" x-text="p.tire_label"></span>
-                                        <span class="text-xs text-ink-400">from <span x-text="p.from_position_label"></span></span>
-                                        <span class="text-xs text-ink-700" x-text="p.tread_center + '/32&quot;'"></span>
+                                    <div x-show="currentPositions[fromPos] === 'FR'" draggable="true"
+                                         x-on:dragstart="onDragStart(fromPos, $event)"
+                                         x-on:touchstart.prevent="onTouchStart(fromPos, $event)"
+                                         class="cursor-grab select-none bg-white border border-ink-200 rounded-control px-2 py-2 mt-1 flex flex-col items-center gap-0.5 shadow-sm">
+                                        <x-phosphor-tire-duotone class="w-9 h-9 text-ink-500" />
+                                        <span class="font-mono text-xs font-bold text-ink-900" x-text="p.tire_label"></span>
+                                        <span class="text-[10px] text-ink-400">from <span x-text="p.from_position_label"></span></span>
+                                        <span class="font-mono text-[11px] text-ink-600" x-text="p.tread_center + '/32&quot;'"></span>
                                     </div>
                                 </template>
                             </div>
 
-                            {{-- Garage --}}
-                            <div
-                                x-bind:class="dropZoneClass('GARAGE')"
-                                x-on:dragover.prevent="onDragOver('GARAGE')"
-                                x-on:dragleave="onDragLeave('GARAGE')"
-                                x-on:drop.prevent="onDrop('GARAGE')"
-                                x-on:touchmove.prevent="onTouchMove($event)"
-                                x-on:touchend.prevent="onTouchEnd('GARAGE')"
-                                data-position="GARAGE"
-                                class="row-span-3 justify-self-center border-2 border-dashed rounded-lg p-3 w-44 min-h-48 transition-colors"
-                            >
-                                <div class="text-xs font-semibold text-ink-400 uppercase tracking-wide mb-2 text-center">Holding</div>
+                            {{-- Holding zone --}}
+                            <div x-bind:class="dropZoneClass('GARAGE')"
+                                 x-on:dragover.prevent="onDragOver('GARAGE')" x-on:dragleave="onDragLeave('GARAGE')"
+                                 x-on:drop.prevent="onDrop('GARAGE')" x-on:touchmove.prevent="onTouchMove($event)"
+                                 x-on:touchend.prevent="onTouchEnd('GARAGE')" data-position="GARAGE"
+                                 class="{{ $garageBase }}">
+                                <p class="text-[11px] font-semibold text-ink-400 uppercase tracking-wide mb-2 text-center">Holding</p>
                                 <template x-for="(p, fromPos) in placements" :key="fromPos">
-                                    <div
-                                        x-show="currentPositions[fromPos] === 'GARAGE'"
-                                        draggable="true"
-                                        x-on:dragstart="onDragStart(fromPos, $event)"
-                                        x-on:touchstart.prevent="onTouchStart(fromPos, $event)"
-                                        class="cursor-grab select-none flex flex-col items-center mb-2"
-                                    >
-                                        <x-phosphor-tire-duotone class="w-10 h-10 text-ink-400" />
-                                        <span class="text-xs font-bold text-ink-700" x-text="p.tire_label"></span>
+                                    <div x-show="currentPositions[fromPos] === 'GARAGE'" draggable="true"
+                                         x-on:dragstart="onDragStart(fromPos, $event)"
+                                         x-on:touchstart.prevent="onTouchStart(fromPos, $event)"
+                                         class="cursor-grab select-none bg-white border border-ink-200 rounded-control px-2 py-2 mb-1.5 flex flex-col items-center gap-0.5 shadow-sm">
+                                        <x-phosphor-tire-duotone class="w-8 h-8 text-ink-400" />
+                                        <span class="font-mono text-xs font-bold text-ink-700" x-text="p.tire_label"></span>
                                     </div>
                                 </template>
                             </div>
 
                             {{-- RL --}}
-                            <div
-                                x-bind:class="dropZoneClass('RL')"
-                                x-on:dragover.prevent="onDragOver('RL')"
-                                x-on:dragleave="onDragLeave('RL')"
-                                x-on:drop.prevent="onDrop('RL')"
-                                x-on:touchmove.prevent="onTouchMove($event)"
-                                x-on:touchend.prevent="onTouchEnd('RL')"
-                                data-position="RL"
-                                class="justify-self-center border-2 rounded-lg p-2 w-44 min-h-40 transition-colors"
-                            >
-                                <div class="text-xs font-semibold text-ink-400 uppercase tracking-wide mb-1 border-b border-ink-200 pb-1">Rear Left</div>
+                            <div x-bind:class="dropZoneClass('RL')"
+                                 x-on:dragover.prevent="onDragOver('RL')" x-on:dragleave="onDragLeave('RL')"
+                                 x-on:drop.prevent="onDrop('RL')" x-on:touchmove.prevent="onTouchMove($event)"
+                                 x-on:touchend.prevent="onTouchEnd('RL')" data-position="RL"
+                                 class="{{ $zoneBase }}">
+                                <div class="mb-2 pb-1.5 border-b border-ink-200">
+                                    <x-treadmark.position-tag position="RL" size="sm" show-label />
+                                </div>
                                 <template x-for="(p, fromPos) in placements" :key="fromPos">
-                                    <div
-                                        x-show="currentPositions[fromPos] === 'RL'"
-                                        draggable="true"
-                                        x-on:dragstart="onDragStart(fromPos, $event)"
-                                        x-on:touchstart.prevent="onTouchStart(fromPos, $event)"
-                                        class="cursor-grab select-none flex flex-col items-center mt-1"
-                                    >
-                                        <x-phosphor-tire-duotone class="w-12 h-12 text-cyan-600" />
-                                        <span class="text-xs font-bold text-cyan-700" x-text="p.tire_label"></span>
-                                        <span class="text-xs text-ink-400">from <span x-text="p.from_position_label"></span></span>
-                                        <span class="text-xs text-ink-700" x-text="p.tread_center + '/32&quot;'"></span>
+                                    <div x-show="currentPositions[fromPos] === 'RL'" draggable="true"
+                                         x-on:dragstart="onDragStart(fromPos, $event)"
+                                         x-on:touchstart.prevent="onTouchStart(fromPos, $event)"
+                                         class="cursor-grab select-none bg-white border border-ink-200 rounded-control px-2 py-2 mt-1 flex flex-col items-center gap-0.5 shadow-sm">
+                                        <x-phosphor-tire-duotone class="w-9 h-9 text-ink-500" />
+                                        <span class="font-mono text-xs font-bold text-ink-900" x-text="p.tire_label"></span>
+                                        <span class="text-[10px] text-ink-400">from <span x-text="p.from_position_label"></span></span>
+                                        <span class="font-mono text-[11px] text-ink-600" x-text="p.tread_center + '/32&quot;'"></span>
                                     </div>
                                 </template>
                             </div>
 
                             {{-- RR --}}
-                            <div
-                                x-bind:class="dropZoneClass('RR')"
-                                x-on:dragover.prevent="onDragOver('RR')"
-                                x-on:dragleave="onDragLeave('RR')"
-                                x-on:drop.prevent="onDrop('RR')"
-                                x-on:touchmove.prevent="onTouchMove($event)"
-                                x-on:touchend.prevent="onTouchEnd('RR')"
-                                data-position="RR"
-                                class="justify-self-center border-2 rounded-lg p-2 w-44 min-h-40 transition-colors"
-                            >
-                                <div class="text-xs font-semibold text-ink-400 uppercase tracking-wide mb-1 border-b border-ink-200 pb-1">Rear Right</div>
+                            <div x-bind:class="dropZoneClass('RR')"
+                                 x-on:dragover.prevent="onDragOver('RR')" x-on:dragleave="onDragLeave('RR')"
+                                 x-on:drop.prevent="onDrop('RR')" x-on:touchmove.prevent="onTouchMove($event)"
+                                 x-on:touchend.prevent="onTouchEnd('RR')" data-position="RR"
+                                 class="{{ $zoneBase }}">
+                                <div class="mb-2 pb-1.5 border-b border-ink-200">
+                                    <x-treadmark.position-tag position="RR" size="sm" show-label />
+                                </div>
                                 <template x-for="(p, fromPos) in placements" :key="fromPos">
-                                    <div
-                                        x-show="currentPositions[fromPos] === 'RR'"
-                                        draggable="true"
-                                        x-on:dragstart="onDragStart(fromPos, $event)"
-                                        x-on:touchstart.prevent="onTouchStart(fromPos, $event)"
-                                        class="cursor-grab select-none flex flex-col items-center mt-1"
-                                    >
-                                        <x-phosphor-tire-duotone class="w-12 h-12 text-fern-600" />
-                                        <span class="text-xs font-bold text-fern-600" x-text="p.tire_label"></span>
-                                        <span class="text-xs text-ink-400">from <span x-text="p.from_position_label"></span></span>
-                                        <span class="text-xs text-ink-700" x-text="p.tread_center + '/32&quot;'"></span>
+                                    <div x-show="currentPositions[fromPos] === 'RR'" draggable="true"
+                                         x-on:dragstart="onDragStart(fromPos, $event)"
+                                         x-on:touchstart.prevent="onTouchStart(fromPos, $event)"
+                                         class="cursor-grab select-none bg-white border border-ink-200 rounded-control px-2 py-2 mt-1 flex flex-col items-center gap-0.5 shadow-sm">
+                                        <x-phosphor-tire-duotone class="w-9 h-9 text-ink-500" />
+                                        <span class="font-mono text-xs font-bold text-ink-900" x-text="p.tire_label"></span>
+                                        <span class="text-[10px] text-ink-400">from <span x-text="p.from_position_label"></span></span>
+                                        <span class="font-mono text-[11px] text-ink-600" x-text="p.tread_center + '/32&quot;'"></span>
                                     </div>
                                 </template>
                             </div>
 
                             {{-- Spare --}}
-                            <div
-                                x-bind:class="dropZoneClass('SP')"
-                                x-on:dragover.prevent="onDragOver('SP')"
-                                x-on:dragleave="onDragLeave('SP')"
-                                x-on:drop.prevent="onDrop('SP')"
-                                x-on:touchmove.prevent="onTouchMove($event)"
-                                x-on:touchend.prevent="onTouchEnd('SP')"
-                                data-position="SP"
-                                class="col-start-2 justify-self-center border-2 rounded-lg p-2 w-44 min-h-40 transition-colors"
-                            >
-                                <div class="text-xs font-semibold text-ink-400 uppercase tracking-wide mb-1 border-b border-ink-200 pb-1">Spare</div>
+                            <div x-bind:class="dropZoneClass('SP')"
+                                 x-on:dragover.prevent="onDragOver('SP')" x-on:dragleave="onDragLeave('SP')"
+                                 x-on:drop.prevent="onDrop('SP')" x-on:touchmove.prevent="onTouchMove($event)"
+                                 x-on:touchend.prevent="onTouchEnd('SP')" data-position="SP"
+                                 class="col-start-2 {{ $zoneBase }}">
+                                <div class="mb-2 pb-1.5 border-b border-ink-200">
+                                    <x-treadmark.position-tag position="SP" size="sm" show-label />
+                                </div>
                                 <template x-for="(p, fromPos) in placements" :key="fromPos">
-                                    <div
-                                        x-show="currentPositions[fromPos] === 'SP'"
-                                        draggable="true"
-                                        x-on:dragstart="onDragStart(fromPos, $event)"
-                                        x-on:touchstart.prevent="onTouchStart(fromPos, $event)"
-                                        class="cursor-grab select-none flex flex-col items-center mt-1"
-                                    >
-                                        <x-phosphor-tire-duotone class="w-12 h-12 text-lime-600" />
-                                        <span class="text-xs font-bold text-lime-700" x-text="p.tire_label"></span>
-                                        <span class="text-xs text-ink-400">from <span x-text="p.from_position_label"></span></span>
-                                        <span class="text-xs text-ink-700" x-text="p.tread_center + '/32&quot;'"></span>
+                                    <div x-show="currentPositions[fromPos] === 'SP'" draggable="true"
+                                         x-on:dragstart="onDragStart(fromPos, $event)"
+                                         x-on:touchstart.prevent="onTouchStart(fromPos, $event)"
+                                         class="cursor-grab select-none bg-white border border-ink-200 rounded-control px-2 py-2 mt-1 flex flex-col items-center gap-0.5 shadow-sm">
+                                        <x-phosphor-tire-duotone class="w-9 h-9 text-ink-500" />
+                                        <span class="font-mono text-xs font-bold text-ink-900" x-text="p.tire_label"></span>
+                                        <span class="text-[10px] text-ink-400">from <span x-text="p.from_position_label"></span></span>
+                                        <span class="font-mono text-[11px] text-ink-600" x-text="p.tread_center + '/32&quot;'"></span>
                                     </div>
                                 </template>
                             </div>
                         </div>
                     @endif
 
-                    <div class="flex justify-end mt-6">
-                        <x-treadmark.button wire:click="save">
-                            {{ __('Complete Rotation') }}
-                        </x-treadmark.button>
-                    </div>
                 </div>
             </div>
         </div>
+    </div>
+
+    {{-- Sticky submit bar --}}
+    <div class="fixed bottom-0 inset-x-0 z-10 bg-white/95 backdrop-blur-sm border-t border-ink-200 px-4 py-3 flex items-center justify-between sm:px-6">
+        <x-treadmark.button variant="ghost" href="{{ route('rotations.prepare') }}" wire:navigate>
+            &larr; {{ __('Back') }}
+        </x-treadmark.button>
+        <x-treadmark.button wire:click="save">
+            {{ __('Complete Rotation') }}
+        </x-treadmark.button>
     </div>
 </div>
 

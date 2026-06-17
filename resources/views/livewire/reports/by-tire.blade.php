@@ -170,7 +170,7 @@ class extends Component {
 
                             {{-- Tire label --}}
                             <div class="{{ $rowBorder }}">
-                                <a href="{{ route('tires.show', $tire) }}" class="inline-flex items-center font-display font-semibold uppercase tracking-wider text-[13px] px-[13px] py-0.5 rounded-control border border-ink-200 text-ink-900 hover:bg-ink-50 hover:border-ink-300 transition-colors">{{ $tire->label }}</a>
+                                <a href="{{ route('tires.show', $tire) }}" class="inline-flex items-center font-mono font-semibold text-[13px] px-[13px] py-0.5 rounded-control border border-ink-200 text-ink-900 hover:bg-ink-50 hover:border-ink-300 transition-colors">{{ $tire->label }}</a>
                                 @if ($tire->brand)
                                     <div class="text-xs text-ink-400">{{ $tire->brand }}</div>
                                 @endif

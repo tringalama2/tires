@@ -64,6 +64,43 @@ class extends Component {
             $this->stubs = $rotationService->startNext($this->vehicle);
             $this->initTreads();
         }
+
+        $this->restoreFromSession();
+    }
+
+    private function restoreFromSession(): void
+    {
+        if (session()->missing('rotation.odometer')) {
+            return;
+        }
+
+        // For edits, only restore if the session belongs to the same rotation.
+        if ($this->isEdit) {
+            $sessionRotationId = session('rotation.rotation_id');
+            $currentRotationId = $this->edit_rotation_id ? (hashid_decode($this->edit_rotation_id) ?? null) : null;
+            if ($sessionRotationId !== $currentRotationId) {
+                return;
+            }
+        } elseif (session('rotation.rotation_id') !== null) {
+            // Session is from a previous edit flow, not a new rotation.
+            return;
+        }
+
+        $this->rotated_on = session('rotation.rotated_on', $this->rotated_on);
+        $this->odometer = session('rotation.odometer');
+        $this->rotation_note = session('rotation.note');
+
+        foreach (session('rotation.placements', []) as $pos => $placement) {
+            if (! isset($this->treads[$pos])) {
+                continue;
+            }
+            $this->treads[$pos]['tread_center'] = $placement['tread_center'];
+            $this->treads[$pos]['tread_inner'] = $placement['tread_inner'];
+            $this->treads[$pos]['tread_outer'] = $placement['tread_outer'];
+            $this->treads[$pos]['note'] = $placement['note'];
+            $this->tireFlags[$pos] = $placement['tire_flags'];
+            $this->wearFlags[$pos]['is_feathering'] = $placement['is_feathering'];
+        }
     }
 
     #[Computed]
@@ -217,12 +254,13 @@ class extends Component {
         </h2>
     </x-slot>
 
-    <div class="py-12">
+    {{-- extra bottom padding so the sticky bar never covers content --}}
+    <div class="py-6 pb-28 sm:py-12 sm:pb-12">
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
-            <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-ink-900">
+            <div class="bg-white shadow-sm sm:rounded-lg">
+                <div class="p-4 sm:p-6 text-ink-900">
 
-                    <div class="flex justify-between mb-4">
+                    <div class="flex justify-between mb-5">
                         <div class="font-display font-semibold uppercase text-2xl tracking-wider text-ink-900">{{ $this->vehicle()->nickname }}</div>
                         @if ($isEdit)
                             <span class="text-sm text-amber-600 font-medium self-center">Editing existing rotation</span>
@@ -239,9 +277,9 @@ class extends Component {
                         </div>
                     @endif
 
-                    <form wire:submit="next">
+                    <form wire:submit="next" id="prepare-form">
                         {{-- Date + Odometer --}}
-                        <div class="flex flex-col sm:flex-row gap-4 mb-6">
+                        <div class="flex flex-col sm:flex-row gap-4 mb-5">
                             <div class="basis-1/2">
                                 <x-treadmark.input
                                     wire:model="rotated_on"
@@ -272,34 +310,43 @@ class extends Component {
 
                         {{-- Optional rotation note --}}
                         <div class="mb-6">
-                            <label for="rotation_note" class="font-sans font-semibold text-[13px] text-ink-900">Rotation
-                                                                                                                Note
-                                <span class="text-ink-300 font-normal ml-1.5 text-[12px]">optional</span></label>
+                            <label for="rotation_note" class="font-sans font-semibold text-[13px] text-ink-900">
+                                Rotation Note
+                                <span class="text-ink-300 font-normal ml-1.5 text-[12px]">optional</span>
+                            </label>
                             <textarea wire:model="rotation_note" id="rotation_note" name="rotation_note"
                                       class="mt-1.5 block w-full ring-1 ring-ink-200 rounded-control bg-white text-[15px] text-ink-900 px-3 py-2.5 placeholder:text-ink-300 focus:outline-none focus:ring-4 focus:ring-blaze-500/40"
                                       rows="2" placeholder="e.g. adjusted tire pressure to 32 PSI"></textarea>
                         </div>
 
-                        {{-- Per-position tread cards --}}
-                        <div class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4 mb-6">
+                        {{-- Per-position tread cards — 2-col on mobile, 3-col on desktop --}}
+                        <div class="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-6">
                             @foreach ($stubs as $stub)
                                 @php
                                     $pos = $stub['from_position']->value;
                                     $tire = $stub['tire'];
                                     $lastTread = $stub['last_tread_center'];
+                                    $hasFlags = collect($tireFlags[$pos] ?? [])->contains(true)
+                                        || ($wearFlags[$pos]['is_feathering'] ?? false);
+                                    $hasNote = !empty($treads[$pos]['note']);
+                                    $startOpen = $hasFlags || $hasNote;
                                 @endphp
-                                <div class="border border-ink-200 rounded-card p-4 bg-white">
-                                    <div class="flex items-center justify-between mb-3 border-b border-ink-100 pb-2">
-                                        <span class="font-semibold text-sm text-ink-500 uppercase tracking-wide">{{ $stub['from_position']->label() }}</span>
-                                        <span class="font-bold text-ink-900">{{ $tire->label }}</span>
+                                <div class="border border-ink-200 rounded-card p-3 sm:p-4 bg-white flex flex-col"
+                                     x-data="{ open: {{ $startOpen ? 'true' : 'false' }} }">
+
+                                    {{-- Card header: position chip + tire label --}}
+                                    <div class="flex items-center justify-between mb-3 pb-2 border-b border-ink-100">
+                                        <x-treadmark.position-tag :position="$pos" size="sm" />
+                                        <span class="font-mono font-bold text-sm text-ink-800">{{ $tire->label }}</span>
                                     </div>
 
+                                    {{-- Last reading badge --}}
                                     @if ($lastTread !== null)
-                                        <p class="text-xs text-ink-400 mb-2">Last: {{ $lastTread }}/32"</p>
+                                        <p class="text-[11px] text-ink-400 mb-2 font-mono">Last: {{ $lastTread }}/32"</p>
                                     @endif
 
-                                    {{-- Center tread (required) — text-base prevents iOS zoom on focus --}}
-                                    <div class="mb-3">
+                                    {{-- Center tread (required) — visually prominent --}}
+                                    <div class="mb-3 bg-ink-50 rounded-control p-2.5">
                                         <x-treadmark.input
                                             wire:model="treads.{{ $pos }}.tread_center"
                                             :id="'tread_center_'.$pos"
@@ -314,9 +361,9 @@ class extends Component {
                                         />
                                     </div>
 
-                                    {{-- Inner + Outer (optional) --}}
+                                    {{-- Inner + Outer (optional) — min-w-0 fixes overflow --}}
                                     <div class="flex gap-2 mb-3">
-                                        <div class="flex-1">
+                                        <div class="flex-1 min-w-0">
                                             <x-treadmark.input
                                                 wire:model="treads.{{ $pos }}.tread_inner"
                                                 :id="'tread_inner_'.$pos"
@@ -328,7 +375,7 @@ class extends Component {
                                                 inputmode="decimal"
                                             />
                                         </div>
-                                        <div class="flex-1">
+                                        <div class="flex-1 min-w-0">
                                             <x-treadmark.input
                                                 wire:model="treads.{{ $pos }}.tread_outer"
                                                 :id="'tread_outer_'.$pos"
@@ -342,51 +389,76 @@ class extends Component {
                                         </div>
                                     </div>
 
-                                    {{-- Note --}}
-                                    <div class="mb-3">
-                                        <label :for="'note_'.$pos" class="font-sans font-semibold text-[13px]">Note
-                                            <span class="text-ink-300 font-normal ml-1.5 text-[12px]">optional</span></label>
-                                        <textarea
-                                            wire:model="treads.{{ $pos }}.note"
-                                            :id="'note_'.$pos"
-                                            class="mt-1.5 block w-full ring-1 ring-ink-200 rounded-control bg-white text-[13px] text-ink-900 px-3 py-2 placeholder:text-ink-300 focus:outline-none focus:ring-4 focus:ring-blaze-500/40"
-                                            rows="2"></textarea>
-                                    </div>
+                                    {{-- Collapsible: Note + Condition flags --}}
+                                    <div class="mt-auto pt-2 border-t border-ink-100">
+                                        <button type="button"
+                                                x-on:click="open = !open"
+                                                class="w-full flex items-center justify-between py-1 text-[11px] font-semibold uppercase tracking-wide text-ink-400 hover:text-ink-600 transition-colors">
+                                            <span>Note &amp; Condition</span>
+                                            <svg x-bind:class="open ? 'rotate-180' : ''"
+                                                 class="w-3.5 h-3.5 transition-transform duration-150"
+                                                 viewBox="0 0 16 16" fill="currentColor">
+                                                <path d="M8 10.94 2.53 5.47l1.06-1.06L8 8.81l4.41-4.4 1.06 1.06L8 10.94Z"/>
+                                            </svg>
+                                        </button>
 
-                                    {{-- Condition & wear flags --}}
-                                    <div class="pt-3 border-t border-ink-100 space-y-1.5">
-                                        <p class="text-xs font-semibold text-ink-400 uppercase tracking-wide mb-1">
-                                            Condition</p>
-                                        @foreach ([
-                                            'has_cracking' => 'Cracking / dry rot',
-                                            'has_bulge' => 'Sidewall bulge',
-                                            'has_cupping' => 'Cupping',
-                                            'has_puncture_repair' => 'Plug / patch',
-                                        ] as $flag => $label)
-                                            <label class="flex items-center gap-2 text-xs text-ink-700 cursor-pointer select-none">
-                                                <input type="checkbox" wire:model="tireFlags.{{ $pos }}.{{ $flag }}"
-                                                       class="rounded border-ink-300 text-blaze-500 focus:ring-blaze-500/40 min-h-[20px] min-w-[20px]">
-                                                {{ $label }}
-                                            </label>
-                                        @endforeach
-                                        <label class="flex items-center gap-2 text-xs text-ink-700 cursor-pointer select-none">
-                                            <input type="checkbox" wire:model="wearFlags.{{ $pos }}.is_feathering"
-                                                   class="rounded border-ink-300 text-blaze-500 focus:ring-blaze-500/40 min-h-[20px] min-w-[20px]">
-                                            Feathering / sawtooth
-                                        </label>
+                                        <div x-show="open"
+                                             x-transition:enter="transition ease-out duration-150"
+                                             x-transition:enter-start="opacity-0 -translate-y-1"
+                                             x-transition:enter-end="opacity-100 translate-y-0"
+                                             x-transition:leave="transition ease-in duration-100"
+                                             x-transition:leave-start="opacity-100 translate-y-0"
+                                             x-transition:leave-end="opacity-0 -translate-y-1"
+                                             class="pt-2 space-y-3">
+
+                                            {{-- Note --}}
+                                            <div>
+                                                <label for="note_{{ $pos }}" class="font-sans font-semibold text-[13px]">
+                                                    Note <span class="text-ink-300 font-normal ml-1.5 text-[12px]">optional</span>
+                                                </label>
+                                                <textarea
+                                                    wire:model="treads.{{ $pos }}.note"
+                                                    id="note_{{ $pos }}"
+                                                    class="mt-1.5 block w-full ring-1 ring-ink-200 rounded-control bg-white text-[13px] text-ink-900 px-3 py-2 placeholder:text-ink-300 focus:outline-none focus:ring-4 focus:ring-blaze-500/40"
+                                                    rows="2"></textarea>
+                                            </div>
+
+                                            {{-- Condition & wear flags --}}
+                                            <div class="space-y-1.5">
+                                                <p class="text-[11px] font-semibold text-ink-400 uppercase tracking-wide">Condition</p>
+                                                @foreach ([
+                                                    'has_cracking' => 'Cracking / dry rot',
+                                                    'has_bulge' => 'Sidewall bulge',
+                                                    'has_cupping' => 'Cupping',
+                                                    'has_puncture_repair' => 'Plug / patch',
+                                                ] as $flag => $label)
+                                                    <label class="flex items-center gap-2 text-xs text-ink-700 cursor-pointer select-none">
+                                                        <input type="checkbox" wire:model="tireFlags.{{ $pos }}.{{ $flag }}"
+                                                               class="rounded border-ink-300 text-blaze-500 focus:ring-blaze-500/40 min-h-[20px] min-w-[20px]">
+                                                        {{ $label }}
+                                                    </label>
+                                                @endforeach
+                                                <label class="flex items-center gap-2 text-xs text-ink-700 cursor-pointer select-none">
+                                                    <input type="checkbox" wire:model="wearFlags.{{ $pos }}.is_feathering"
+                                                           class="rounded border-ink-300 text-blaze-500 focus:ring-blaze-500/40 min-h-[20px] min-w-[20px]">
+                                                    Feathering / sawtooth
+                                                </label>
+                                            </div>
+                                        </div>
                                     </div>
                                 </div>
                             @endforeach
-                        </div>
-
-                        <div class="flex items-center justify-end">
-                            <x-treadmark.button type="submit" size="lg">
-                                {{ __('Next: Assign Positions →') }}
-                            </x-treadmark.button>
                         </div>
                     </form>
                 </div>
             </div>
         </div>
+    </div>
+
+    {{-- Sticky submit bar — sits above the mobile nav safely --}}
+    <div class="fixed bottom-0 inset-x-0 z-10 bg-white/95 backdrop-blur-sm border-t border-ink-200 px-4 py-3 flex justify-end sm:px-6">
+        <x-treadmark.button form="prepare-form" type="submit">
+            {{ __('Next: Assign Positions →') }}
+        </x-treadmark.button>
     </div>
 </div>

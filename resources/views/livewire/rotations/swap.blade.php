@@ -250,7 +250,7 @@ class extends Component {
                                         :active="! $swap['retiring']"
                                     />
                                     <div class="flex-1 min-w-0">
-                                        <div class="font-semibold text-[14px] text-ink-900">
+                                        <div class="font-mono font-semibold text-[14px] text-ink-900">
                                             {{ $swap['tire_label'] }}
                                             @if ($swap['tire_brand'] || $swap['tire_model'])
                                                 <span class="font-normal text-ink-400">&middot; {{ trim($swap['tire_brand'].' '.$swap['tire_model']) }}</span>
@@ -380,7 +380,7 @@ class extends Component {
                                         <x-treadmark.icon name="trash" class="w-3.5 h-3.5 text-rust-600"/>
                                     </span>
                                     <div class="flex-1 min-w-0">
-                                        <span class="font-semibold text-[14px] text-ink-900">{{ $swap['tire_label'] }}</span>
+                                        <span class="font-mono font-semibold text-[14px] text-ink-900">{{ $swap['tire_label'] }}</span>
                                         <span class="text-ink-400 text-[13px]"> retiring from {{ $swap['current_position'] }}</span>
                                         @if ($swap['retiring_tread'] !== '')
                                             <span class="text-ink-400 text-[13px]"> &middot; final tread {{ $swap['retiring_tread'] }}/32"</span>

@@ -101,7 +101,7 @@ class extends Component {
                             @foreach ($this->tires as $row)
                                 @php $tire = $row['tire']; @endphp
                                 <tr class="hover:bg-ink-50 {{ $tire->status === TireStatus::Retired ? 'opacity-60' : '' }}">
-                                    <td class="py-3 font-bold text-ink-900">
+                                    <td class="py-3 font-mono font-bold text-ink-900">
                                         <a href="{{ route('tires.show', $tire) }}" class="hover:underline">{{ $tire->label }}</a>
                                     </td>
                                     <td class="py-3 text-ink-700">
