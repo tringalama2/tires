@@ -96,7 +96,9 @@
 
     {{-- Tread section --}}
     <div class="px-5 py-5 space-y-3">
-        <div class="font-mono text-[11px] uppercase tracking-caps text-ink-400">Starting tread depth</div>
+        <div class="font-sans font-semibold text-[13px] ">Starting tread
+                                                          depth<span class="text-blaze-500 ml-0.5">*</span>
+        </div>
 
         <div class="flex items-start gap-4">
             <div class="flex-1">
