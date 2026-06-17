@@ -6,11 +6,13 @@ use App\Models\Rotation;
 use App\Models\Vehicle;
 use App\Services\RotationService;
 use Illuminate\Support\Carbon;
+use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 
-new #[Layout('layouts.app')] class extends Component {
+new #[Layout('layouts.app')]
+class extends Component {
 
     public string|int|null $vehicle_id = null;
     public ?string $edit_rotation_id = null;
@@ -64,9 +66,20 @@ new #[Layout('layouts.app')] class extends Component {
         }
     }
 
+    #[Computed]
+    public function lastOdometer(): ?int
+    {
+        return $this->vehicle()->rotations()->max('odometer');
+    }
+
+    private function vehicle(): Vehicle
+    {
+        return Vehicle::findOrFail($this->vehicle_id);
+    }
+
     private function loadExistingRotation(string|int $rotationId): void
     {
-        $rotation = $this->vehicle->rotations()->with('placements.tire')->findOrFail($rotationId);
+        $rotation = $this->vehicle()->rotations()->with('placements.tire')->findOrFail($rotationId);
         $this->rotated_on = $rotation->rotated_on->toDateString();
         $this->odometer = $rotation->odometer;
         $this->rotation_note = $rotation->note;
@@ -100,8 +113,8 @@ new #[Layout('layouts.app')] class extends Component {
         }
 
         // Sort by canonical position order
-        $order = array_flip(array_map(fn ($p) => $p->value, TirePosition::order()));
-        usort($stubs, fn ($a, $b) => $order[$a['from_position']->value] <=> $order[$b['from_position']->value]);
+        $order = array_flip(array_map(fn($p) => $p->value, TirePosition::order()));
+        usort($stubs, fn($a, $b) => $order[$a['from_position']->value] <=> $order[$b['from_position']->value]);
         $this->stubs = $stubs;
     }
 
@@ -210,7 +223,7 @@ new #[Layout('layouts.app')] class extends Component {
                 <div class="p-6 text-ink-900">
 
                     <div class="flex justify-between mb-4">
-                        <div class="font-display font-semibold uppercase text-2xl tracking-wider text-ink-900">{{ $this->vehicle->nickname }}</div>
+                        <div class="font-display font-semibold uppercase text-2xl tracking-wider text-ink-900">{{ $this->vehicle()->nickname }}</div>
                         @if ($isEdit)
                             <span class="text-sm text-amber-600 font-medium self-center">Editing existing rotation</span>
                         @endif
@@ -247,6 +260,7 @@ new #[Layout('layouts.app')] class extends Component {
                                     type="number"
                                     label="Odometer"
                                     name="odometer"
+                                    :placeholder="$this->lastOdometer ? number_format($this->lastOdometer) : ''"
                                     suffix="mi"
                                     mono
                                     min="1"
@@ -258,10 +272,12 @@ new #[Layout('layouts.app')] class extends Component {
 
                         {{-- Optional rotation note --}}
                         <div class="mb-6">
-                            <label for="rotation_note" class="font-sans font-semibold text-[13px] text-ink-900">Rotation Note <span class="text-ink-300 font-normal ml-1.5 text-[12px]">optional</span></label>
+                            <label for="rotation_note" class="font-sans font-semibold text-[13px] text-ink-900">Rotation
+                                                                                                                Note
+                                <span class="text-ink-300 font-normal ml-1.5 text-[12px]">optional</span></label>
                             <textarea wire:model="rotation_note" id="rotation_note" name="rotation_note"
-                                class="mt-1.5 block w-full ring-1 ring-ink-200 rounded-control bg-white text-[15px] text-ink-900 px-3 py-2.5 placeholder:text-ink-300 focus:outline-none focus:ring-4 focus:ring-blaze-500/40"
-                                rows="2" placeholder="e.g. adjusted tire pressure to 32 PSI"></textarea>
+                                      class="mt-1.5 block w-full ring-1 ring-ink-200 rounded-control bg-white text-[15px] text-ink-900 px-3 py-2.5 placeholder:text-ink-300 focus:outline-none focus:ring-4 focus:ring-blaze-500/40"
+                                      rows="2" placeholder="e.g. adjusted tire pressure to 32 PSI"></textarea>
                         </div>
 
                         {{-- Per-position tread cards --}}
@@ -328,7 +344,8 @@ new #[Layout('layouts.app')] class extends Component {
 
                                     {{-- Note --}}
                                     <div class="mb-3">
-                                        <label :for="'note_'.$pos" class="font-sans font-semibold text-[13px]">Note <span class="text-ink-300 font-normal ml-1.5 text-[12px]">optional</span></label>
+                                        <label :for="'note_'.$pos" class="font-sans font-semibold text-[13px]">Note
+                                            <span class="text-ink-300 font-normal ml-1.5 text-[12px]">optional</span></label>
                                         <textarea
                                             wire:model="treads.{{ $pos }}.note"
                                             :id="'note_'.$pos"
@@ -338,7 +355,8 @@ new #[Layout('layouts.app')] class extends Component {
 
                                     {{-- Condition & wear flags --}}
                                     <div class="pt-3 border-t border-ink-100 space-y-1.5">
-                                        <p class="text-xs font-semibold text-ink-400 uppercase tracking-wide mb-1">Condition</p>
+                                        <p class="text-xs font-semibold text-ink-400 uppercase tracking-wide mb-1">
+                                            Condition</p>
                                         @foreach ([
                                             'has_cracking' => 'Cracking / dry rot',
                                             'has_bulge' => 'Sidewall bulge',
@@ -347,13 +365,13 @@ new #[Layout('layouts.app')] class extends Component {
                                         ] as $flag => $label)
                                             <label class="flex items-center gap-2 text-xs text-ink-700 cursor-pointer select-none">
                                                 <input type="checkbox" wire:model="tireFlags.{{ $pos }}.{{ $flag }}"
-                                                    class="rounded border-ink-300 text-blaze-500 focus:ring-blaze-500/40 min-h-[20px] min-w-[20px]">
+                                                       class="rounded border-ink-300 text-blaze-500 focus:ring-blaze-500/40 min-h-[20px] min-w-[20px]">
                                                 {{ $label }}
                                             </label>
                                         @endforeach
                                         <label class="flex items-center gap-2 text-xs text-ink-700 cursor-pointer select-none">
                                             <input type="checkbox" wire:model="wearFlags.{{ $pos }}.is_feathering"
-                                                class="rounded border-ink-300 text-blaze-500 focus:ring-blaze-500/40 min-h-[20px] min-w-[20px]">
+                                                   class="rounded border-ink-300 text-blaze-500 focus:ring-blaze-500/40 min-h-[20px] min-w-[20px]">
                                             Feathering / sawtooth
                                         </label>
                                     </div>

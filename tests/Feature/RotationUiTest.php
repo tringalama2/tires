@@ -4,11 +4,51 @@ use App\Models\Rotation;
 use App\Models\User;
 use App\Models\Vehicle;
 use App\Services\RotationService;
+use Livewire\Livewire;
 
 beforeEach(function () {
     [$this->user, $this->vehicle] = vehicleWithHistory();
     session(['vehicle' => $this->vehicle]);
 });
+
+/**
+ * Build the session placements payload keyed by from_position value.
+ */
+function sessionPlacements(object $vehicle, float $tread = 7.0): array
+{
+    $stubs = app(RotationService::class)->startNext($vehicle);
+    $placements = [];
+    foreach ($stubs as $stub) {
+        $pos = $stub['from_position']->value;
+        $placements[$pos] = [
+            'tire_id' => $stub['tire']->id,
+            'tire_label' => $stub['tire']->label,
+            'from_position' => $pos,
+            'from_position_label' => $stub['from_position']->label(),
+            'tread_center' => $tread,
+            'tread_inner' => null,
+            'tread_outer' => null,
+            'note' => null,
+            'to_position' => $pos,
+            'tire_flags' => ['has_cracking' => false, 'has_bulge' => false, 'has_cupping' => false, 'has_puncture_repair' => false],
+            'is_feathering' => false,
+            'is_cupped' => false,
+        ];
+    }
+
+    return $placements;
+}
+
+function withRotationSession(object $vehicle, int $odometer = 65000): void
+{
+    session([
+        'rotation.rotated_on' => '2026-12-01',
+        'rotation.odometer' => $odometer,
+        'rotation.note' => null,
+        'rotation.placements' => sessionPlacements($vehicle),
+        'rotation.rotation_id' => null,
+    ]);
+}
 
 // ---------------------------------------------------------------------------
 // Prepare page (new rotation)
@@ -41,6 +81,34 @@ it('shows the last known tread as a hint on the prepare page', function () {
         ->assertSeeText('8'); // T1@FL hint
 });
 
+it('shows the last odometer as a placeholder after a wire interaction', function () {
+    // vehicleWithHistory ends at odometer 60,000
+    Livewire::actingAs($this->user)
+        ->test('rotations.prepare')
+        ->set('rotation_note', 'test')
+        ->assertSee('60,000');
+});
+
+it('shows the vehicle nickname after a wire interaction', function () {
+    Livewire::actingAs($this->user)
+        ->test('rotations.prepare')
+        ->set('rotation_note', 'test')
+        ->assertSee($this->vehicle->nickname);
+});
+
+it('shows the vehicle nickname in edit mode after a wire interaction', function () {
+    $rotation = $this->vehicle->rotations()->where('is_setup', false)->orderByDesc('odometer')->first();
+
+    Livewire::actingAs($this->user)
+        ->test('rotations.prepare', ['edit_rotation_id' => $rotation->id])
+        ->set('rotation_note', 'test')
+        ->assertSee($this->vehicle->nickname);
+});
+
+// ---------------------------------------------------------------------------
+// Update page (assign to_positions + save)
+// ---------------------------------------------------------------------------
+
 it('redirects to prepare when update is accessed without session data', function () {
     session()->forget(['rotation.odometer']);
 
@@ -49,30 +117,30 @@ it('redirects to prepare when update is accessed without session data', function
         ->assertRedirect(route('rotations.prepare'));
 });
 
-// ---------------------------------------------------------------------------
-// Update page (assign to_positions + save)
-// ---------------------------------------------------------------------------
-
 it('renders the update page when session data is present', function () {
-    $stubs = app(RotationService::class)->startNext($this->vehicle);
-    $placements = [];
-    foreach ($stubs as $stub) {
-        $pos = $stub['from_position']->value;
-        $placements[$pos] = [
-            'tire_id' => $stub['tire']->id,
-            'tire_label' => $stub['tire']->label,
-            'from_position' => $pos,
-            'from_position_label' => $stub['from_position']->label(),
-            'tread_center' => 7.0,
-            'tread_inner' => null,
-            'tread_outer' => null,
-            'note' => null,
-            'to_position' => null,
-            'tire_flags' => ['has_cracking' => false, 'has_bulge' => false, 'has_cupping' => false, 'has_puncture_repair' => false],
-            'is_feathering' => false,
-            'is_cupped' => false,
-        ];
-    }
+    withRotationSession($this->vehicle);
+
+    $this->actingAs($this->user)
+        ->get(route('rotations.update'))
+        ->assertOk()
+        ->assertSeeText('Step 2');
+});
+
+it('saves a new rotation and redirects to the dashboard', function () {
+    withRotationSession($this->vehicle);
+
+    Livewire::actingAs($this->user)
+        ->test('rotations.update')
+        ->call('save')
+        ->assertRedirect(route('dashboard'));
+
+    expect(
+        Rotation::where('vehicle_id', $this->vehicle->id)->where('odometer', 65000)->exists()
+    )->toBeTrue();
+});
+
+it('shows a validation error when to_positions are not a valid permutation', function () {
+    $placements = sessionPlacements($this->vehicle);
 
     session([
         'rotation.rotated_on' => '2026-12-01',
@@ -82,10 +150,13 @@ it('renders the update page when session data is present', function () {
         'rotation.rotation_id' => null,
     ]);
 
-    $this->actingAs($this->user)
-        ->get(route('rotations.update'))
-        ->assertOk()
-        ->assertSeeText('Step 2');
+    $badPositions = array_fill_keys(array_keys($placements), 'FL');
+
+    Livewire::actingAs($this->user)
+        ->test('rotations.update')
+        ->set('toPositions', $badPositions)
+        ->call('save')
+        ->assertSet('validationError', 'Each tire must be assigned exactly one position, and all positions must be filled.');
 });
 
 // ---------------------------------------------------------------------------

@@ -11,7 +11,8 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Locked;
 use Livewire\Component;
 
-new #[Layout('layouts.app')] class extends Component {
+new #[Layout('layouts.app')]
+class extends Component {
 
     #[Locked]
     public string|int|null $vehicle_id = null;
@@ -77,7 +78,7 @@ new #[Layout('layouts.app')] class extends Component {
     #[Computed]
     public function activeSwaps(): array
     {
-        return array_filter($this->swaps, fn ($s) => $s['retiring']);
+        return array_filter($this->swaps, fn($s) => $s['retiring']);
     }
 
     #[Computed]
@@ -120,11 +121,11 @@ new #[Layout('layouts.app')] class extends Component {
                 $this->validationError = "Starting tread is required for the replacement of {$swap['tire_label']}.";
                 return;
             }
-            if (! empty($swap['replacement_tin']) && strlen(trim($swap['replacement_tin'])) > 12) {
+            if (!empty($swap['replacement_tin']) && strlen(trim($swap['replacement_tin'])) > 12) {
                 $this->validationError = "DOT/TIN for the replacement of {$swap['tire_label']} must be 12 characters or fewer.";
                 return;
             }
-            if (! empty($swap['replacement_purchased_on']) && ! strtotime($swap['replacement_purchased_on'])) {
+            if (!empty($swap['replacement_purchased_on']) && !strtotime($swap['replacement_purchased_on'])) {
                 $this->validationError = "Purchase date for the replacement of {$swap['tire_label']} is not a valid date.";
                 return;
             }
@@ -208,7 +209,8 @@ new #[Layout('layouts.app')] class extends Component {
 
                 {{-- Date + Odometer --}}
                 <div class="bg-white border border-ink-100 rounded-card shadow-tm-sm p-5 space-y-4">
-                    <h3 class="font-display font-semibold uppercase tracking-wide text-[13px] text-ink-500">Swap details</h3>
+                    <h3 class="font-display font-semibold uppercase tracking-wide text-[13px] text-ink-500">Swap
+                                                                                                            details</h3>
                     <div class="grid grid-cols-2 gap-4">
                         <x-treadmark.input
                             wire:model="rotated_on"
@@ -221,6 +223,9 @@ new #[Layout('layouts.app')] class extends Component {
                             type="number"
                             label="Odometer (mi)"
                             :placeholder="$this->lastOdometer ? number_format($this->lastOdometer) : ''"
+                            suffix="mi"
+                            mono
+                            min="1"
                             required
                         />
                     </div>
@@ -261,7 +266,7 @@ new #[Layout('layouts.app')] class extends Component {
                                                 ? 'bg-rust-100 border-rust-600/40 text-rust-600 hover:bg-rust-100'
                                                 : 'bg-ink-50 border-ink-200 text-ink-500 hover:bg-ink-100' }}"
                                     >
-                                        <x-treadmark.icon name="{{ $swap['retiring'] ? 'x' : 'trash' }}" class="w-3.5 h-3.5" />
+                                        <x-treadmark.icon name="{{ $swap['retiring'] ? 'x' : 'trash' }}" class="w-3.5 h-3.5"/>
                                         {{ $swap['retiring'] ? 'Cancel' : 'Retire' }}
                                     </button>
                                 </div>
@@ -269,7 +274,9 @@ new #[Layout('layouts.app')] class extends Component {
                                 {{-- Replacement form (expanded when retiring) --}}
                                 @if ($swap['retiring'])
                                     <div class="ml-14 space-y-3">
-                                        <div class="text-[11px] font-semibold uppercase tracking-wider text-ink-400 border-t border-ink-100 pt-3">Retiring tire final tread (optional)</div>
+                                        <div class="text-[11px] font-semibold uppercase tracking-wider text-ink-400 border-t border-ink-100 pt-3">
+                                            Retiring tire final tread (optional)
+                                        </div>
                                         <x-treadmark.input
                                             wire:model="swaps.{{ $tireId }}.retiring_tread"
                                             type="number"
@@ -280,7 +287,9 @@ new #[Layout('layouts.app')] class extends Component {
                                             max="20"
                                         />
 
-                                        <div class="text-[11px] font-semibold uppercase tracking-wider text-ink-400 border-t border-ink-100 pt-3">Replacement tire</div>
+                                        <div class="text-[11px] font-semibold uppercase tracking-wider text-ink-400 border-t border-ink-100 pt-3">
+                                            Replacement tire
+                                        </div>
                                         <div class="grid grid-cols-2 gap-3">
                                             <x-treadmark.input
                                                 wire:model="swaps.{{ $tireId }}.replacement_label"
@@ -348,7 +357,7 @@ new #[Layout('layouts.app')] class extends Component {
                     </x-treadmark.button>
                 </div>
 
-            {{-- ── STEP 2: REVIEW ── --}}
+                {{-- ── STEP 2: REVIEW ── --}}
             @else
 
                 <div class="bg-white border border-ink-100 rounded-card shadow-tm-sm overflow-hidden">
@@ -368,7 +377,7 @@ new #[Layout('layouts.app')] class extends Component {
                                 {{-- Retiring row --}}
                                 <div class="flex items-center gap-3">
                                     <span class="flex-none w-6 h-6 rounded-full bg-rust-100 flex items-center justify-center">
-                                        <x-treadmark.icon name="trash" class="w-3.5 h-3.5 text-rust-600" />
+                                        <x-treadmark.icon name="trash" class="w-3.5 h-3.5 text-rust-600"/>
                                     </span>
                                     <div class="flex-1 min-w-0">
                                         <span class="font-semibold text-[14px] text-ink-900">{{ $swap['tire_label'] }}</span>
@@ -383,7 +392,7 @@ new #[Layout('layouts.app')] class extends Component {
                                 {{-- Replacement row --}}
                                 <div class="flex items-center gap-3">
                                     <span class="flex-none w-6 h-6 rounded-full bg-fern-100 flex items-center justify-center">
-                                        <x-treadmark.icon name="plus" class="w-3.5 h-3.5 text-fern-600" />
+                                        <x-treadmark.icon name="plus" class="w-3.5 h-3.5 text-fern-600"/>
                                     </span>
                                     <div class="flex-1 min-w-0">
                                         <span class="font-semibold text-[14px] text-ink-900">{{ $swap['replacement_label'] }}</span>

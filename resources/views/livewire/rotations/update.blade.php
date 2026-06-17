@@ -13,8 +13,6 @@ new #[Layout('layouts.app')] class extends Component {
 
     public string|int|null $vehicle_id = null;
 
-    protected Vehicle $vehicle;
-
     /** Placements from session, keyed by from_position value. */
     public array $placements = [];
 
@@ -41,11 +39,13 @@ new #[Layout('layouts.app')] class extends Component {
 
         if (isset($this->vehicle_id)) {
             $id = is_string($this->vehicle_id) ? hashid_decode($this->vehicle_id) : $this->vehicle_id;
-            $this->vehicle = Vehicle::findOrFail($id);
-            $this->authorize('view', $this->vehicle);
-            $selectVehicle($this->vehicle);
+            $vehicle = Vehicle::findOrFail($id);
+            $this->authorize('view', $vehicle);
+            $selectVehicle($vehicle);
+            $this->vehicle_id = $vehicle->id;
         } else {
-            $this->vehicle = session('vehicle');
+            $vehicle = session('vehicle');
+            $this->vehicle_id = $vehicle->id;
         }
 
         $this->placements = session('rotation.placements', []);
@@ -53,12 +53,12 @@ new #[Layout('layouts.app')] class extends Component {
         $this->isEdit = $this->rotationId !== null;
 
         if ($this->isEdit) {
-            $maxOdometer = $this->vehicle->rotations()
+            $maxOdometer = $this->vehicle()->rotations()
                 ->where('is_setup', false)
                 ->where('id', '!=', $this->rotationId)
                 ->max('odometer');
 
-            $latestId = $this->vehicle->rotations()
+            $latestId = $this->vehicle()->rotations()
                 ->where('is_setup', false)
                 ->orderByDesc('odometer')
                 ->value('id');
@@ -75,6 +75,11 @@ new #[Layout('layouts.app')] class extends Component {
                 $this->toPositions[$pos] = $pos;
             }
         }
+    }
+
+    private function vehicle(): Vehicle
+    {
+        return Vehicle::findOrFail($this->vehicle_id);
     }
 
     public function save(RotationService $rotationService): void
@@ -117,7 +122,7 @@ new #[Layout('layouts.app')] class extends Component {
                 'note' => session('rotation.note'),
                 'rotation_id' => $this->rotationId,
                 'placements' => $placements,
-            ], $this->vehicle);
+            ], $this->vehicle());
         } catch (ValidationException $e) {
             $this->validationError = collect($e->errors())->flatten()->first();
             return;
