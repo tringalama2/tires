@@ -19,6 +19,7 @@
                 :value="old('year', $model?->year)"
                 min="1900"
                 max="9999"
+                placeholder="1990"
                 required
                 autofocus
                 :error="$errors->first('year')"
@@ -31,6 +32,7 @@
                 type="text"
                 label="Make"
                 :value="old('make', $model?->make)"
+                placeholder="Toyota"
                 required
                 :error="$errors->first('make')"
             />
@@ -42,6 +44,7 @@
                 type="text"
                 label="Model"
                 :value="old('model', $model?->model)"
+                placeholder="4Runner"
                 required
                 :error="$errors->first('model')"
             />
@@ -53,6 +56,7 @@
         name="vin"
         type="text"
         label="VIN"
+        placeholder="JT3VN39J2L0......"
         :value="old('vin', $model?->vin)"
         :error="$errors->first('vin')"
     />
@@ -63,6 +67,7 @@
         type="text"
         label="Nickname"
         :value="old('nickname', $model?->nickname)"
+        placeholder="My 2nd Gen 4Runner"
         required
         :error="$errors->first('nickname')"
     />
@@ -93,6 +98,7 @@
                     suffix="mi"
                     mono
                     :value="old('starting_odometer')"
+                    placeholder="499,998"
                     required
                     :error="$errors->first('starting_odometer')"
                 />
