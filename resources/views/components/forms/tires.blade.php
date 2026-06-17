@@ -18,7 +18,7 @@
             name="label"
             type="text"
             label="Label"
-            placeholder="T6"
+            placeholder="Tire 1"
             :value="old('label', $model?->label)"
             required
             autofocus
@@ -148,17 +148,17 @@
 </form>
 
 @once
-<script>
-function tireForm() {
-    return {
-        tread: 0,
-        get gaugeColor() {
-            if (this.tread <= 2)  return 'var(--tread-worn)';
-            if (this.tread < 5)   return 'var(--tread-low)';
-            if (this.tread < 8)   return 'var(--tread-fair)';
-            return 'var(--tread-good)';
-        },
-    };
-}
-</script>
+    <script>
+        function tireForm() {
+            return {
+                tread: 0,
+                get gaugeColor() {
+                    if (this.tread <= 2) return 'var(--tread-worn)';
+                    if (this.tread < 5) return 'var(--tread-low)';
+                    if (this.tread < 8) return 'var(--tread-fair)';
+                    return 'var(--tread-good)';
+                },
+            };
+        }
+    </script>
 @endonce
