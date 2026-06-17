@@ -163,7 +163,7 @@ new #[Layout('layouts.app')] class extends Component {
 
 <div>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+        <h2 class="font-semibold text-xl text-ink-800 leading-tight">
             {{ $isEdit ? __('Edit Rotation — Step 2 of 2') : __('New Rotation — Step 2 of 2') }}
         </h2>
     </x-slot>
@@ -171,7 +171,7 @@ new #[Layout('layouts.app')] class extends Component {
     <div class="py-12">
         <div class="max-w-5xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
+                <div class="p-6 text-ink-900">
 
                     {{-- Edit warning --}}
                     @if ($isEdit && ! $isLatestRotation)
@@ -193,13 +193,13 @@ new #[Layout('layouts.app')] class extends Component {
 
                     {{-- Validation error --}}
                     @if ($validationError)
-                        <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded text-red-700 text-sm">
+                        <div class="mb-4 p-3 bg-rust-100 border border-rust-600/30 rounded-control text-rust-600 text-sm">
                             {{ $validationError }}
                         </div>
                     @endif
 
                     <div class="flex justify-between mb-4">
-                        <div class="text-sm text-gray-500">
+                        <div class="text-sm text-ink-500">
                             Drag each tire to its new position, or
                             <button type="button" wire:click="toggleMode" class="text-steel-600 underline hover:text-steel-700 text-sm">switch to {{ $tableMode ? 'drag' : 'table' }} view</button>.
                         </div>
@@ -212,26 +212,26 @@ new #[Layout('layouts.app')] class extends Component {
                         {{-- Table fallback --}}
                         <table class="w-full border-collapse text-sm">
                             <thead>
-                                <tr class="bg-gray-100 text-left">
-                                    <th class="p-3 border border-gray-300">Tire</th>
-                                    <th class="p-3 border border-gray-300">From</th>
-                                    <th class="p-3 border border-gray-300">To</th>
-                                    <th class="p-3 border border-gray-300">Tread (C/I/O)</th>
+                                <tr class="bg-ink-50 text-left">
+                                    <th class="p-3 border border-ink-200">Tire</th>
+                                    <th class="p-3 border border-ink-200">From</th>
+                                    <th class="p-3 border border-ink-200">To</th>
+                                    <th class="p-3 border border-ink-200">Tread (C/I/O)</th>
                                 </tr>
                             </thead>
                             <tbody>
                                 @foreach ($placements as $fromPos => $p)
-                                    <tr class="odd:bg-white even:bg-gray-50">
-                                        <td class="p-3 border border-gray-300 font-bold text-ink-900">{{ $p['tire_label'] ?? $fromPos }}</td>
-                                        <td class="p-3 border border-gray-300">{{ TirePosition::from($fromPos)->label() }}</td>
-                                        <td class="p-3 border border-gray-300">
-                                            <select wire:model.live="toPositions.{{ $fromPos }}" class="border-gray-300 rounded text-sm w-full">
+                                    <tr class="odd:bg-white even:bg-ink-50">
+                                        <td class="p-3 border border-ink-200 font-bold text-ink-900">{{ $p['tire_label'] ?? $fromPos }}</td>
+                                        <td class="p-3 border border-ink-200">{{ TirePosition::from($fromPos)->label() }}</td>
+                                        <td class="p-3 border border-ink-200">
+                                            <select wire:model.live="toPositions.{{ $fromPos }}" class="border-ink-200 rounded-control text-sm w-full">
                                                 @foreach (TirePosition::order() as $pos)
                                                     <option value="{{ $pos->value }}">{{ $pos->label() }}</option>
                                                 @endforeach
                                             </select>
                                         </td>
-                                        <td class="p-3 border border-gray-300 text-gray-600">
+                                        <td class="p-3 border border-ink-200 text-ink-500">
                                             {{ $p['tread_center'] }}/32"
                                             @if ($p['tread_inner'] ?? null) · i:{{ $p['tread_inner'] }} @endif
                                             @if ($p['tread_outer'] ?? null) · o:{{ $p['tread_outer'] }} @endif
@@ -258,7 +258,7 @@ new #[Layout('layouts.app')] class extends Component {
                                 data-position="FL"
                                 class="justify-self-center border-2 rounded-lg p-2 w-44 min-h-40 transition-colors"
                             >
-                                <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 border-b pb-1">Front Left</div>
+                                <div class="text-xs font-semibold text-ink-400 uppercase tracking-wide mb-1 border-b border-ink-200 pb-1">Front Left</div>
                                 <template x-for="(p, fromPos) in placements" :key="fromPos">
                                     <div
                                         x-show="currentPositions[fromPos] === 'FL'"
@@ -269,8 +269,8 @@ new #[Layout('layouts.app')] class extends Component {
                                     >
                                         <x-phosphor-tire-duotone class="w-12 h-12 text-ink-600" />
                                         <span class="text-xs font-bold text-ink-900" x-text="p.tire_label"></span>
-                                        <span class="text-xs text-gray-500">from <span x-text="p.from_position_label"></span></span>
-                                        <span class="text-xs text-gray-700" x-text="p.tread_center + '/32&quot;'"></span>
+                                        <span class="text-xs text-ink-400">from <span x-text="p.from_position_label"></span></span>
+                                        <span class="text-xs text-ink-700" x-text="p.tread_center + '/32&quot;'"></span>
                                     </div>
                                 </template>
                             </div>
@@ -291,7 +291,7 @@ new #[Layout('layouts.app')] class extends Component {
                                 data-position="FR"
                                 class="justify-self-center border-2 rounded-lg p-2 w-44 min-h-40 transition-colors"
                             >
-                                <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 border-b pb-1">Front Right</div>
+                                <div class="text-xs font-semibold text-ink-400 uppercase tracking-wide mb-1 border-b border-ink-200 pb-1">Front Right</div>
                                 <template x-for="(p, fromPos) in placements" :key="fromPos">
                                     <div
                                         x-show="currentPositions[fromPos] === 'FR'"
@@ -302,8 +302,8 @@ new #[Layout('layouts.app')] class extends Component {
                                     >
                                         <x-phosphor-tire-duotone class="w-12 h-12 text-ink-600" />
                                         <span class="text-xs font-bold text-ink-900" x-text="p.tire_label"></span>
-                                        <span class="text-xs text-gray-500">from <span x-text="p.from_position_label"></span></span>
-                                        <span class="text-xs text-gray-700" x-text="p.tread_center + '/32&quot;'"></span>
+                                        <span class="text-xs text-ink-400">from <span x-text="p.from_position_label"></span></span>
+                                        <span class="text-xs text-ink-700" x-text="p.tread_center + '/32&quot;'"></span>
                                     </div>
                                 </template>
                             </div>
@@ -319,7 +319,7 @@ new #[Layout('layouts.app')] class extends Component {
                                 data-position="GARAGE"
                                 class="row-span-3 justify-self-center border-2 border-dashed rounded-lg p-3 w-44 min-h-48 transition-colors"
                             >
-                                <div class="text-xs font-semibold text-gray-400 uppercase tracking-wide mb-2 text-center">Holding</div>
+                                <div class="text-xs font-semibold text-ink-400 uppercase tracking-wide mb-2 text-center">Holding</div>
                                 <template x-for="(p, fromPos) in placements" :key="fromPos">
                                     <div
                                         x-show="currentPositions[fromPos] === 'GARAGE'"
@@ -328,8 +328,8 @@ new #[Layout('layouts.app')] class extends Component {
                                         x-on:touchstart.prevent="onTouchStart(fromPos, $event)"
                                         class="cursor-grab select-none flex flex-col items-center mb-2"
                                     >
-                                        <x-phosphor-tire-duotone class="w-10 h-10 text-gray-500" />
-                                        <span class="text-xs font-bold text-gray-700" x-text="p.tire_label"></span>
+                                        <x-phosphor-tire-duotone class="w-10 h-10 text-ink-400" />
+                                        <span class="text-xs font-bold text-ink-700" x-text="p.tire_label"></span>
                                     </div>
                                 </template>
                             </div>
@@ -345,7 +345,7 @@ new #[Layout('layouts.app')] class extends Component {
                                 data-position="RL"
                                 class="justify-self-center border-2 rounded-lg p-2 w-44 min-h-40 transition-colors"
                             >
-                                <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 border-b pb-1">Rear Left</div>
+                                <div class="text-xs font-semibold text-ink-400 uppercase tracking-wide mb-1 border-b border-ink-200 pb-1">Rear Left</div>
                                 <template x-for="(p, fromPos) in placements" :key="fromPos">
                                     <div
                                         x-show="currentPositions[fromPos] === 'RL'"
@@ -356,8 +356,8 @@ new #[Layout('layouts.app')] class extends Component {
                                     >
                                         <x-phosphor-tire-duotone class="w-12 h-12 text-cyan-600" />
                                         <span class="text-xs font-bold text-cyan-700" x-text="p.tire_label"></span>
-                                        <span class="text-xs text-gray-500">from <span x-text="p.from_position_label"></span></span>
-                                        <span class="text-xs text-gray-700" x-text="p.tread_center + '/32&quot;'"></span>
+                                        <span class="text-xs text-ink-400">from <span x-text="p.from_position_label"></span></span>
+                                        <span class="text-xs text-ink-700" x-text="p.tread_center + '/32&quot;'"></span>
                                     </div>
                                 </template>
                             </div>
@@ -373,7 +373,7 @@ new #[Layout('layouts.app')] class extends Component {
                                 data-position="RR"
                                 class="justify-self-center border-2 rounded-lg p-2 w-44 min-h-40 transition-colors"
                             >
-                                <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 border-b pb-1">Rear Right</div>
+                                <div class="text-xs font-semibold text-ink-400 uppercase tracking-wide mb-1 border-b border-ink-200 pb-1">Rear Right</div>
                                 <template x-for="(p, fromPos) in placements" :key="fromPos">
                                     <div
                                         x-show="currentPositions[fromPos] === 'RR'"
@@ -382,10 +382,10 @@ new #[Layout('layouts.app')] class extends Component {
                                         x-on:touchstart.prevent="onTouchStart(fromPos, $event)"
                                         class="cursor-grab select-none flex flex-col items-center mt-1"
                                     >
-                                        <x-phosphor-tire-duotone class="w-12 h-12 text-green-600" />
-                                        <span class="text-xs font-bold text-green-700" x-text="p.tire_label"></span>
-                                        <span class="text-xs text-gray-500">from <span x-text="p.from_position_label"></span></span>
-                                        <span class="text-xs text-gray-700" x-text="p.tread_center + '/32&quot;'"></span>
+                                        <x-phosphor-tire-duotone class="w-12 h-12 text-fern-600" />
+                                        <span class="text-xs font-bold text-fern-600" x-text="p.tire_label"></span>
+                                        <span class="text-xs text-ink-400">from <span x-text="p.from_position_label"></span></span>
+                                        <span class="text-xs text-ink-700" x-text="p.tread_center + '/32&quot;'"></span>
                                     </div>
                                 </template>
                             </div>
@@ -401,7 +401,7 @@ new #[Layout('layouts.app')] class extends Component {
                                 data-position="SP"
                                 class="col-start-2 justify-self-center border-2 rounded-lg p-2 w-44 min-h-40 transition-colors"
                             >
-                                <div class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1 border-b pb-1">Spare</div>
+                                <div class="text-xs font-semibold text-ink-400 uppercase tracking-wide mb-1 border-b border-ink-200 pb-1">Spare</div>
                                 <template x-for="(p, fromPos) in placements" :key="fromPos">
                                     <div
                                         x-show="currentPositions[fromPos] === 'SP'"
@@ -412,8 +412,8 @@ new #[Layout('layouts.app')] class extends Component {
                                     >
                                         <x-phosphor-tire-duotone class="w-12 h-12 text-lime-600" />
                                         <span class="text-xs font-bold text-lime-700" x-text="p.tire_label"></span>
-                                        <span class="text-xs text-gray-500">from <span x-text="p.from_position_label"></span></span>
-                                        <span class="text-xs text-gray-700" x-text="p.tread_center + '/32&quot;'"></span>
+                                        <span class="text-xs text-ink-400">from <span x-text="p.from_position_label"></span></span>
+                                        <span class="text-xs text-ink-700" x-text="p.tread_center + '/32&quot;'"></span>
                                     </div>
                                 </template>
                             </div>
@@ -442,8 +442,8 @@ Alpine.data('rotationDrag', (placements, initialPositions) => ({
 
     dropZoneClass(pos) {
         const base = pos === 'GARAGE'
-            ? 'bg-gray-50 border-gray-300'
-            : 'bg-gray-100 border-gray-400';
+            ? 'bg-ink-50 border-ink-200'
+            : 'bg-ink-100 border-ink-300';
         const highlight = 'bg-blaze-50 border-blaze-400';
         return this.hovering === pos ? highlight : base;
     },

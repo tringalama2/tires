@@ -258,7 +258,7 @@ new #[Layout('layouts.app')] class extends Component {
                                         wire:click="$set('swaps.{{ $tireId }}.retiring', {{ $swap['retiring'] ? 'false' : 'true' }})"
                                         class="flex-none inline-flex items-center gap-1.5 font-display font-semibold uppercase tracking-wider2 text-[11px] px-3 py-1.5 rounded-control border transition-colors
                                             {{ $swap['retiring']
-                                                ? 'bg-red-50 border-red-300 text-red-600 hover:bg-red-100'
+                                                ? 'bg-rust-100 border-rust-600/40 text-rust-600 hover:bg-rust-100'
                                                 : 'bg-ink-50 border-ink-200 text-ink-500 hover:bg-ink-100' }}"
                                     >
                                         <x-treadmark.icon name="{{ $swap['retiring'] ? 'x' : 'trash' }}" class="w-3.5 h-3.5" />
@@ -367,8 +367,8 @@ new #[Layout('layouts.app')] class extends Component {
 
                                 {{-- Retiring row --}}
                                 <div class="flex items-center gap-3">
-                                    <span class="flex-none w-6 h-6 rounded-full bg-red-100 flex items-center justify-center">
-                                        <x-treadmark.icon name="trash" class="w-3.5 h-3.5 text-red-500" />
+                                    <span class="flex-none w-6 h-6 rounded-full bg-rust-100 flex items-center justify-center">
+                                        <x-treadmark.icon name="trash" class="w-3.5 h-3.5 text-rust-600" />
                                     </span>
                                     <div class="flex-1 min-w-0">
                                         <span class="font-semibold text-[14px] text-ink-900">{{ $swap['tire_label'] }}</span>
@@ -377,7 +377,7 @@ new #[Layout('layouts.app')] class extends Component {
                                             <span class="text-ink-400 text-[13px]"> &middot; final tread {{ $swap['retiring_tread'] }}/32"</span>
                                         @endif
                                     </div>
-                                    <span class="text-[11px] font-mono px-2 py-0.5 rounded bg-red-50 text-red-500 uppercase tracking-wide">Retired</span>
+                                    <span class="text-[11px] font-mono px-2 py-0.5 rounded bg-rust-100 text-rust-600 uppercase tracking-wide">Retired</span>
                                 </div>
 
                                 {{-- Replacement row --}}

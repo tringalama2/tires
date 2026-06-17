@@ -35,7 +35,7 @@ new #[Layout('layouts.app')] class extends Component {
 ?>
 
 <x-slot name="header">
-    <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+    <h2 class="font-semibold text-xl text-ink-800 leading-tight">
         My Vehicles
     </h2>
 </x-slot>
@@ -52,7 +52,7 @@ new #[Layout('layouts.app')] class extends Component {
 
             <div class="max-w-xl">
                 <header>
-                    <h2 class="text-lg font-medium text-gray-900">
+                    <h2 class="text-lg font-medium text-ink-900">
                         Select a vehicle or add a new one.
                     </h2>
                 </header>
@@ -72,14 +72,14 @@ new #[Layout('layouts.app')] class extends Component {
                             </div>
                         </a>
                         <div class="w-32">
-                            <h2 class="text-xl font-bold text-gray-800">{{ $vehicle->nickname }}</h2>
-                            <div class="text-gray-500 text-sm">
+                            <h2 class="text-xl font-bold text-ink-800">{{ $vehicle->nickname }}</h2>
+                            <div class="text-ink-500 text-sm">
                                 {{ $vehicle->year }} {{ $vehicle->make }} {{ $vehicle->model }}
                             </div>
                         </div>
                         <div class="w-48">
                             <div>
-                                    <span class="text-lg font-bold text-gray-700 p-2 border-b-gray-300">
+                                    <span class="text-lg font-bold text-ink-700 p-2">
                                         {{ $vehicle->loadCount('activeTires')->active_tires_count }}
                                     </span>
                                 <span>Active Tires</span>

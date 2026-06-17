@@ -70,7 +70,7 @@ class extends Component {
 <div>
     <x-slot name="header">
         <div class="flex items-center justify-between">
-            <h2 class="font-semibold text-xl text-gray-800 leading-tight">{{ __('Tires') }}</h2>
+            <h2 class="font-semibold text-xl text-ink-800 leading-tight">{{ __('Tires') }}</h2>
             <x-treadmark.button href="{{ route('rotations.swap', hashid_encode($vehicle_id)) }}" wire:navigate size="sm">
                 <x-treadmark.icon name="wrench" class="w-4 h-4"/>
                 Swap Tire
@@ -84,35 +84,35 @@ class extends Component {
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
                 <div class="p-6 overflow-x-auto">
                     @if ($this->tires->isEmpty())
-                        <p class="text-sm text-gray-400">No tires yet.</p>
+                        <p class="text-sm text-ink-400">No tires yet.</p>
                     @else
                         <table class="w-full text-sm">
                             <thead>
-                            <tr class="text-left border-b border-gray-200">
-                                <th class="pb-3 font-semibold text-gray-600">Label</th>
-                                <th class="pb-3 font-semibold text-gray-600">Brand / Model</th>
-                                <th class="pb-3 font-semibold text-gray-600">Position</th>
-                                <th class="pb-3 font-semibold text-gray-600 text-right">Latest Tread</th>
-                                <th class="pb-3 font-semibold text-gray-600">Status</th>
-                                <th class="pb-3 font-semibold text-gray-600"></th>
+                            <tr class="text-left border-b border-ink-200">
+                                <th class="pb-3 font-semibold text-ink-500">Label</th>
+                                <th class="pb-3 font-semibold text-ink-500">Brand / Model</th>
+                                <th class="pb-3 font-semibold text-ink-500">Position</th>
+                                <th class="pb-3 font-semibold text-ink-500 text-right">Latest Tread</th>
+                                <th class="pb-3 font-semibold text-ink-500">Status</th>
+                                <th class="pb-3 font-semibold text-ink-500"></th>
                             </tr>
                             </thead>
-                            <tbody class="divide-y divide-gray-100">
+                            <tbody class="divide-y divide-ink-100">
                             @foreach ($this->tires as $row)
                                 @php $tire = $row['tire']; @endphp
-                                <tr class="hover:bg-gray-50 {{ $tire->status === TireStatus::Retired ? 'opacity-60' : '' }}">
+                                <tr class="hover:bg-ink-50 {{ $tire->status === TireStatus::Retired ? 'opacity-60' : '' }}">
                                     <td class="py-3 font-bold text-ink-900">
                                         <a href="{{ route('tires.show', $tire) }}" class="hover:underline">{{ $tire->label }}</a>
                                     </td>
-                                    <td class="py-3 text-gray-700">
+                                    <td class="py-3 text-ink-700">
                                         {{ implode(' ', array_filter([$tire->brand, $tire->model])) ?: '—' }}
                                     </td>
-                                    <td class="py-3 text-gray-600">{{ $row['current_position'] }}</td>
-                                    <td class="py-3 text-right font-mono text-gray-700">
+                                    <td class="py-3 text-ink-500">{{ $row['current_position'] }}</td>
+                                    <td class="py-3 text-right font-mono text-ink-700">
                                         {{ $row['latest_tread'] !== null ? $row['latest_tread'].'/32"' : '—' }}
                                     </td>
                                     <td class="py-3">
-                                            <span class="px-2 py-0.5 rounded text-xs font-medium {{ $tire->status === TireStatus::Active ? 'bg-green-100 text-green-700' : 'bg-gray-100 text-gray-500' }}">
+                                            <span class="px-2 py-0.5 rounded text-xs font-medium {{ $tire->status === TireStatus::Active ? 'bg-fern-100 text-fern-600' : 'bg-ink-100 text-ink-500' }}">
                                                 {{ $tire->status->label() }}
                                             </span>
                                     </td>

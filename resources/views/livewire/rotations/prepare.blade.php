@@ -199,7 +199,7 @@ new #[Layout('layouts.app')] class extends Component {
 
 <div>
     <x-slot name="header">
-        <h2 class="font-semibold text-xl text-gray-800 leading-tight">
+        <h2 class="font-semibold text-xl text-ink-800 leading-tight">
             {{ $isEdit ? __('Edit Rotation') : __('New Rotation — Step 1 of 2') }}
         </h2>
     </x-slot>
@@ -207,7 +207,7 @@ new #[Layout('layouts.app')] class extends Component {
     <div class="py-12">
         <div class="max-w-4xl mx-auto sm:px-6 lg:px-8">
             <div class="bg-white overflow-hidden shadow-sm sm:rounded-lg">
-                <div class="p-6 text-gray-900">
+                <div class="p-6 text-ink-900">
 
                     <div class="flex justify-between mb-4">
                         <div class="font-display font-semibold uppercase text-2xl tracking-wider text-ink-900">{{ $this->vehicle->nickname }}</div>
@@ -217,7 +217,7 @@ new #[Layout('layouts.app')] class extends Component {
                     </div>
 
                     @if ($errors->any())
-                        <div class="mb-4 p-3 bg-red-50 border border-red-200 rounded text-red-700 text-sm">
+                        <div class="mb-4 p-3 bg-rust-100 border border-rust-600/30 rounded-control text-rust-600 text-sm">
                             <ul class="list-disc list-inside space-y-1">
                                 @foreach ($errors->all() as $error)
                                     <li>{{ $error }}</li>
@@ -272,14 +272,14 @@ new #[Layout('layouts.app')] class extends Component {
                                     $tire = $stub['tire'];
                                     $lastTread = $stub['last_tread_center'];
                                 @endphp
-                                <div class="border border-gray-300 rounded-lg p-4 bg-gray-50">
-                                    <div class="flex items-center justify-between mb-3 border-b border-gray-300 pb-2">
-                                        <span class="font-semibold text-sm text-gray-700 uppercase tracking-wide">{{ $stub['from_position']->label() }}</span>
+                                <div class="border border-ink-200 rounded-card p-4 bg-white">
+                                    <div class="flex items-center justify-between mb-3 border-b border-ink-100 pb-2">
+                                        <span class="font-semibold text-sm text-ink-500 uppercase tracking-wide">{{ $stub['from_position']->label() }}</span>
                                         <span class="font-bold text-ink-900">{{ $tire->label }}</span>
                                     </div>
 
                                     @if ($lastTread !== null)
-                                        <p class="text-xs text-gray-400 mb-2">Last: {{ $lastTread }}/32"</p>
+                                        <p class="text-xs text-ink-400 mb-2">Last: {{ $lastTread }}/32"</p>
                                     @endif
 
                                     {{-- Center tread (required) — text-base prevents iOS zoom on focus --}}
@@ -328,7 +328,7 @@ new #[Layout('layouts.app')] class extends Component {
 
                                     {{-- Note --}}
                                     <div class="mb-3">
-                                        <label :for="'note_'.$pos" class="font-sans font-semibold text-[13px] text-ink-900">Note <span class="text-ink-300 font-normal ml-1.5 text-[12px]">optional</span></label>
+                                        <label :for="'note_'.$pos" class="font-sans font-semibold text-[13px]">Note <span class="text-ink-300 font-normal ml-1.5 text-[12px]">optional</span></label>
                                         <textarea
                                             wire:model="treads.{{ $pos }}.note"
                                             :id="'note_'.$pos"
@@ -337,23 +337,23 @@ new #[Layout('layouts.app')] class extends Component {
                                     </div>
 
                                     {{-- Condition & wear flags --}}
-                                    <div class="pt-3 border-t border-gray-200 space-y-1.5">
-                                        <p class="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-1">Condition</p>
+                                    <div class="pt-3 border-t border-ink-100 space-y-1.5">
+                                        <p class="text-xs font-semibold text-ink-400 uppercase tracking-wide mb-1">Condition</p>
                                         @foreach ([
                                             'has_cracking' => 'Cracking / dry rot',
                                             'has_bulge' => 'Sidewall bulge',
                                             'has_cupping' => 'Cupping',
                                             'has_puncture_repair' => 'Plug / patch',
                                         ] as $flag => $label)
-                                            <label class="flex items-center gap-2 text-xs text-gray-700 cursor-pointer select-none">
+                                            <label class="flex items-center gap-2 text-xs text-ink-700 cursor-pointer select-none">
                                                 <input type="checkbox" wire:model="tireFlags.{{ $pos }}.{{ $flag }}"
-                                                    class="rounded border-gray-300 text-blaze-600 focus:ring-blaze-500 min-h-[20px] min-w-[20px]">
+                                                    class="rounded border-ink-300 text-blaze-500 focus:ring-blaze-500/40 min-h-[20px] min-w-[20px]">
                                                 {{ $label }}
                                             </label>
                                         @endforeach
-                                        <label class="flex items-center gap-2 text-xs text-gray-700 cursor-pointer select-none">
+                                        <label class="flex items-center gap-2 text-xs text-ink-700 cursor-pointer select-none">
                                             <input type="checkbox" wire:model="wearFlags.{{ $pos }}.is_feathering"
-                                                class="rounded border-gray-300 text-blaze-600 focus:ring-blaze-500 min-h-[20px] min-w-[20px]">
+                                                class="rounded border-ink-300 text-blaze-500 focus:ring-blaze-500/40 min-h-[20px] min-w-[20px]">
                                             Feathering / sawtooth
                                         </label>
                                     </div>
