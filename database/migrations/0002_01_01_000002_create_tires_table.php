@@ -25,7 +25,7 @@ return new class extends Migration
             $table->unsignedTinyInteger('status')->default(1);
             $table->timestamps();
 
-            $table->foreign('vehicle_id')->references('id')->on('vehicles');
+            $table->foreign('vehicle_id')->references('id')->on('vehicles')->cascadeOnDelete();
         });
     }
 

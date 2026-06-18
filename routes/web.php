@@ -1,5 +1,6 @@
 <?php
 
+use App\Http\Controllers\ExportDataController;
 use App\Http\Controllers\LegalController;
 use App\Http\Controllers\TireSetupController;
 use App\Http\Controllers\VehicleController;
@@ -12,6 +13,7 @@ Route::get('/privacy', [LegalController::class, 'privacy'])->name('privacy');
 
 Route::middleware(['auth'])->group(function () {
     Route::view('profile', 'profile')->name('profile');
+    Route::get('profile/export', ExportDataController::class)->name('profile.export');
 
     Route::middleware(['verified'])->group(function () {
 

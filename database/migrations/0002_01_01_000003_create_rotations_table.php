@@ -18,7 +18,7 @@ return new class extends Migration
             $table->boolean('is_swap')->default(false);
             $table->timestamps();
 
-            $table->foreign('vehicle_id')->references('id')->on('vehicles');
+            $table->foreign('vehicle_id')->references('id')->on('vehicles')->cascadeOnDelete();
         });
     }
 
