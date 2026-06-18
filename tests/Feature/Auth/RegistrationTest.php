@@ -18,7 +18,8 @@ test('new users can register', function () {
         ->set('last_name', 'User')
         ->set('email', 'test@example.com')
         ->set('password', 'password')
-        ->set('password_confirmation', 'password');
+        ->set('password_confirmation', 'password')
+        ->set('terms', true);
 
     $component->call('register');
 

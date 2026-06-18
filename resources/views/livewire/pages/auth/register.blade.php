@@ -2,6 +2,7 @@
 
 use App\Models\User;
 use Illuminate\Auth\Events\Registered;
+use Illuminate\Support\Carbon;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules;
@@ -15,10 +16,8 @@ new #[Layout('layouts.guest')] class extends Component
     public string $email = '';
     public string $password = '';
     public string $password_confirmation = '';
+    public bool $terms = false;
 
-    /**
-     * Handle an incoming registration request.
-     */
     public function register(): void
     {
         $validated = $this->validate([
@@ -26,9 +25,12 @@ new #[Layout('layouts.guest')] class extends Component
             'last_name' => ['required', 'string', 'max:255'],
             'email' => ['required', 'string', 'lowercase', 'email', 'max:255', 'unique:'.User::class],
             'password' => ['required', 'string', 'confirmed', Rules\Password::defaults()],
+            'terms' => ['accepted'],
         ]);
 
         $validated['password'] = Hash::make($validated['password']);
+        $validated['terms_accepted_at'] = Carbon::now();
+        unset($validated['terms']);
 
         event(new Registered($user = User::create($validated)));
 
@@ -95,6 +97,26 @@ new #[Layout('layouts.guest')] class extends Component
             autocomplete="new-password"
             :error="$errors->first('password_confirmation')"
         />
+
+        <div>
+            <label class="flex items-start gap-3 cursor-pointer group">
+                <input
+                    wire:model="terms"
+                    id="terms"
+                    type="checkbox"
+                    class="mt-0.5 h-4 w-4 rounded border-ink-500 bg-ink-700 text-blaze-500 focus:ring-blaze-500 focus:ring-offset-ink-800"
+                >
+                <span class="text-sm text-ink-300 leading-snug">
+                    I agree to the
+                    <a href="{{ route('terms') }}" target="_blank" class="text-blaze-400 hover:underline">Terms of Service</a>
+                    and
+                    <a href="{{ route('privacy') }}" target="_blank" class="text-blaze-400 hover:underline">Privacy Policy</a>
+                </span>
+            </label>
+            @error('terms')
+                <p class="mt-1.5 text-xs text-rust-600">{{ $message }}</p>
+            @enderror
+        </div>
 
         <div class="flex items-center justify-end gap-4">
             <a class="text-sm text-steel-500 hover:text-steel-400 transition-colors" href="{{ route('login') }}" wire:navigate>
