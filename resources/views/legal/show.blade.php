@@ -1,4 +1,4 @@
-<x-public-layout :title="$title" maxWidth="3xl">
+<x-public-layout :title="$title" maxWidth="3xl" noindex>
     <main class="flex-1 py-12 px-6">
         <div class="max-w-3xl mx-auto">
             <div class="mb-8">

@@ -1,0 +1,47 @@
+<svg width="1200" height="630" viewBox="0 0 1200 630" xmlns="http://www.w3.org/2000/svg" role="img">
+  <title>Tread·Mark — Every rotation, on the record.</title>
+  <desc>TreadMark social card showing the logo, wordmark, and tagline on a deep pine background</desc>
+
+  <defs>
+    <style>
+      @import url('https://fonts.googleapis.com/css2?family=Oswald:wght@700&amp;family=Figtree:wght@400;500&amp;display=swap');
+    </style>
+    <pattern id="tread" width="24" height="24" patternUnits="userSpaceOnUse" patternTransform="rotate(135)">
+      <line x1="0" y1="0" x2="0" y2="24" stroke="#ffffff" stroke-width="1.5" stroke-opacity="0.04"/>
+    </pattern>
+    <clipPath id="card">
+      <rect width="1200" height="630"/>
+    </clipPath>
+  </defs>
+
+  <rect width="1200" height="630" fill="#0F1410"/>
+  <rect width="1200" height="630" fill="url(#tread)"/>
+
+  <rect x="0" y="614" width="1200" height="16" fill="#FF7A2E"/>
+
+  <g clip-path="url(#card)" stroke-linecap="round" stroke-linejoin="round">
+    <path d="M524,261 L600,207 L676,261" fill="none" stroke="#273127" stroke-width="22"/>
+    <path d="M524,219 L600,165 L676,219" fill="none" stroke="#3B463B" stroke-width="19"/>
+    <path d="M524,177 L600,123 L676,177" fill="none" stroke="#FF7A2E" stroke-width="16"/>
+  </g>
+
+  <text x="600" y="402" text-anchor="middle"
+        font-family="Oswald, 'Arial Narrow', sans-serif"
+        font-weight="700" font-size="104" letter-spacing="10">
+    <tspan fill="#FFFFFF">TREAD</tspan><tspan fill="#FF7A2E">·</tspan><tspan fill="#FFFFFF">MARK</tspan>
+  </text>
+
+  <text x="600" y="466" text-anchor="middle"
+        font-family="Figtree, -apple-system, sans-serif"
+        font-weight="400" font-size="26" fill="#7C877B" letter-spacing="2">
+    Every rotation, on the record.
+  </text>
+
+  <line x1="540" y1="508" x2="660" y2="508" stroke="#FF7A2E" stroke-width="1.5" stroke-opacity="0.6"/>
+
+  <text x="600" y="548" text-anchor="middle"
+        font-family="Figtree, -apple-system, sans-serif"
+        font-weight="500" font-size="18" fill="#586257" letter-spacing="1.5">
+    5-TIRE ROTATION  ·  WEAR BY POSITION  ·  TREAD IN 32NDS  ·  FREE
+  </text>
+</svg>
