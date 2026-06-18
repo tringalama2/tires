@@ -5,15 +5,19 @@ use Illuminate\Support\Facades\Route;
 
 Route::middleware('guest')->group(function () {
     Route::livewire('register', 'pages.auth.register')
+        ->middleware('throttle:register')
         ->name('register');
 
     Route::livewire('login', 'pages.auth.login')
+        ->middleware('throttle:login')
         ->name('login');
 
     Route::livewire('forgot-password', 'pages.auth.forgot-password')
+        ->middleware('throttle:password-reset')
         ->name('password.request');
 
     Route::livewire('reset-password/{token}', 'pages.auth.reset-password')
+        ->middleware('throttle:password-reset')
         ->name('password.reset');
 });
 

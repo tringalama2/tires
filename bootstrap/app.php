@@ -2,6 +2,7 @@
 
 use App\Http\Middleware\ActiveVehicleTiresMiddleware;
 use App\Http\Middleware\FirstVehicleMiddleware;
+use App\Http\Middleware\SecurityHeaders;
 use Illuminate\Foundation\Application;
 use Illuminate\Foundation\Configuration\Exceptions;
 use Illuminate\Foundation\Configuration\Middleware;
@@ -14,14 +15,14 @@ return Application::configure(basePath: dirname(__DIR__))
     )
     ->withMiddleware(function (Middleware $middleware) {
         $middleware
-//            ->web(append: [
-//                MyGlobalWebMiddleware::class,
-//            ])
+            ->web(append: [
+                SecurityHeaders::class,
+            ])
             ->alias([
                 'firstVehicleExists' => FirstVehicleMiddleware::class,
                 'activeVehicleTires' => ActiveVehicleTiresMiddleware::class,
             ]);
-        //$middleware->append(MyGlobalMiddleware::class);
+        // $middleware->append(MyGlobalMiddleware::class);
     })
     ->withExceptions(function (Exceptions $exceptions) {
         //
