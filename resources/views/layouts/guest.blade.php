@@ -42,6 +42,11 @@
     </div>
 
     <p class="mt-8 text-ink-400 text-xs tracking-wide">Every rotation, on the record.</p>
+
+    <a href="/" wire:navigate class="mt-4 inline-flex items-center gap-1.5 text-xs text-ink-500 hover:text-ink-300 transition-colors">
+        <x-treadmark.icon name="arrow-left" class="w-3 h-3" />
+        Back to home
+    </a>
 </div>
 
 @livewireScripts
