@@ -68,9 +68,9 @@ The `activeVehicle` is stored in the session via `App\Actions\SelectVehicle` and
 
 ### Livewire component pattern
 
-All feature components use Livewire 4's **Single-File Component (SFC)** style — the PHP class is defined inline at the top of the Blade file with `new #[Layout('layouts.app')] class extends Component { ... };`. Class-based components in `app/Livewire/` are the exception (only `RotationDashboard` and the Breeze auth components use that pattern).
+All feature components use Livewire 4's **Single-File Component (SFC)** style — the PHP class is defined inline at the top of the Blade file with `new #[Layout('layouts.app')] class extends Component { ... };`. The only class-based components in `app/Livewire/` are the Breeze auth scaffolding (`Actions/Logout.php`, `Forms/LoginForm.php`) — do not add new class-based components.
 
-**Never use `protected Vehicle $vehicle` in SFC components.** Livewire only calls `mount()` on the initial page load; subsequent requests (wire:click, wire:model changes) re-hydrate public properties from the serialized snapshot but do NOT call `mount()` again. A `protected` property set in `mount()` will be uninitialized on every subsequent request, causing a PHP 8 typed-property error. The correct pattern is a private `vehicle()` method:
+**Never use `protected Vehicle $vehicle` in components.** Livewire only calls `mount()` on the initial page load; subsequent requests (wire:click, wire:model changes) re-hydrate public properties from the serialized snapshot but do NOT call `mount()` again. A `protected` or `private` property set in `mount()` will be uninitialized on every subsequent request, causing a PHP 8 typed-property error. The correct pattern is a private `vehicle()` method:
 
 ```php
 private function vehicle(): Vehicle
@@ -80,6 +80,12 @@ private function vehicle(): Vehicle
 ```
 
 Use this method in all `#[Computed]` properties and actions. `$vehicle_id` is a `#[Locked]` public property and survives re-hydration correctly.
+
+**Tire label duplicate warning** — active tire labels must be unique per vehicle (soft constraint, not a DB unique index). When a label field is present in a form, show an amber warning when the entered label matches an existing active tire. Use a `#[Computed] duplicateLabel(): bool` property with `wire:model.live` on the label input so it reacts as the user types. Never use async JS fetch for this — keep the check in PHP.
+
+**Authorization** — always use `$this->authorize()` in both Livewire components and controllers. Never use `Gate::authorize()`. The base `Controller` class includes the `AuthorizesRequests` trait.
+
+**Tire setup flow** — tire creation during setup is handled by the Livewire SFC `livewire/vehicles/setuptire-create.blade.php`, routed via `Route::livewire(...)`. `TireSetupController` only handles the setup index page.
 
 ### Tire status vs. installation — two orthogonal concepts
 
