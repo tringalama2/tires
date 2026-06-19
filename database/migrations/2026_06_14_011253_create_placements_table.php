@@ -23,7 +23,7 @@ return new class extends Migration
             $table->timestamps();
 
             $table->foreign('rotation_id')->references('id')->on('rotations')->cascadeOnDelete();
-            $table->foreign('tire_id')->references('id')->on('tires');
+            $table->foreign('tire_id')->references('id')->on('tires')->cascadeOnDelete();
 
             $table->unique(['rotation_id', 'tire_id']);
             $table->unique(['rotation_id', 'to_position']);

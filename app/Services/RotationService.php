@@ -8,6 +8,8 @@ use App\Models\Placement;
 use App\Models\Rotation;
 use App\Models\Tire;
 use App\Models\Vehicle;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
+use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\ValidationException;
 
@@ -196,7 +198,11 @@ class RotationService
             ]);
 
             foreach ($data['swaps'] as $swap) {
-                $retiring = Tire::findOrFail($swap['retiring_tire_id']);
+                try {
+                    $retiring = Tire::findOrFail($swap['retiring_tire_id']);
+                } catch (QueryException) {
+                    throw (new ModelNotFoundException)->setModel(Tire::class);
+                }
                 $position = $this->tireService->currentPosition($retiring);
 
                 // Retiring tire placement — leaves the vehicle
