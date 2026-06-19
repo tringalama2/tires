@@ -7,14 +7,13 @@ use App\Enums\TirePosition;
 use App\Models\Tire;
 use App\Models\Vehicle;
 use Illuminate\Http\RedirectResponse;
-use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
 
 class TireSetupController extends Controller
 {
     public function index(SelectVehicle $selectVehicle, Vehicle $vehicle): RedirectResponse|View
     {
-        Gate::authorize('view', $vehicle);
+        $this->authorize('view', $vehicle);
 
         $selectVehicle($vehicle);
 

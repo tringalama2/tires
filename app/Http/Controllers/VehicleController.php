@@ -2,11 +2,10 @@
 
 namespace App\Http\Controllers;
 
+use App\Actions\SelectVehicle;
 use App\Http\Requests\VehicleCreateRequest;
 use App\Http\Requests\VehicleUpdateRequest;
-use App\Actions\SelectVehicle;
 use App\Models\Vehicle;
-use Illuminate\Support\Facades\Gate;
 
 class VehicleController extends Controller
 {
@@ -15,7 +14,7 @@ class VehicleController extends Controller
      */
     public function create()
     {
-        Gate::authorize('create', Vehicle::class);
+        $this->authorize('create', Vehicle::class);
 
         return view('vehicles.create');
     }
@@ -25,7 +24,7 @@ class VehicleController extends Controller
      */
     public function store(VehicleCreateRequest $request, SelectVehicle $selectVehicle)
     {
-        Gate::authorize('create', Vehicle::class);
+        $this->authorize('create', Vehicle::class);
 
         $vehicle = auth()->user()->vehicles()->create($request->validated());
 
@@ -39,7 +38,7 @@ class VehicleController extends Controller
      */
     public function edit(Vehicle $vehicle)
     {
-        Gate::authorize('update', $vehicle);
+        $this->authorize('update', $vehicle);
 
         return view('vehicles.edit', compact('vehicle'));
     }
@@ -49,7 +48,7 @@ class VehicleController extends Controller
      */
     public function update(VehicleUpdateRequest $request, Vehicle $vehicle, SelectVehicle $selectVehicle)
     {
-        Gate::authorize('update', $vehicle);
+        $this->authorize('update', $vehicle);
 
         $vehicle->update($request->validated());
 
