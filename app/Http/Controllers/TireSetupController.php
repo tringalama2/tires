@@ -4,14 +4,11 @@ namespace App\Http\Controllers;
 
 use App\Actions\SelectVehicle;
 use App\Enums\TirePosition;
-use App\Enums\TireStatus;
-use App\Http\Requests\TireRequest;
 use App\Models\Tire;
 use App\Models\Vehicle;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Support\Facades\Gate;
 use Illuminate\View\View;
-use ValueError;
 
 class TireSetupController extends Controller
 {
@@ -47,61 +44,5 @@ class TireSetupController extends Controller
             'rearRightTire' => $tireAtPosition(TirePosition::RearRight),
             'spareTire' => $tireAtPosition(TirePosition::Spare),
         ]);
-    }
-
-    public function create(Vehicle $vehicle, string $tirePosition): RedirectResponse|View
-    {
-        Gate::authorize('view', $vehicle);
-
-        try {
-            $position = TirePosition::from($tirePosition);
-        } catch (ValueError) {
-            abort(404, 'Invalid tire position.');
-        }
-
-        // Guard: reject if this position already has a tire in the setup rotation.
-        $setupRotation = $vehicle->rotations()->where('is_setup', true)->first();
-        if ($setupRotation && $setupRotation->placements()->where('to_position', $position->value)->exists()) {
-            return redirect()
-                ->route('vehicles.setuptires.index', $vehicle)
-                ->with('status', "A tire is already placed at {$position->label()}.");
-        }
-
-        $existingTire = $vehicle->tires()->first();
-
-        return view('tires.create', compact('vehicle', 'position', 'existingTire'));
-    }
-
-    public function store(TireRequest $request, Vehicle $vehicle, string $tirePosition): RedirectResponse
-    {
-        Gate::authorize('view', $vehicle);
-
-        try {
-            $position = TirePosition::from($tirePosition);
-        } catch (ValueError) {
-            abort(404, 'Invalid tire position.');
-        }
-
-        $tire = $vehicle->tires()->create(
-            $request->safe()->except(['starting_tread']) + ['status' => TireStatus::Active]
-        );
-
-        // Find or create the vehicle's is_setup rotation at the vehicle's starting odometer.
-        $setupRotation = $vehicle->rotations()->firstOrCreate(
-            ['is_setup' => true],
-            [
-                'rotated_on' => $vehicle->created_at->toDateString(),
-                'odometer' => $vehicle->starting_odometer,
-            ]
-        );
-
-        $setupRotation->placements()->create([
-            'tire_id' => $tire->id,
-            'from_position' => null,
-            'to_position' => $position->value,
-            'tread_center' => $request->validated()['starting_tread'],
-        ]);
-
-        return to_route('vehicles.setuptires.index', $vehicle);
     }
 }

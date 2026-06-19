@@ -8,10 +8,14 @@ use Livewire\Attributes\Layout;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 
-new #[Layout('layouts.app')] class extends Component {
+new #[Layout('layouts.app')]
+class extends Component {
 
     public Tire $tire;
     public bool $editing = false;
+
+    #[Validate('required|string|max:255')]
+    public string $label = '';
 
     #[Validate('nullable|string|max:50')]
     public ?string $brand = null;
@@ -44,6 +48,7 @@ new #[Layout('layouts.app')] class extends Component {
     {
         $this->authorize('view', $this->tire);
 
+        $this->label = $this->tire->label;
         $this->brand = $this->tire->brand;
         $this->model = $this->tire->model;
         $this->tin = $this->tire->tin;
@@ -53,6 +58,21 @@ new #[Layout('layouts.app')] class extends Component {
         $this->has_bulge = (bool) $this->tire->has_bulge;
         $this->has_cupping = (bool) $this->tire->has_cupping;
         $this->has_puncture_repair = (bool) $this->tire->has_puncture_repair;
+    }
+
+    #[Computed]
+    public function duplicateLabel(): bool
+    {
+        $trimmed = trim($this->label);
+        if ($trimmed === '') {
+            return false;
+        }
+
+        return $this->tire->vehicle->tires()
+            ->where('status', \App\Enums\TireStatus::Active)
+            ->where('label', $trimmed)
+            ->where('id', '!=', $this->tire->id)
+            ->exists();
     }
 
     #[Computed]
@@ -81,7 +101,7 @@ new #[Layout('layouts.app')] class extends Component {
     #[Computed]
     public function chartPoints(): array
     {
-        return $this->history->map(fn ($p) => [
+        return $this->history->map(fn($p) => [
             'odometer' => (int) $p->rotation_odometer,
             'tread' => (float) $p->tread_center,
         ])->values()->all();
@@ -97,6 +117,7 @@ new #[Layout('layouts.app')] class extends Component {
         $this->authorize('update', $this->tire);
         $this->validate();
         $this->tire->update([
+            'label' => $this->label,
             'brand' => $this->brand ?: null,
             'model' => $this->model ?: null,
             'tin' => $this->tin ?: null,
@@ -112,6 +133,7 @@ new #[Layout('layouts.app')] class extends Component {
 
     public function cancelEdit(): void
     {
+        $this->label = $this->tire->label;
         $this->brand = $this->tire->brand;
         $this->model = $this->tire->model;
         $this->tin = $this->tire->tin;
@@ -135,9 +157,11 @@ new #[Layout('layouts.app')] class extends Component {
 <div>
     <x-slot name="header">
         <div class="flex justify-between items-center">
-            <h1 class="font-display font-semibold uppercase text-2xl tracking-wider text-ink-900">Tire <span class="font-mono">{{ $tire->label }}</span></h1>
-            <x-treadmark.button variant="ghost" size="sm" href="{{ route('reports.by-tire') }}">
-                <x-treadmark.icon name="arrow-left" class="w-4 h-4" /> Back to report
+            <h1 class="font-display font-semibold uppercase text-2xl tracking-wider text-ink-900">Tire
+                <span class="font-mono">{{ $tire->label }}</span></h1>
+            <x-treadmark.button variant="ghost" size="sm" href="{{ route('tires.index') }}">
+                <x-treadmark.icon name="arrow-left" class="w-4 h-4"/>
+                Back to all tires
             </x-treadmark.button>
         </div>
     </x-slot>
@@ -155,9 +179,15 @@ new #[Layout('layouts.app')] class extends Component {
                             {{ $tire->brand ? $tire->brand.' '.($tire->model ?? '') : 'Tire '.$tire->label }}
                         </div>
                         <div class="font-mono text-xs tracking-widest text-ink-300 mt-1 uppercase">
-                            @if ($tire->size) {{ $tire->size }} · @endif
-                            @if ($tire->tin) DOT {{ $tire->tin }} · @endif
-                            @if ($tire->purchased_on) purchased {{ $tire->purchased_on->format('M Y') }} @endif
+                            @if ($tire->size)
+                                {{ $tire->size }} ·
+                            @endif
+                            @if ($tire->tin)
+                                                  DOT {{ $tire->tin }} ·
+                            @endif
+                            @if ($tire->purchased_on)
+                                                  purchased {{ $tire->purchased_on->format('M Y') }}
+                            @endif
                         </div>
                     </div>
                     <div class="flex items-center gap-3">
@@ -169,7 +199,8 @@ new #[Layout('layouts.app')] class extends Component {
                         </x-treadmark.badge>
                         @if (! $editing)
                             <x-treadmark.button variant="inverse" size="sm" wire:click="startEdit">
-                                <x-treadmark.icon name="pencil-simple" class="w-4 h-4" /> Edit
+                                <x-treadmark.icon name="pencil-simple" class="w-4 h-4"/>
+                                Edit
                             </x-treadmark.button>
                         @endif
                     </div>
@@ -178,13 +209,21 @@ new #[Layout('layouts.app')] class extends Component {
                 @if ($editing)
                     {{-- Edit form --}}
                     <form wire:submit="save" class="px-8 py-6 grid grid-cols-2 gap-4">
-                        <x-treadmark.input wire:model="brand" type="text" label="Brand" placeholder="BF Goodrich" :error="$errors->first('brand')" />
-                        <x-treadmark.input wire:model="model" type="text" label="Model" placeholder="KO2" :error="$errors->first('model')" />
-                        <x-treadmark.input wire:model="tin" type="text" label="DOT / TIN" placeholder="DOT XXXX XXXX XX" maxlength="12" :error="$errors->first('tin')" />
-                        <x-treadmark.input wire:model="size" type="text" label="Size" placeholder="275/70R18" :error="$errors->first('size')" />
-                        <x-treadmark.input wire:model="purchased_on" type="date" label="Purchase Date" :error="$errors->first('purchased_on')" />
                         <div class="col-span-2">
-                            <p class="font-mono text-[11px] tracking-widest uppercase text-ink-400 mb-2">Condition Flags</p>
+                            <x-treadmark.input wire:model.live="label" type="text" label="Label" :error="$errors->first('label')"/>
+                            @if ($this->duplicateLabel)
+                                <p class="mt-1.5 text-[12px] text-[#8A6000]">'{{ trim($label) }}' is already used by an
+                                                                             active tire.</p>
+                            @endif
+                        </div>
+                        <x-treadmark.input wire:model="brand" type="text" label="Brand" placeholder="BF Goodrich" :error="$errors->first('brand')"/>
+                        <x-treadmark.input wire:model="model" type="text" label="Model" placeholder="KO2" :error="$errors->first('model')"/>
+                        <x-treadmark.input wire:model="tin" type="text" label="DOT / TIN" placeholder="DOT XXXX XXXX XX" maxlength="12" :error="$errors->first('tin')"/>
+                        <x-treadmark.input wire:model="size" type="text" label="Size" placeholder="275/70R18" :error="$errors->first('size')"/>
+                        <x-treadmark.input wire:model="purchased_on" type="date" label="Purchase Date" :error="$errors->first('purchased_on')"/>
+                        <div class="col-span-2">
+                            <p class="font-mono text-[11px] tracking-widest uppercase text-ink-400 mb-2">Condition
+                                                                                                         Flags</p>
                             <div class="flex flex-wrap gap-x-6 gap-y-2">
                                 @foreach ([
                                     'has_cracking' => 'Cracking / dry rot',
@@ -199,8 +238,9 @@ new #[Layout('layouts.app')] class extends Component {
                                 @endforeach
                             </div>
                         </div>
-                        <div class="flex items-end justify-between gap-2">
-                            <x-treadmark.button type="button" variant="ghost" size="sm" wire:click="cancelEdit">Cancel</x-treadmark.button>
+                        <div class="flex items-end justify-between gap-2 col-span-2">
+                            <x-treadmark.button type="button" variant="ghost" size="sm" wire:click="cancelEdit">Cancel
+                            </x-treadmark.button>
                             <x-treadmark.button type="submit">Save</x-treadmark.button>
                         </div>
                     </form>
@@ -215,7 +255,7 @@ new #[Layout('layouts.app')] class extends Component {
                                         @php
                                             $pos = app(\App\Services\TireService::class)->currentPosition($tire);
                                         @endphp
-                                        <x-treadmark.position-tag :position="$pos->value" size="md" show-label />
+                                        <x-treadmark.position-tag :position="$pos->value" size="md" show-label/>
                                     @else
                                         <span class="font-display font-semibold text-[21px] text-ink-300">—</span>
                                     @endif
@@ -227,10 +267,10 @@ new #[Layout('layouts.app')] class extends Component {
                                 $latestPlacement = $this->history->last();
                                 $latestTread = $latestPlacement?->tread_center;
                             @endphp
-                            <x-treadmark.stat-tile size="sm" label="Latest Tread" :value="$latestTread !== null ? (string) $latestTread : '—'" unit='/32"' mono />
+                            <x-treadmark.stat-tile size="sm" label="Latest Tread" :value="$latestTread !== null ? (string) $latestTread : '—'" unit='/32"' mono/>
                         </div>
                         <div class="bg-white px-6 py-4">
-                            <x-treadmark.stat-tile size="sm" label='Projected replacement' :value="$this->projectedMiles !== null ? '≈ '.number_format($this->projectedMiles) : '—'" unit="mi" mono />
+                            <x-treadmark.stat-tile size="sm" label='Projected replacement' :value="$this->projectedMiles !== null ? '≈ '.number_format($this->projectedMiles) : '—'" unit="mi" mono/>
                         </div>
                     </div>
 
@@ -274,7 +314,9 @@ new #[Layout('layouts.app')] class extends Component {
             {{-- Rotation history table --}}
             <div class="bg-white border border-ink-100 rounded-card shadow-tm-sm overflow-hidden">
                 <div class="px-8 py-4 border-b border-ink-100">
-                    <div class="font-display font-semibold uppercase tracking-wider text-sm text-ink-900">Rotation History</div>
+                    <div class="font-display font-semibold uppercase tracking-wider text-sm text-ink-900">Rotation
+                                                                                                          History
+                    </div>
                 </div>
 
                 @if ($this->history->isEmpty())
@@ -315,21 +357,21 @@ new #[Layout('layouts.app')] class extends Component {
                                 </div>
                                 <div class="{{ $rowBorder }}">
                                     @if ($p->from_position)
-                                        <x-treadmark.position-tag :position="$p->from_position->value" size="sm" />
+                                        <x-treadmark.position-tag :position="$p->from_position->value" size="sm"/>
                                     @else
                                         <span class="text-ink-300 text-xs">—</span>
                                     @endif
                                 </div>
                                 <div class="{{ $rowBorder }}">
                                     @if ($p->to_position)
-                                        <x-treadmark.position-tag :position="$p->to_position->value" size="sm" />
+                                        <x-treadmark.position-tag :position="$p->to_position->value" size="sm"/>
                                     @else
                                         <span class="text-ink-300 text-xs">—</span>
                                     @endif
                                 </div>
                                 <div class="{{ $rowBorder }} pr-2">
                                     @if ($p->tread_center !== null)
-                                        <x-treadmark.tread-gauge :depth="$p->tread_center" size="sm" />
+                                        <x-treadmark.tread-gauge :depth="$p->tread_center" size="sm"/>
                                     @else
                                         <span class="text-ink-300 font-mono text-xs">—</span>
                                     @endif
@@ -340,7 +382,7 @@ new #[Layout('layouts.app')] class extends Component {
                                             {{ $p->tread_inner ?? '?' }} / {{ $p->tread_outer ?? '?' }}
                                         </span>
                                         @if ($scalloped)
-                                            <x-scallop-warning />
+                                            <x-scallop-warning/>
                                         @endif
                                     @else
                                         <span class="text-ink-300 text-xs">—</span>
@@ -388,8 +430,10 @@ new #[Layout('layouts.app')] class extends Component {
                         <svg viewBox="0 0 {{ $w }} {{ $h }}" class="w-full" xmlns="http://www.w3.org/2000/svg">
                             {{-- 2/32" limit line --}}
                             <line x1="{{ $pad['l'] }}" y1="{{ $yScale(2) }}" x2="{{ $w - $pad['r'] }}" y2="{{ $yScale(2) }}"
-                                stroke="#C42B22" stroke-width="1" stroke-dasharray="4,3" />
-                            <text x="{{ $pad['l'] + 2 }}" y="{{ $yScale(2) - 3 }}" fill="#C42B22" font-size="9">2/32" limit</text>
+                                  stroke="#C42B22" stroke-width="1" stroke-dasharray="4,3"/>
+                            <text x="{{ $pad['l'] + 2 }}" y="{{ $yScale(2) - 3 }}" fill="#C42B22" font-size="9">2/32"
+                                                                                                                limit
+                            </text>
 
                             {{-- Y axis ticks --}}
                             @foreach ([2, 4, 6, 8, 10, 12, 14, 16] as $tick)
@@ -416,8 +460,9 @@ new #[Layout('layouts.app')] class extends Component {
                             @endif
 
                             <text x="10" y="{{ $pad['t'] + $innerH / 2 }}"
-                                transform="rotate(-90 10 {{ $pad['t'] + $innerH / 2 }})"
-                                text-anchor="middle" fill="#7C877B" font-size="9">tread (32nds)</text>
+                                  transform="rotate(-90 10 {{ $pad['t'] + $innerH / 2 }})"
+                                  text-anchor="middle" fill="#7C877B" font-size="9">tread (32nds)
+                            </text>
                         </svg>
                     </div>
                 </div>

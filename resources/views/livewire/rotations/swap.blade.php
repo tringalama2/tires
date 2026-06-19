@@ -82,6 +82,29 @@ class extends Component {
     }
 
     #[Computed]
+    public function duplicateReplacementLabels(): array
+    {
+        $activeLabels = $this->vehicle()->tires()
+            ->where('status', \App\Enums\TireStatus::Active)
+            ->pluck('label')
+            ->map(fn ($l) => strtolower(trim($l)))
+            ->all();
+
+        $duplicates = [];
+        foreach ($this->swaps as $tireId => $swap) {
+            if (! $swap['retiring']) {
+                continue;
+            }
+            $label = strtolower(trim($swap['replacement_label'] ?? ''));
+            if ($label !== '' && in_array($label, $activeLabels, true)) {
+                $duplicates[$tireId] = true;
+            }
+        }
+
+        return $duplicates;
+    }
+
+    #[Computed]
     public function lastOdometer(): ?int
     {
         return $this->vehicle()->rotations()->max('odometer');
@@ -291,13 +314,18 @@ class extends Component {
                                             Replacement tire
                                         </div>
                                         <div class="grid grid-cols-2 gap-3">
-                                            <x-treadmark.input
-                                                wire:model="swaps.{{ $tireId }}.replacement_label"
-                                                type="text"
-                                                label="Label"
-                                                placeholder="T6"
-                                                required
-                                            />
+                                            <div>
+                                                <x-treadmark.input
+                                                    wire:model="swaps.{{ $tireId }}.replacement_label"
+                                                    type="text"
+                                                    label="Label"
+                                                    placeholder="T6"
+                                                    required
+                                                />
+                                                @if (isset($this->duplicateReplacementLabels[$tireId]))
+                                                    <p class="mt-1.5 text-[12px] text-[#8A6000]">'{{ trim($swap['replacement_label']) }}' is already used by an active tire.</p>
+                                                @endif
+                                            </div>
                                             <x-treadmark.input
                                                 wire:model="swaps.{{ $tireId }}.replacement_tread"
                                                 type="number"

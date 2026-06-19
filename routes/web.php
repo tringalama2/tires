@@ -29,8 +29,7 @@ Route::middleware(['auth'])->group(function () {
 
             Route::livewire('vehicles', 'vehicles.index')->name('vehicles.index');
 
-            Route::get('vehicles/{vehicle}/setuptires/create/{tirePosition}', [TireSetupController::class, 'create'])->name('vehicles.setuptires.create');
-            Route::post('vehicles/{vehicle}/setuptires/{tirePosition}', [TireSetupController::class, 'store'])->name('vehicles.setuptires.store');
+            Route::livewire('vehicles/{vehicle}/setuptires/create/{tirePosition}', 'vehicles.setuptire-create')->name('vehicles.setuptires.create');
             Route::resource('vehicles.setuptires', TireSetupController::class)->scoped(['tires' => 'id'])->only('index');
 
             Route::middleware(['activeVehicleTires'])->group(function () {

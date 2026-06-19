@@ -100,12 +100,6 @@ it('cannot access tire setup pages for another user\'s vehicle', function () {
     $this->actingAs($this->user)
         ->get(route('vehicles.setuptires.create', ['vehicle' => $other, 'tirePosition' => 'FL']))
         ->assertNotFound();
-
-    $this->actingAs($this->user)
-        ->post(route('vehicles.setuptires.store', ['vehicle' => $other, 'tirePosition' => 'FL']), [
-            'label' => 'Evil', 'starting_tread' => 10,
-        ])
-        ->assertNotFound();
 });
 
 it('cannot change tire_count via the update form', function () {

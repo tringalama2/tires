@@ -128,7 +128,7 @@
                         <div class="tread-gauge-limit"></div>
                     </div>
                     <div class="font-mono font-semibold text-[18px] mt-2 leading-none"
-                         x-text="tread > 0 ? tread + ' /32″' : '—'"
+                         x-text="tread > 0 ? tread + ' /32″' : '—'"
                          x-bind:style="'color:' + gaugeColor">
                     </div>
                 </div>
