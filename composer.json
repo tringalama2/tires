@@ -12,6 +12,7 @@
         "codeat3/blade-phosphor-icons": "^2.2",
         "laravel/breeze": "^2.1",
         "laravel/framework": "^13.0",
+        "laravel/nightwatch": "^1.28",
         "laravel/tinker": "^3.0",
         "livewire/livewire": "^4.0",
         "phpoffice/phpspreadsheet": "^5.8",
