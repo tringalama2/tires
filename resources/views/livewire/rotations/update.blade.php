@@ -339,6 +339,7 @@ new #[Layout('layouts.app')] class extends Component {
                                              class="cursor-grab select-none bg-white border border-ink-200 rounded-control px-2 py-2 mb-1.5 flex flex-col items-center gap-0.5 shadow-sm">
                                             <x-phosphor-tire-duotone class="w-8 h-8 text-ink-400" />
                                             <span class="font-mono text-xs font-bold text-ink-700" x-text="p.tire_label"></span>
+                                            <span class="text-[10px] text-ink-400">from <span x-text="p.from_position_label"></span></span>
                                         </div>
                                     </template>
                                 </div>
