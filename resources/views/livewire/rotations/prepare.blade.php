@@ -319,8 +319,8 @@ class extends Component {
                                       rows="2" placeholder="e.g. adjusted tire pressure to 32 PSI"></textarea>
                         </div>
 
-                        {{-- Per-position tread cards — 2-col on mobile, 3-col on desktop --}}
-                        <div class="grid grid-cols-2 lg:grid-cols-3 gap-3 sm:gap-4 mb-6">
+                        {{-- Per-position tread cards — always 2 columns (left/right side by side) --}}
+                        <div class="grid grid-cols-2 gap-3 sm:gap-4 mb-6">
                             @foreach ($stubs as $stub)
                                 @php
                                     $pos = $stub['from_position']->value;
