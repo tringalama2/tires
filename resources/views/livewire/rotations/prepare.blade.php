@@ -204,6 +204,14 @@ class extends Component {
     {
         $this->validate($this->rules());
 
+        if (! $this->isEdit) {
+            $maxOdometer = $this->vehicle()->rotations()->max('odometer');
+            if ($maxOdometer !== null && $this->odometer <= $maxOdometer) {
+                $this->addError('odometer', 'Odometer must be greater than the previous rotation ('.number_format($maxOdometer).' mi).');
+                return;
+            }
+        }
+
         $placements = [];
         foreach ($this->stubs as $stub) {
             $pos = $stub['from_position']->value;
