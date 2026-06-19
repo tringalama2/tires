@@ -212,7 +212,9 @@ new #[Layout('layouts.app')] class extends Component {
                         <div class="mb-4 text-sm text-ink-500">
                             <span x-show="!mobile">
                                 Drag each tire to its new position, or
-                                <button type="button" wire:click="toggleMode" class="text-steel-600 underline hover:text-steel-700 text-sm">switch to {{ $tableMode ? 'drag' : 'table' }} view</button>.
+                                <button type="button" wire:click="toggleMode" class="text-steel-600 underline hover:text-steel-700 text-sm">
+                                    switch to <span x-text="$wire.tableMode ? 'drag' : 'table'"></span> view
+                                </button>.
                             </span>
                             <span x-show="mobile" class="text-ink-400">Assign each tire to its new position.</span>
                         </div>
@@ -226,7 +228,7 @@ new #[Layout('layouts.app')] class extends Component {
                         @endphp
 
                         {{-- Table view: always on mobile, or when tableMode on desktop --}}
-                        <div x-show="mobile || @js($tableMode)">
+                        <div x-show="mobile || $wire.tableMode">
                             <div class="border border-ink-200 rounded-card overflow-hidden">
                                 <table class="w-full text-sm">
                                     <thead>
@@ -274,7 +276,7 @@ new #[Layout('layouts.app')] class extends Component {
                         </div>
 
                         {{-- Drag view: desktop only, when not tableMode --}}
-                        <div x-show="!mobile && !@js($tableMode)">
+                        <div x-show="!mobile && !$wire.tableMode">
                             <div
                                 id="drag-root"
                                 x-data="rotationDrag(@js($placements), @js($toPositions))"
