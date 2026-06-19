@@ -17,16 +17,16 @@ class extends Component {
     #[Validate('required|string|max:255')]
     public string $label = '';
 
-    #[Validate('nullable|string|max:50')]
+    #[Validate('nullable|string|max:255')]
     public ?string $brand = null;
 
-    #[Validate('nullable|string|max:50')]
+    #[Validate('nullable|string|max:255')]
     public ?string $model = null;
 
     #[Validate('nullable|string|max:12')]
     public ?string $tin = null;
 
-    #[Validate('nullable|string|max:30')]
+    #[Validate('nullable|string|max:255')]
     public ?string $size = null;
 
     #[Validate('nullable|date')]
