@@ -4,7 +4,6 @@ use App\Http\Controllers\ExportDataController;
 use App\Http\Controllers\LegalController;
 use App\Http\Controllers\TireSetupController;
 use App\Http\Controllers\VehicleController;
-use App\Livewire\RotationDashboard;
 use Illuminate\Support\Facades\Route;
 
 Route::view('/', 'welcome');
@@ -33,7 +32,7 @@ Route::middleware(['auth'])->group(function () {
             Route::resource('vehicles.setuptires', TireSetupController::class)->scoped(['tires' => 'id'])->only('index');
 
             Route::middleware(['activeVehicleTires'])->group(function () {
-                Route::get('dashboard/{vehicle_id?}', RotationDashboard::class)->name('dashboard');
+                Route::livewire('dashboard/{vehicle_id?}', 'rotation-dashboard')->name('dashboard');
 
                 Route::livewire('rotations/swap/{vehicle_id?}', 'rotations.swap')->name('rotations.swap');
                 Route::livewire('rotations/prepare/{vehicle_id?}', 'rotations.prepare')->name('rotations.prepare');

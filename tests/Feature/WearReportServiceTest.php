@@ -2,7 +2,6 @@
 
 use App\Enums\TirePosition;
 use App\Enums\TireStatus;
-use App\Livewire\RotationDashboard;
 use App\Models\Placement;
 use App\Models\Rotation;
 use App\Models\Tire;
@@ -274,6 +273,6 @@ it('dashboard replacement alerts exclude retired tires', function () {
     $tires['T1']->update(['status' => TireStatus::Retired]);
 
     Livewire::actingAs($user)
-        ->test(RotationDashboard::class, ['vehicle_id' => $vehicle->id])
+        ->test('rotation-dashboard', ['vehicle_id' => $vehicle->id])
         ->assertDontSeeHtml('T1');
 });

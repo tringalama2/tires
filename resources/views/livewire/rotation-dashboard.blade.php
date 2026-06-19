@@ -1,3 +1,133 @@
+<?php
+
+use App\Actions\SelectVehicle;
+use App\Enums\TireStatus;
+use App\Models\Rotation;
+use App\Models\Vehicle;
+use App\Services\WearReportService;
+use Illuminate\Support\Carbon;
+use Illuminate\Support\Collection;
+use Livewire\Attributes\Computed;
+use Livewire\Attributes\Layout;
+use Livewire\Component;
+
+new #[Layout('layouts.app')]
+class extends Component {
+
+    public string|int|null $vehicle_id = null;
+
+    public function mount(SelectVehicle $selectVehicle): void
+    {
+        if (isset($this->vehicle_id)) {
+            $id = is_string($this->vehicle_id) ? hashid_decode($this->vehicle_id) : $this->vehicle_id;
+            $vehicle = Vehicle::findOrFail($id);
+            $this->authorize('view', $vehicle);
+            $selectVehicle($vehicle);
+        } else {
+            $vehicle = session('vehicle');
+        }
+
+        $this->vehicle_id = $vehicle->id;
+
+        if ($vehicle->tires()->count() === 0) {
+            $this->redirect(route('vehicles.setuptires.index', ['vehicle' => $vehicle]));
+        }
+    }
+
+    private function vehicle(): Vehicle
+    {
+        return Vehicle::findOrFail($this->vehicle_id);
+    }
+
+    #[Computed]
+    public function latestRotation(): ?Rotation
+    {
+        return $this->vehicle()->rotations()
+            ->where('is_setup', false)
+            ->orderByDesc('odometer')
+            ->first();
+    }
+
+    #[Computed]
+    public function currentOdometer(): int
+    {
+        return $this->latestRotation?->odometer ?? $this->vehicle()->starting_odometer;
+    }
+
+    #[Computed]
+    public function daysSinceRotation(): ?int
+    {
+        if (! $this->latestRotation) {
+            return null;
+        }
+
+        return (int) Carbon::parse($this->latestRotation->rotated_on)->diffInDays(Carbon::today());
+    }
+
+    #[Computed]
+    public function replacementAlerts(): Collection
+    {
+        return $this->allTiresSortedByMilesLeft
+            ->filter(fn ($r) => $r['projected_miles'] !== null && $r['projected_miles'] <= 10000)
+            ->values();
+    }
+
+    #[Computed]
+    public function allTiresSortedByMilesLeft(): Collection
+    {
+        return app(WearReportService::class)->wearByTire($this->vehicle(), TireStatus::Active)
+            ->sortBy(fn ($r) => $r['projected_miles'] ?? PHP_INT_MAX)
+            ->values();
+    }
+
+    #[Computed]
+    public function currentPositions(): Collection
+    {
+        return app(WearReportService::class)->wearByTire($this->vehicle(), TireStatus::Active)
+            ->filter(fn ($r) => $r['current_position'] !== null)
+            ->sortBy(fn ($r) => array_search($r['current_position']->value, ['FL', 'FR', 'RL', 'RR', 'SP']))
+            ->values();
+    }
+
+    #[Computed]
+    public function fastestWearPosition(): ?array
+    {
+        return app(WearReportService::class)->wearByPosition($this->vehicle())
+            ->whereNotNull('avg_wear_per_1000mi')
+            ->sortByDesc('avg_wear_per_1000mi')
+            ->first();
+    }
+
+    #[Computed]
+    public function unevenWearAlert(): ?string
+    {
+        $rows = app(WearReportService::class)->wearByPosition($this->vehicle())
+            ->whereNotNull('avg_wear_per_1000mi');
+
+        if ($rows->count() < 2) {
+            return null;
+        }
+
+        $fastest = $rows->sortByDesc('avg_wear_per_1000mi')->first();
+        $othersAvg = $rows
+            ->filter(fn ($r) => $r['position'] !== $fastest['position'])
+            ->avg('avg_wear_per_1000mi');
+
+        if ($othersAvg > 0 && $fastest['avg_wear_per_1000mi'] >= 1.5 * $othersAvg) {
+            return $fastest['position']->label().' is wearing significantly faster than the rest. Check alignment or rotate more frequently.';
+        }
+
+        return null;
+    }
+
+    public function render(): \Illuminate\View\View
+    {
+        return view('livewire.rotation-dashboard');
+    }
+};
+
+?>
+
 <div>
     <x-slot name="header">
         <div class="flex items-baseline justify-between gap-4">
@@ -210,8 +340,7 @@
                                     <x-treadmark.tread-gauge :depth="$t['latest_tread_center']" size="sm"/>
                                 </div>
                             @empty
-                                <p class="text-sm text-ink-400 text-center py-4">Need 2+ rotations per tire for
-                                                                                 projections.</p>
+                                <p class="text-sm text-ink-400 text-center py-4">Need 2+ rotations per tire for projections.</p>
                             @endforelse
 
                             <div class="mt-auto pt-4 border-t border-ink-100 flex flex-col gap-2">
