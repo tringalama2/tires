@@ -19,7 +19,7 @@ soft_deletes, timestamps
 
 ### `tires`
 ```
-id            uuid PK
+id            bigint PK (auto-increment)
 vehicle_id    bigint NOT NULL FK → vehicles
 label         string required (T1, T2 … user-defined)
 brand         string nullable
@@ -37,7 +37,7 @@ timestamps
 ### `rotations`
 One row per rotation event (not per tire).
 ```
-id            uuid PK
+id            bigint PK (auto-increment)
 vehicle_id    bigint NOT NULL FK → vehicles
 rotated_on    date required
 odometer      unsignedMediumInteger required
@@ -50,9 +50,9 @@ timestamps
 ### `placements`
 Fact table. One row per tire per rotation.
 ```
-id              uuid PK
-rotation_id     uuid FK → rotations
-tire_id         uuid FK → tires
+id              bigint PK (auto-increment)
+rotation_id     bigint FK → rotations
+tire_id         bigint FK → tires
 from_position   string(2) nullable  — null on is_setup placements and on swap replacement tires
 to_position     string(2) nullable  — null when a retiring tire leaves the vehicle in a swap
 tread_center    decimal(4,1) required
@@ -76,7 +76,7 @@ Positions are the `TirePosition` enum: `FL`, `FR`, `RL`, `RR`, `SPARE`.
 
 ## Primary keys
 
-`vehicles` uses bigint (auto-increment). `tires`, `rotations`, `placements` use UUIDs.
+All tables use bigint auto-increment PKs. Public-facing IDs are encoded as hashids in URLs via `App\Concerns\HasHashid`.
 
 ## Key relationships
 

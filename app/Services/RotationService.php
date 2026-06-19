@@ -65,9 +65,9 @@ class RotationService
      *   rotated_on   string (date)
      *   odometer     int
      *   note         string|null
-     *   rotation_id  string|null  (UUID — set for edits, null for new)
+     *   rotation_id  int|null  (set for edits, null for new)
      *   placements   array of:
-     *     tire_id       string (UUID)
+     *     tire_id       int
      *     from_position string (TirePosition value)
      *     to_position   string (TirePosition value)
      *     tread_center  float
@@ -154,7 +154,7 @@ class RotationService
      *   rotated_on  string (date)
      *   odometer    int   (>= last rotation odometer)
      *   swaps       array of:
-     *     retiring_tire_id    string UUID
+     *     retiring_tire_id    int
      *     retiring_tread      float|null
      *     replacement_label        string
      *     replacement_brand        string|null

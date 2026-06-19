@@ -23,7 +23,7 @@ class extends Component {
     public ?int $odometer = null;
 
     /**
-     * Keyed by tire UUID. Each entry:
+     * Keyed by tire ID. Each entry:
      *   retiring       bool
      *   retiring_tread string|null
      *   replacement_label      string

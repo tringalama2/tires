@@ -161,7 +161,7 @@ it('is atomic — rolls back everything on error', function () {
     expect(fn () => app(RotationService::class)->saveSwap([
         'rotated_on' => '2026-07-01',
         'odometer' => 60000,
-        'swaps' => [['retiring_tire_id' => 'non-existent-uuid', 'retiring_tread' => null, 'replacement_label' => 'T6', 'replacement_tread' => 15.0]],
+        'swaps' => [['retiring_tire_id' => 999999, 'retiring_tread' => null, 'replacement_label' => 'T6', 'replacement_tread' => 15.0]],
     ], $vehicle))->toThrow(ModelNotFoundException::class);
 
     expect($vehicle->tires()->count())->toBe($countBefore)
