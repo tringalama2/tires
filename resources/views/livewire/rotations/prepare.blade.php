@@ -17,8 +17,6 @@ class extends Component {
     public string|int|null $vehicle_id = null;
     public ?string $edit_rotation_id = null;
 
-    protected Vehicle $vehicle;
-
     #[Validate('required|date')]
     public string $rotated_on = '';
 
@@ -46,14 +44,14 @@ class extends Component {
     {
         if (isset($this->vehicle_id)) {
             $id = is_string($this->vehicle_id) ? hashid_decode($this->vehicle_id) : $this->vehicle_id;
-            $this->vehicle = Vehicle::findOrFail($id);
-            $this->authorize('view', $this->vehicle);
-            $selectVehicle($this->vehicle);
+            $vehicle = Vehicle::findOrFail($id);
+            $this->authorize('view', $vehicle);
+            $selectVehicle($vehicle);
         } else {
-            $this->vehicle = session('vehicle');
+            $vehicle = session('vehicle');
         }
 
-        $this->vehicle_id = $this->vehicle->id;
+        $this->vehicle_id = $vehicle->id;
 
         if ($this->edit_rotation_id) {
             $this->isEdit = true;
@@ -61,7 +59,7 @@ class extends Component {
             $this->loadExistingRotation($rotationId);
         } else {
             $this->rotated_on = Carbon::today()->toDateString();
-            $this->stubs = $rotationService->startNext($this->vehicle);
+            $this->stubs = $rotationService->startNext($this->vehicle());
             $this->initTreads();
         }
 

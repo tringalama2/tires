@@ -18,30 +18,33 @@ class RotationDashboard extends Component
 {
     public string|int|null $vehicle_id = null;
 
-    protected Vehicle $vehicle;
-
     public function mount(SelectVehicle $selectVehicle): void
     {
         if (isset($this->vehicle_id)) {
             $id = is_string($this->vehicle_id) ? hashid_decode($this->vehicle_id) : $this->vehicle_id;
-            $this->vehicle = Vehicle::findOrFail($id);
-            $this->authorize('view', $this->vehicle);
-            $selectVehicle($this->vehicle);
+            $vehicle = Vehicle::findOrFail($id);
+            $this->authorize('view', $vehicle);
+            $selectVehicle($vehicle);
         } else {
-            $this->vehicle = session('vehicle');
+            $vehicle = session('vehicle');
         }
 
-        $this->vehicle_id = $this->vehicle->id;
+        $this->vehicle_id = $vehicle->id;
 
-        if ($this->vehicle->tires()->count() === 0) {
-            $this->redirect(route('vehicles.setuptires.index', ['vehicle' => $this->vehicle]));
+        if ($vehicle->tires()->count() === 0) {
+            $this->redirect(route('vehicles.setuptires.index', ['vehicle' => $vehicle]));
         }
+    }
+
+    private function vehicle(): Vehicle
+    {
+        return Vehicle::findOrFail($this->vehicle_id);
     }
 
     #[Computed]
     public function latestRotation(): ?Rotation
     {
-        return $this->vehicle->rotations()
+        return $this->vehicle()->rotations()
             ->where('is_setup', false)
             ->orderByDesc('odometer')
             ->first();
@@ -50,7 +53,7 @@ class RotationDashboard extends Component
     #[Computed]
     public function currentOdometer(): int
     {
-        return $this->latestRotation?->odometer ?? $this->vehicle->starting_odometer;
+        return $this->latestRotation?->odometer ?? $this->vehicle()->starting_odometer;
     }
 
     #[Computed]
@@ -81,7 +84,7 @@ class RotationDashboard extends Component
     #[Computed]
     public function allTiresSortedByMilesLeft(): Collection
     {
-        return app(WearReportService::class)->wearByTire($this->vehicle, TireStatus::Active)
+        return app(WearReportService::class)->wearByTire($this->vehicle(), TireStatus::Active)
             ->sortBy(fn ($r) => $r['projected_miles'] ?? PHP_INT_MAX)
             ->values();
     }
@@ -92,7 +95,7 @@ class RotationDashboard extends Component
     #[Computed]
     public function currentPositions(): Collection
     {
-        return app(WearReportService::class)->wearByTire($this->vehicle, TireStatus::Active)
+        return app(WearReportService::class)->wearByTire($this->vehicle(), TireStatus::Active)
             ->filter(fn ($r) => $r['current_position'] !== null)
             ->sortBy(fn ($r) => array_search($r['current_position']->value, ['FL', 'FR', 'RL', 'RR', 'SP']))
             ->values();
@@ -104,7 +107,7 @@ class RotationDashboard extends Component
     #[Computed]
     public function fastestWearPosition(): ?array
     {
-        return app(WearReportService::class)->wearByPosition($this->vehicle)
+        return app(WearReportService::class)->wearByPosition($this->vehicle())
             ->whereNotNull('avg_wear_per_1000mi')
             ->sortByDesc('avg_wear_per_1000mi')
             ->first();
@@ -116,7 +119,7 @@ class RotationDashboard extends Component
     #[Computed]
     public function unevenWearAlert(): ?string
     {
-        $rows = app(WearReportService::class)->wearByPosition($this->vehicle)
+        $rows = app(WearReportService::class)->wearByPosition($this->vehicle())
             ->whereNotNull('avg_wear_per_1000mi');
 
         if ($rows->count() < 2) {

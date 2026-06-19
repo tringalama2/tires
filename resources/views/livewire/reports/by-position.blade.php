@@ -13,24 +13,28 @@ new #[Layout('layouts.app')] class extends Component {
 
     #[Locked]
     public ?int $vehicle_id;
-    protected Vehicle $vehicle;
 
     public function mount(SelectVehicle $selectVehicle): void
     {
         if (isset($this->vehicle_id)) {
-            $this->vehicle = Vehicle::findOrFail($this->vehicle_id);
-            $this->authorize('view', $this->vehicle);
-            $selectVehicle($this->vehicle);
+            $vehicle = Vehicle::findOrFail($this->vehicle_id);
+            $this->authorize('view', $vehicle);
+            $selectVehicle($vehicle);
         } else {
-            $this->vehicle = session('vehicle');
+            $vehicle = session('vehicle');
         }
-        $this->vehicle_id = $this->vehicle->id;
+        $this->vehicle_id = $vehicle->id;
+    }
+
+    private function vehicle(): Vehicle
+    {
+        return Vehicle::findOrFail($this->vehicle_id);
     }
 
     #[Computed]
     public function report(): \Illuminate\Support\Collection
     {
-        return app(WearReportService::class)->wearByPosition($this->vehicle);
+        return app(WearReportService::class)->wearByPosition($this->vehicle());
     }
 
     #[Computed]
@@ -57,13 +61,13 @@ new #[Layout('layouts.app')] class extends Component {
     #[Computed]
     public function odometerThrough(): ?int
     {
-        return $this->vehicle->rotations()->where('is_setup', false)->max('odometer');
+        return $this->vehicle()->rotations()->where('is_setup', false)->max('odometer');
     }
 
     #[Computed]
     public function rotationCount(): int
     {
-        return $this->vehicle->rotations()->where('is_setup', false)->count();
+        return $this->vehicle()->rotations()->where('is_setup', false)->count();
     }
 
     public function render(): \Illuminate\View\View
