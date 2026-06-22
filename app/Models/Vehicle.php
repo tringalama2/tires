@@ -3,7 +3,6 @@
 namespace App\Models;
 
 use App\Concerns\HasHashid;
-use App\Enums\TireStatus;
 use Illuminate\Database\Eloquent\Casts\Attribute;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
@@ -54,7 +53,7 @@ class Vehicle extends Model
 
     public function activeTires(): HasMany
     {
-        return $this->hasMany(Tire::class)->where('status', TireStatus::Active);
+        return $this->tires()->active();
     }
 
     public function rotations(): HasMany
@@ -64,9 +63,8 @@ class Vehicle extends Model
 
     public function isSetupComplete(): bool
     {
-        $setupRotation = $this->rotations()->where('is_setup', true)->first();
+        $placedCount = $this->rotations()->setup()->first()?->placements()->whereNotNull('to_position')->count();
 
-        return $setupRotation !== null
-            && $setupRotation->placements()->whereNotNull('to_position')->count() === $this->tire_count;
+        return $placedCount === $this->tire_count;
     }
 }

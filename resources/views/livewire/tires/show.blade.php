@@ -69,7 +69,7 @@ class extends Component {
         }
 
         return $this->tire->vehicle->tires()
-            ->where('status', \App\Enums\TireStatus::Active)
+            ->active()
             ->where('label', $trimmed)
             ->where('id', '!=', $this->tire->id)
             ->exists();
@@ -78,12 +78,7 @@ class extends Component {
     #[Computed]
     public function history(): \Illuminate\Support\Collection
     {
-        return $this->tire->placements()
-            ->join('rotations', 'rotations.id', '=', 'placements.rotation_id')
-            ->where('rotations.is_setup', false)
-            ->orderBy('rotations.odometer')
-            ->select('placements.*', 'rotations.rotated_on', 'rotations.odometer as rotation_odometer')
-            ->get();
+        return $this->tire->wearPlacements()->addSelect('rotations.rotated_on')->get();
     }
 
     #[Computed]
@@ -95,7 +90,7 @@ class extends Component {
     #[Computed]
     public function currentPosition(): ?string
     {
-        return app(\App\Services\TireService::class)->currentPosition($this->tire)?->label();
+        return $this->tire->currentPosition()?->label();
     }
 
     #[Computed]
@@ -253,7 +248,7 @@ class extends Component {
                                 <div class="mt-0.5">
                                     @if ($this->currentPosition)
                                         @php
-                                            $pos = app(\App\Services\TireService::class)->currentPosition($tire);
+                                            $pos = $tire->currentPosition();
                                         @endphp
                                         <x-treadmark.position-tag :position="$pos->value" size="md" show-label/>
                                     @else

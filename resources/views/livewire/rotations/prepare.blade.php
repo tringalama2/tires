@@ -2,8 +2,8 @@
 
 use App\Actions\SelectVehicle;
 use App\Enums\TirePosition;
+use App\Livewire\Concerns\ResolvesActiveVehicle;
 use App\Models\Rotation;
-use App\Models\Vehicle;
 use App\Services\RotationService;
 use Illuminate\Support\Carbon;
 use Livewire\Attributes\Computed;
@@ -13,6 +13,7 @@ use Livewire\Component;
 
 new #[Layout('layouts.app')]
 class extends Component {
+    use ResolvesActiveVehicle;
 
     public string|int|null $vehicle_id = null;
     public ?string $edit_rotation_id = null;
@@ -42,16 +43,7 @@ class extends Component {
 
     public function mount(SelectVehicle $selectVehicle, RotationService $rotationService): void
     {
-        if (isset($this->vehicle_id)) {
-            $id = is_string($this->vehicle_id) ? hashid_decode($this->vehicle_id) : $this->vehicle_id;
-            $vehicle = Vehicle::findOrFail($id);
-            $this->authorize('view', $vehicle);
-            $selectVehicle($vehicle);
-        } else {
-            $vehicle = session('vehicle');
-        }
-
-        $this->vehicle_id = $vehicle->id;
+        $this->resolveVehicle($selectVehicle);
 
         if ($this->edit_rotation_id) {
             $this->isEdit = true;
@@ -105,11 +97,6 @@ class extends Component {
     public function lastOdometer(): ?int
     {
         return $this->vehicle()->rotations()->max('odometer');
-    }
-
-    private function vehicle(): Vehicle
-    {
-        return Vehicle::findOrFail($this->vehicle_id);
     }
 
     private function loadExistingRotation(string|int $rotationId): void

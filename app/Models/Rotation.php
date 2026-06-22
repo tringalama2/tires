@@ -3,6 +3,7 @@
 namespace App\Models;
 
 use App\Concerns\HasHashid;
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
@@ -31,5 +32,15 @@ class Rotation extends Model
     public function placements(): HasMany
     {
         return $this->hasMany(Placement::class);
+    }
+
+    public function scopeReal(Builder $query): void
+    {
+        $query->where('is_setup', false);
+    }
+
+    public function scopeSetup(Builder $query): void
+    {
+        $query->where('is_setup', true);
     }
 }

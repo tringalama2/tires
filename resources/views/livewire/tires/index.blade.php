@@ -2,9 +2,8 @@
 
 use App\Actions\SelectVehicle;
 use App\Enums\TireStatus;
+use App\Livewire\Concerns\ResolvesActiveVehicle;
 use App\Models\Tire;
-use App\Models\Vehicle;
-use App\Services\TireService;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
 use Livewire\Attributes\Locked;
@@ -12,44 +11,27 @@ use Livewire\Component;
 
 new #[Layout('layouts.app')]
 class extends Component {
+    use ResolvesActiveVehicle;
 
     #[Locked]
     public ?int $vehicle_id;
 
     public function mount(SelectVehicle $selectVehicle): void
     {
-        if (isset($this->vehicle_id)) {
-            $vehicle = Vehicle::findOrFail($this->vehicle_id);
-            $this->authorize('view', $vehicle);
-            $selectVehicle($vehicle);
-        } else {
-            $vehicle = session('vehicle');
-        }
-        $this->vehicle_id = $vehicle->id;
-    }
-
-    private function vehicle(): Vehicle
-    {
-        return Vehicle::findOrFail($this->vehicle_id);
+        $this->resolveVehicle($selectVehicle);
     }
 
     #[Computed]
     public function tires(): \Illuminate\Support\Collection
     {
-        $tireService = app(TireService::class);
-
         return $this->vehicle()->tires()
             ->orderBy('status')
             ->orderByDesc('purchased_on')
             ->orderBy('label')
             ->get()
-            ->map(function (Tire $tire) use ($tireService) {
-                $pos = $tireService->currentPosition($tire);
-                $latestTread = $tire->placements()
-                    ->join('rotations', 'rotations.id', '=', 'placements.rotation_id')
-                    ->where('rotations.is_setup', false)
-                    ->orderByDesc('rotations.odometer')
-                    ->value('placements.tread_center');
+            ->map(function (Tire $tire) {
+                $pos = $tire->currentPosition();
+                $latestTread = $tire->wearPlacements()->orderByDesc('rotations.odometer')->value('placements.tread_center');
 
                 return [
                     'tire' => $tire,

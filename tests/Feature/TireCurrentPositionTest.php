@@ -5,7 +5,6 @@ use App\Models\Placement;
 use App\Models\Rotation;
 use App\Models\Tire;
 use App\Models\Vehicle;
-use App\Services\TireService;
 
 it('uses the setup rotation position when no real rotation exists', function () {
     $vehicle = Vehicle::factory()->create(['starting_odometer' => 1000]);
@@ -20,13 +19,13 @@ it('uses the setup rotation position when no real rotation exists', function () 
         'tread_center' => 12.0,
     ]);
 
-    expect(app(TireService::class)->currentPosition($tire))->toBe(TirePosition::FrontLeft);
+    expect($tire->currentPosition())->toBe(TirePosition::FrontLeft);
 });
 
 it('returns null for a tire with no placements', function () {
     $tire = Tire::factory()->create();
 
-    expect(app(TireService::class)->currentPosition($tire))->toBeNull();
+    expect($tire->currentPosition())->toBeNull();
 });
 
 it('returns the most recent placement position when multiple rotations exist', function () {
@@ -49,5 +48,5 @@ it('returns the most recent placement position when multiple rotations exist', f
         'tread_center' => 9.0,
     ]);
 
-    expect(app(TireService::class)->currentPosition($tire))->toBe(TirePosition::RearRight);
+    expect($tire->currentPosition())->toBe(TirePosition::RearRight);
 });

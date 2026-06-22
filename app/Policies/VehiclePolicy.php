@@ -18,9 +18,7 @@ class VehiclePolicy
 
     public function view(User $user, Vehicle $vehicle): Response
     {
-        return $user->id === $vehicle->user_id
-            ? Response::allow()
-            : Response::denyAsNotFound();
+        return $this->owns($user, $vehicle);
     }
 
     public function create(User $user): Response
@@ -32,26 +30,25 @@ class VehiclePolicy
 
     public function update(User $user, Vehicle $vehicle): Response
     {
-        return $user->id === $vehicle->user_id
-            ? Response::allow()
-            : Response::denyAsNotFound();
+        return $this->owns($user, $vehicle);
     }
 
     public function delete(User $user, Vehicle $vehicle): Response
     {
-        return $user->id === $vehicle->user_id
-            ? Response::allow()
-            : Response::denyAsNotFound();
+        return $this->owns($user, $vehicle);
     }
 
     public function restore(User $user, Vehicle $vehicle): Response
     {
-        return $user->id === $vehicle->user_id
-            ? Response::allow()
-            : Response::denyAsNotFound();
+        return $this->owns($user, $vehicle);
     }
 
     public function forceDelete(User $user, Vehicle $vehicle): Response
+    {
+        return $this->owns($user, $vehicle);
+    }
+
+    private function owns(User $user, Vehicle $vehicle): Response
     {
         return $user->id === $vehicle->user_id
             ? Response::allow()

@@ -2,14 +2,15 @@
 
 use App\Actions\SelectVehicle;
 use App\Enums\TirePosition;
+use App\Livewire\Concerns\ResolvesActiveVehicle;
 use App\Models\Rotation;
-use App\Models\Vehicle;
 use App\Services\RotationService;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
 use Livewire\Component;
 
 new #[Layout('layouts.app')] class extends Component {
+    use ResolvesActiveVehicle;
 
     public string|int|null $vehicle_id = null;
 
@@ -39,16 +40,7 @@ new #[Layout('layouts.app')] class extends Component {
             return;
         }
 
-        if (isset($this->vehicle_id)) {
-            $id = is_string($this->vehicle_id) ? hashid_decode($this->vehicle_id) : $this->vehicle_id;
-            $vehicle = Vehicle::findOrFail($id);
-            $this->authorize('view', $vehicle);
-            $selectVehicle($vehicle);
-            $this->vehicle_id = $vehicle->id;
-        } else {
-            $vehicle = session('vehicle');
-            $this->vehicle_id = $vehicle->id;
-        }
+        $vehicle = $this->resolveVehicle($selectVehicle);
 
         $this->tireCount = $vehicle->tire_count;
         $this->placements = session('rotation.placements', []);
@@ -57,12 +49,12 @@ new #[Layout('layouts.app')] class extends Component {
 
         if ($this->isEdit) {
             $maxOdometer = $this->vehicle()->rotations()
-                ->where('is_setup', false)
+                ->real()
                 ->where('id', '!=', $this->rotationId)
                 ->max('odometer');
 
             $latestId = $this->vehicle()->rotations()
-                ->where('is_setup', false)
+                ->real()
                 ->orderByDesc('odometer')
                 ->value('id');
 
@@ -78,11 +70,6 @@ new #[Layout('layouts.app')] class extends Component {
                 $this->toPositions[$pos] = $pos;
             }
         }
-    }
-
-    private function vehicle(): Vehicle
-    {
-        return Vehicle::findOrFail($this->vehicle_id);
     }
 
     public function save(RotationService $rotationService): void

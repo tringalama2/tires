@@ -2,8 +2,7 @@
 
 use App\Actions\SelectVehicle;
 use App\Enums\TireStatus;
-use App\Models\Placement;
-use App\Models\Vehicle;
+use App\Livewire\Concerns\ResolvesActiveVehicle;
 use App\Services\WearReportService;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
@@ -12,6 +11,7 @@ use Livewire\Component;
 
 new #[Layout('layouts.app')]
 class extends Component {
+    use ResolvesActiveVehicle;
 
     #[Locked]
     public ?int $vehicle_id;
@@ -21,18 +21,7 @@ class extends Component {
 
     public function mount(SelectVehicle $selectVehicle): void
     {
-        $vehicle = isset($this->vehicle_id)
-            ? Vehicle::findOrFail($this->vehicle_id)
-            : session('vehicle');
-
-        $this->authorize('view', $vehicle);
-        $selectVehicle($vehicle);
-        $this->vehicle_id = $vehicle->id;
-    }
-
-    private function vehicle(): Vehicle
-    {
-        return Vehicle::findOrFail($this->vehicle_id);
+        $this->resolveVehicle($selectVehicle);
     }
 
     #[Computed]
@@ -52,13 +41,13 @@ class extends Component {
     #[Computed]
     public function odometerThrough(): ?int
     {
-        return $this->vehicle()->rotations()->where('is_setup', false)->max('odometer');
+        return $this->vehicle()->rotations()->real()->max('odometer');
     }
 
     #[Computed]
     public function rotationCount(): int
     {
-        return $this->vehicle()->rotations()->where('is_setup', false)->count();
+        return $this->vehicle()->rotations()->real()->count();
     }
 
     #[Computed]
@@ -66,18 +55,11 @@ class extends Component {
     {
         $status = $this->showRetired ? TireStatus::Retired : TireStatus::Active;
 
-        $tires = $this->vehicle()->tires()->where('status', $status)->with([
-            'placements' => function ($q) {
-                $q->join('rotations', 'rotations.id', '=', 'placements.rotation_id')
-                    ->where('rotations.is_setup', false)
-                    ->orderBy('rotations.odometer')
-                    ->select('placements.*', 'rotations.odometer as rotation_odometer');
-            }
-        ])->get();
+        $tires = $this->vehicle()->tires()->where('status', $status)->with('wearPlacements')->get();
 
-        return $tires->map(fn($tire) => [
+        return $tires->map(fn ($tire) => [
             'label' => $tire->label,
-            'points' => $tire->placements->map(fn($p) => [
+            'points' => $tire->wearPlacements->map(fn ($p) => [
                 'odometer' => (int) $p->rotation_odometer,
                 'tread' => (float) $p->tread_center,
             ])->values()->all(),

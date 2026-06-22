@@ -6,10 +6,11 @@ use App\Actions\SelectVehicle;
 use App\Models\Vehicle;
 use Closure;
 use Illuminate\Http\Request;
+use Symfony\Component\HttpFoundation\Response;
 
 class FirstVehicleMiddleware
 {
-    public function handle(Request $request, Closure $next)
+    public function handle(Request $request, Closure $next): Response
     {
         if (auth()->guest()) {
             return $next($request);

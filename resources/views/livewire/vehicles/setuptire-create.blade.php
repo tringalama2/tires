@@ -52,7 +52,7 @@ new #[Layout('layouts.app')] class extends Component {
             abort(404, 'Invalid tire position.');
         }
 
-        $setupRotation = $vehicle->rotations()->where('is_setup', true)->first();
+        $setupRotation = $vehicle->rotations()->setup()->first();
         if ($setupRotation && $setupRotation->placements()->where('to_position', $position->value)->exists()) {
             $this->redirectRoute('vehicles.setuptires.index', $vehicle, navigate: true);
             return;
@@ -88,7 +88,7 @@ new #[Layout('layouts.app')] class extends Component {
         }
 
         return $this->vehicle()->tires()
-            ->where('status', TireStatus::Active)
+            ->active()
             ->where('label', $trimmed)
             ->exists();
     }

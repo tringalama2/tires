@@ -40,7 +40,7 @@
                 $filled = collect($visiblePositions)->filter(fn($p) => $p['tire'] !== null)->count();
                 $total  = count($visiblePositions);
                 $allDone = $filled === $total;
-                $setupRotation = $vehicle->rotations()->where('is_setup', true)->with('placements')->first();
+                $setupRotation = $vehicle->rotations()->setup()->with('placements')->first();
                 $placements = $setupRotation?->placements->keyBy('to_position') ?? collect();
             @endphp
 

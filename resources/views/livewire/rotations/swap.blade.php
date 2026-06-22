@@ -1,9 +1,8 @@
 <?php
 
 use App\Actions\SelectVehicle;
-use App\Models\Vehicle;
+use App\Livewire\Concerns\ResolvesActiveVehicle;
 use App\Services\RotationService;
-use App\Services\TireService;
 use Illuminate\Support\Carbon;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Computed;
@@ -13,6 +12,7 @@ use Livewire\Component;
 
 new #[Layout('layouts.app')]
 class extends Component {
+    use ResolvesActiveVehicle;
 
     #[Locked]
     public string|int|null $vehicle_id = null;
@@ -38,24 +38,13 @@ class extends Component {
 
     public ?string $validationError = null;
 
-    private Vehicle $vehicle;
-
-    public function mount(SelectVehicle $selectVehicle, TireService $tireService): void
+    public function mount(SelectVehicle $selectVehicle): void
     {
-        if (isset($this->vehicle_id)) {
-            $id = is_string($this->vehicle_id) ? hashid_decode($this->vehicle_id) : $this->vehicle_id;
-            $this->vehicle = Vehicle::findOrFail($id);
-            $this->authorize('view', $this->vehicle);
-            $selectVehicle($this->vehicle);
-        } else {
-            $this->vehicle = session('vehicle');
-        }
-
-        $this->vehicle_id = $this->vehicle->id;
+        $vehicle = $this->resolveVehicle($selectVehicle);
         $this->rotated_on = Carbon::today()->toDateString();
 
-        foreach ($this->vehicle->activeTires()->orderBy('label')->get() as $tire) {
-            $pos = $tireService->currentPosition($tire);
+        foreach ($vehicle->activeTires()->orderBy('label')->get() as $tire) {
+            $pos = $tire->currentPosition();
             $this->swaps[$tire->id] = [
                 'tire_label' => $tire->label,
                 'tire_brand' => $tire->brand,
@@ -85,7 +74,7 @@ class extends Component {
     public function duplicateReplacementLabels(): array
     {
         $activeLabels = $this->vehicle()->tires()
-            ->where('status', \App\Enums\TireStatus::Active)
+            ->active()
             ->pluck('label')
             ->map(fn ($l) => strtolower(trim($l)))
             ->all();
@@ -195,11 +184,6 @@ class extends Component {
         }
 
         $this->redirect(route('dashboard', hashid_encode($this->vehicle_id)), navigate: true);
-    }
-
-    private function vehicle(): Vehicle
-    {
-        return Vehicle::findOrFail($this->vehicle_id);
     }
 
     public function render(): \Illuminate\View\View

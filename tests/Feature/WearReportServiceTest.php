@@ -208,22 +208,6 @@ it('returns a positive projection for a tire with at least two intervals', funct
 });
 
 // ---------------------------------------------------------------------------
-// scalpingFlag
-// ---------------------------------------------------------------------------
-
-it('flags scalloping when is_cupped is true', function () {
-    $placement = new Placement(['is_cupped' => true]);
-
-    expect(app(WearReportService::class)->scalpingFlag($placement))->toBeTrue();
-});
-
-it('does not flag scalloping when is_cupped is false', function () {
-    $placement = new Placement(['is_cupped' => false]);
-
-    expect(app(WearReportService::class)->scalpingFlag($placement))->toBeFalse();
-});
-
-// ---------------------------------------------------------------------------
 // wearByTire — filterStatus parameter
 // ---------------------------------------------------------------------------
 

@@ -4,15 +4,12 @@ namespace App\Services;
 
 use App\Enums\TirePosition;
 use App\Enums\TireStatus;
-use App\Models\Placement;
 use App\Models\Tire;
 use App\Models\Vehicle;
 use Illuminate\Support\Collection;
 
 class WearReportService
 {
-    public function __construct(private readonly TireService $tireService) {}
-
     /**
      * Rule C — Wear by position.
      *
@@ -49,6 +46,30 @@ class WearReportService
     }
 
     /**
+     * The position wearing fastest, if it exceeds $factor times the average of the others.
+     * Returns null when there isn't enough data or no position stands out.
+     */
+    public function unevenWearOutlier(?Vehicle $vehicle, float $factor): ?array
+    {
+        $rows = $this->wearByPosition($vehicle)->whereNotNull('avg_wear_per_1000mi');
+
+        if ($rows->count() < 2) {
+            return null;
+        }
+
+        $fastest = $rows->sortByDesc('avg_wear_per_1000mi')->first();
+        $othersAvg = $rows
+            ->filter(fn ($r) => $r['position'] !== $fastest['position'])
+            ->avg('avg_wear_per_1000mi');
+
+        if ($othersAvg > 0 && $fastest['avg_wear_per_1000mi'] >= $factor * $othersAvg) {
+            return $fastest;
+        }
+
+        return null;
+    }
+
+    /**
      * Rule D — Wear by tire.
      *
      * Returns a Collection of arrays, one per tire, with:
@@ -67,41 +88,29 @@ class WearReportService
             $query->where('status', $filterStatus);
         }
 
-        $tires = $query->with(['placements' => function ($q) {
-            $q->join('rotations', 'rotations.id', '=', 'placements.rotation_id')
-                ->where('rotations.is_setup', false)
-                ->orderBy('rotations.odometer')
-                ->select('placements.*', 'rotations.odometer as rotation_odometer');
+        $tires = $query->with(['wearPlacements' => function ($q) {
+            $q->addSelect('rotations.rotated_on');
         }])->get();
 
         $intervals = $this->buildIntervals($vehicle);
 
         return $tires->map(function (Tire $tire) use ($intervals): array {
-            $latestPlacement = $tire->placements->last();
+            $latestPlacement = $tire->wearPlacements->last();
             $tireIntervals = $intervals->filter(fn ($i) => $i['tire_id'] === $tire->id);
             $count = $tireIntervals->count();
 
-            // Load notes separately to get rotation date for display
-            $notes = $tire->placements()
-                ->join('rotations', 'rotations.id', '=', 'placements.rotation_id')
-                ->where('rotations.is_setup', false)
-                ->whereNotNull('placements.note')
-                ->orderBy('rotations.odometer')
-                ->get(['placements.note', 'rotations.rotated_on'])
+            $notes = $tire->wearPlacements
+                ->filter(fn ($p) => $p->note !== null)
                 ->map(fn ($p) => $p->rotated_on.': '.$p->note)
+                ->values()
                 ->all();
 
             $avgWear = $count > 0 ? round($tireIntervals->avg('wear_per_1000mi'), 4) : null;
-
-            $projectedMiles = null;
-            if ($count >= 2 && $avgWear > 0 && $latestPlacement) {
-                $remaining = ((float) $latestPlacement->tread_center - 2.0) / $avgWear * 1000;
-                $projectedMiles = max(0, round($remaining));
-            }
+            $projectedMiles = $count >= 2 ? $this->projectFromTread($latestPlacement?->tread_center, $avgWear) : null;
 
             return [
                 'tire' => $tire,
-                'current_position' => $this->tireService->currentPosition($tire),
+                'current_position' => $tire->currentPosition(),
                 'latest_tread_center' => $latestPlacement ? (float) $latestPlacement->tread_center : null,
                 'latest_tread_inner' => $latestPlacement ? $latestPlacement->tread_inner : null,
                 'latest_tread_outer' => $latestPlacement ? $latestPlacement->tread_outer : null,
@@ -125,29 +134,23 @@ class WearReportService
             return null;
         }
 
-        $avgWear = $intervals->avg('wear_per_1000mi');
-        if ($avgWear <= 0) {
-            return null;
-        }
+        $latestTread = $tire->wearPlacements()->orderByDesc('rotations.odometer')->value('placements.tread_center');
 
-        $latestTread = $tire->placements()
-            ->join('rotations', 'rotations.id', '=', 'placements.rotation_id')
-            ->where('rotations.is_setup', false)
-            ->orderByDesc('rotations.odometer')
-            ->value('placements.tread_center');
+        return $this->projectFromTread($latestTread, $intervals->avg('wear_per_1000mi'), $limitTread);
+    }
 
-        if ($latestTread === null) {
+    /**
+     * Project remaining miles until $latestTread reaches $limitTread, given an average wear rate.
+     */
+    private function projectFromTread(?float $latestTread, ?float $avgWear, float $limitTread = 2.0): ?float
+    {
+        if ($latestTread === null || $avgWear === null || $avgWear <= 0) {
             return null;
         }
 
         $remaining = ((float) $latestTread - $limitTread) / $avgWear * 1000;
 
         return max(0, round($remaining));
-    }
-
-    public function scalpingFlag(Placement $placement): bool
-    {
-        return $placement->is_cupped;
     }
 
     /**
@@ -157,13 +160,7 @@ class WearReportService
      */
     private function buildIntervals(?Vehicle $vehicle, ?Tire $tire = null): Collection
     {
-        $query = Tire::query()
-            ->with(['placements' => function ($q) {
-                $q->join('rotations', 'rotations.id', '=', 'placements.rotation_id')
-                    ->where('rotations.is_setup', false)
-                    ->orderBy('rotations.odometer')
-                    ->select('placements.*', 'rotations.odometer as rotation_odometer');
-            }]);
+        $query = Tire::query()->with('wearPlacements');
 
         if ($vehicle) {
             $query->where('vehicle_id', $vehicle->id);
@@ -175,28 +172,27 @@ class WearReportService
         $intervals = collect();
 
         foreach ($query->get() as $t) {
-            $placements = $t->placements->values();
+            $intervals = $intervals->concat(
+                $t->wearPlacements->values()->sliding(2)
+                    ->map(function ($pair) use ($t) {
+                        [$prev, $curr] = $pair->values();
+                        $odometerDelta = $curr->rotation_odometer - $prev->rotation_odometer;
 
-            for ($i = 1; $i < $placements->count(); $i++) {
-                $prev = $placements[$i - 1];
-                $curr = $placements[$i];
+                        if ($odometerDelta <= 0 || $curr->from_position === null) {
+                            return null;
+                        }
 
-                $odometerDelta = $curr->rotation_odometer - $prev->rotation_odometer;
+                        $wear = (float) $prev->tread_center - (float) $curr->tread_center;
 
-                if ($odometerDelta <= 0 || $curr->from_position === null) {
-                    continue;
-                }
-
-                $wear = (float) $prev->tread_center - (float) $curr->tread_center;
-                $wearPer1000 = $odometerDelta > 0 ? $wear / $odometerDelta * 1000 : 0;
-
-                $intervals->push([
-                    'tire_id' => $t->id,
-                    'from_position' => $curr->from_position,
-                    'wear_per_1000mi' => $wearPer1000,
-                    'tread_at_removal' => (float) $curr->tread_center,
-                ]);
-            }
+                        return [
+                            'tire_id' => $t->id,
+                            'from_position' => $curr->from_position,
+                            'wear_per_1000mi' => $wear / $odometerDelta * 1000,
+                            'tread_at_removal' => (float) $curr->tread_center,
+                        ];
+                    })
+                    ->filter()
+            );
         }
 
         return $intervals;

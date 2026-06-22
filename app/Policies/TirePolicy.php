@@ -18,9 +18,7 @@ class TirePolicy
 
     public function view(User $user, Tire $tire): Response
     {
-        return $user->id === $tire->vehicle->user_id
-            ? Response::allow()
-            : Response::denyAsNotFound();
+        return $this->owns($user, $tire);
     }
 
     public function create(User $user): bool
@@ -30,26 +28,25 @@ class TirePolicy
 
     public function update(User $user, Tire $tire): Response
     {
-        return $user->id === $tire->vehicle->user_id
-            ? Response::allow()
-            : Response::denyAsNotFound();
+        return $this->owns($user, $tire);
     }
 
     public function delete(User $user, Tire $tire): Response
     {
-        return $user->id === $tire->vehicle->user_id
-            ? Response::allow()
-            : Response::denyAsNotFound();
+        return $this->owns($user, $tire);
     }
 
     public function restore(User $user, Tire $tire): Response
     {
-        return $user->id === $tire->vehicle->user_id
-            ? Response::allow()
-            : Response::denyAsNotFound();
+        return $this->owns($user, $tire);
     }
 
     public function forceDelete(User $user, Tire $tire): Response
+    {
+        return $this->owns($user, $tire);
+    }
+
+    private function owns(User $user, Tire $tire): Response
     {
         return $user->id === $tire->vehicle->user_id
             ? Response::allow()

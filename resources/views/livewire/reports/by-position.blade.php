@@ -1,8 +1,7 @@
 <?php
 
 use App\Actions\SelectVehicle;
-use App\Enums\TirePosition;
-use App\Models\Vehicle;
+use App\Livewire\Concerns\ResolvesActiveVehicle;
 use App\Services\WearReportService;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
@@ -10,25 +9,14 @@ use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 new #[Layout('layouts.app')] class extends Component {
+    use ResolvesActiveVehicle;
 
     #[Locked]
     public ?int $vehicle_id;
 
     public function mount(SelectVehicle $selectVehicle): void
     {
-        if (isset($this->vehicle_id)) {
-            $vehicle = Vehicle::findOrFail($this->vehicle_id);
-            $this->authorize('view', $vehicle);
-            $selectVehicle($vehicle);
-        } else {
-            $vehicle = session('vehicle');
-        }
-        $this->vehicle_id = $vehicle->id;
-    }
-
-    private function vehicle(): Vehicle
-    {
-        return Vehicle::findOrFail($this->vehicle_id);
+        $this->resolveVehicle($selectVehicle);
     }
 
     #[Computed]
@@ -46,28 +34,23 @@ new #[Layout('layouts.app')] class extends Component {
     #[Computed]
     public function outlierAlert(): ?string
     {
-        $rows = $this->report->whereNotNull('avg_wear_per_1000mi');
-        if ($rows->count() < 2) {
-            return null;
-        }
-        $fastest = $rows->sortByDesc('avg_wear_per_1000mi')->first();
-        $othersAvg = $rows->filter(fn ($r) => $r['position'] !== $fastest['position'])->avg('avg_wear_per_1000mi');
-        if ($othersAvg > 0 && $fastest['avg_wear_per_1000mi'] > 2 * $othersAvg) {
-            return $fastest['position']->label().' is wearing significantly faster. Check alignment or consider rotating more frequently.';
-        }
-        return null;
+        $outlier = app(WearReportService::class)->unevenWearOutlier($this->vehicle(), 2.0);
+
+        return $outlier
+            ? $outlier['position']->label().' is wearing significantly faster. Check alignment or consider rotating more frequently.'
+            : null;
     }
 
     #[Computed]
     public function odometerThrough(): ?int
     {
-        return $this->vehicle()->rotations()->where('is_setup', false)->max('odometer');
+        return $this->vehicle()->rotations()->real()->max('odometer');
     }
 
     #[Computed]
     public function rotationCount(): int
     {
-        return $this->vehicle()->rotations()->where('is_setup', false)->count();
+        return $this->vehicle()->rotations()->real()->count();
     }
 
     public function render(): \Illuminate\View\View

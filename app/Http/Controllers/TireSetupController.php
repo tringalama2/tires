@@ -17,7 +17,7 @@ class TireSetupController extends Controller
 
         $selectVehicle($vehicle);
 
-        $setupRotation = $vehicle->rotations()->where('is_setup', true)->first();
+        $setupRotation = $vehicle->rotations()->setup()->first();
         $placedPositions = $setupRotation
             ? $setupRotation->placements()->pluck('to_position')->all()
             : [];

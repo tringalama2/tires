@@ -8,15 +8,12 @@ use App\Models\Placement;
 use App\Models\Rotation;
 use App\Models\Tire;
 use App\Models\Vehicle;
-use Illuminate\Database\Eloquent\ModelNotFoundException;
-use Illuminate\Database\QueryException;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Validator;
 use Illuminate\Validation\ValidationException;
 
 class RotationService
 {
-    public function __construct(private readonly TireService $tireService) {}
-
     /**
      * Rule E — Auto-seed next rotation stubs.
      *
@@ -31,7 +28,7 @@ class RotationService
 
         $byPosition = [];
         foreach ($tires as $tire) {
-            $pos = $this->tireService->currentPosition($tire);
+            $pos = $tire->currentPosition();
             if ($pos === null) {
                 continue;
             }
@@ -175,18 +172,10 @@ class RotationService
             ]);
         }
 
-        foreach ($data['swaps'] as $swap) {
-            if (! empty($swap['replacement_tin']) && strlen($swap['replacement_tin']) > 12) {
-                throw ValidationException::withMessages([
-                    'replacement_tin' => 'DOT/TIN must be 12 characters or fewer.',
-                ]);
-            }
-            if (! empty($swap['replacement_purchased_on']) && ! strtotime($swap['replacement_purchased_on'])) {
-                throw ValidationException::withMessages([
-                    'replacement_purchased_on' => 'Purchase date is not a valid date.',
-                ]);
-            }
-        }
+        Validator::make($data['swaps'], [
+            '*.replacement_tin' => ['nullable', 'max:12'],
+            '*.replacement_purchased_on' => ['nullable', 'date'],
+        ])->validate();
 
         return DB::transaction(function () use ($data, $vehicle) {
             $rotation = Rotation::create([
@@ -198,12 +187,8 @@ class RotationService
             ]);
 
             foreach ($data['swaps'] as $swap) {
-                try {
-                    $retiring = Tire::findOrFail($swap['retiring_tire_id']);
-                } catch (QueryException) {
-                    throw (new ModelNotFoundException)->setModel(Tire::class);
-                }
-                $position = $this->tireService->currentPosition($retiring);
+                $retiring = Tire::findOrFail($swap['retiring_tire_id']);
+                $position = $retiring->currentPosition();
 
                 // Retiring tire placement — leaves the vehicle
                 Placement::create([
@@ -249,11 +234,9 @@ class RotationService
      */
     public function validatePermutation(array $fromPositions, array $toPositions): bool
     {
-        $from = $fromPositions;
-        $to = $toPositions;
-        sort($from);
-        sort($to);
+        sort($fromPositions);
+        sort($toPositions);
 
-        return $from === $to;
+        return $fromPositions === $toPositions;
     }
 }
