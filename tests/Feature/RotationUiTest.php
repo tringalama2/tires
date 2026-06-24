@@ -1,9 +1,13 @@
 <?php
 
+use App\Actions\SelectVehicle;
+use App\Livewire\Concerns\ResolvesActiveVehicle;
 use App\Models\Rotation;
 use App\Models\User;
 use App\Models\Vehicle;
 use App\Services\RotationService;
+use Livewire\Component;
+use Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyException;
 use Livewire\Livewire;
 
 beforeEach(function () {
@@ -204,3 +208,58 @@ it('cannot edit a rotation belonging to another user\'s vehicle', function () {
         ->get(route('rotations.edit', ['edit_rotation_id' => $rotation->id]))
         ->assertNotFound();
 });
+
+// ---------------------------------------------------------------------------
+// IDOR regression — vehicle_id must be #[Locked] so it can't be tampered with
+// after mount (e.g. via browser-console $wire.set calls)
+// ---------------------------------------------------------------------------
+
+it('refuses to let prepare.vehicle_id be changed after mount', function () {
+    Livewire::actingAs($this->user)
+        ->test('rotations.prepare')
+        ->set('vehicle_id', 999999);
+})->throws(CannotUpdateLockedPropertyException::class);
+
+it('refuses to let update.vehicle_id be changed after mount', function () {
+    withRotationSession($this->vehicle);
+
+    Livewire::actingAs($this->user)
+        ->test('rotations.update')
+        ->set('vehicle_id', 999999);
+})->throws(CannotUpdateLockedPropertyException::class);
+
+it('refuses to let dashboard.vehicle_id be changed after mount', function () {
+    Livewire::actingAs($this->user)
+        ->test('rotation-dashboard')
+        ->set('vehicle_id', 999999);
+})->throws(CannotUpdateLockedPropertyException::class);
+
+it('resolveVehicle refuses to run for a component with an unlocked vehicle_id', function () {
+    $component = new class extends Component
+    {
+        use ResolvesActiveVehicle;
+
+        public string|int|null $vehicle_id = null;
+
+        public function mount(SelectVehicle $selectVehicle): void
+        {
+            $this->resolveVehicle($selectVehicle);
+        }
+
+        public function render(): string
+        {
+            return '<div></div>';
+        }
+    };
+
+    try {
+        Livewire::actingAs($this->user)
+            ->test($component, ['vehicle_id' => $this->vehicle->id]);
+    } catch (Throwable $e) {
+        while ($e->getPrevious() !== null) {
+            $e = $e->getPrevious();
+        }
+
+        throw $e;
+    }
+})->throws(LogicException::class, '$vehicle_id must be #[Locked]');

@@ -145,6 +145,36 @@ Two separate Livewire SFCs handle rotation entry:
 - `rotations/prepare.blade.php` — new rotation wizard, also handles edit when `edit_rotation_id` is set. Calls `RotationService::startNext()` to pre-seed `from_position` stubs; user sets `to_position` and tread per tire.
 - `rotations/update.blade.php` — confirmation/review screen after save.
 
+## 6. Security
+
+This app is single-tenant per user but multi-vehicle, and every `Vehicle` belongs to exactly one
+`User`. The two recurring vulnerability classes to watch for:
+
+- **IDOR via vehicle-scoped IDs.** `rotation_id`, `tire_id`, etc. must always be resolved through
+  the owning `Vehicle`'s relation (`$vehicle->rotations()->findOrFail(...)`, `$vehicle->tires()->findOrFail(...)`),
+  never through the bare model (`Rotation::findOrFail(...)`). A bare lookup lets one user's ID
+  reach into another user's data. See `RotationService::save()` and `RotationService::saveSwap()`
+  for the pattern.
+- **Livewire property tampering.** Any public Livewire property that identifies *whose* data is
+  being operated on (`$vehicle_id` is the recurring one) must be `#[Locked]`. Without it, Livewire
+  re-hydrates the property from client state on every request, so a property set safely in
+  `mount()` can be overwritten afterward (e.g. via `$wire.set` in the browser console).
+  `ResolvesActiveVehicle::resolveVehicle()` enforces this at runtime — it throws a `LogicException`
+  if the consuming component's `$vehicle_id` isn't `#[Locked]`, so a missing attribute fails loudly
+  in any environment that exercises `mount()`, not just on the rare end-to-end test that tries to
+  tamper with the property. Components that resolve a vehicle without this trait (e.g.
+  `setuptire-create.blade.php`) still need `#[Locked]` added by hand — the check only covers
+  components that use the trait.
+
+**Every security fix requires a regression test that fails on the pre-fix code.** For IDOR fixes,
+that means a test asserting that an action scoped to vehicle A throws/404s when given an ID that
+belongs to vehicle B (see `RotationTest.php` and `SwapTest.php` for the pattern). For Livewire
+property tampering, assert that `->set('vehicle_id', ...)` throws
+`CannotUpdateLockedPropertyException` (see `RotationUiTest.php`, `TireTest.php`). For mass
+assignment, assert that `Model::create()` with a non-fillable key throws `MassAssignmentException`
+(see `VehicleTest.php`, `TireTest.php`). This applies to every bug fix in this codebase, not just
+security ones — a fix without a regression test that exercises the broken path is incomplete.
+
 <laravel-boost-guidelines>
 === foundation rules ===
 

@@ -16,7 +16,21 @@ class Tire extends Model
 {
     use HasFactory, HasHashid;
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'vehicle_id',
+        'label',
+        'brand',
+        'model',
+        'tin',
+        'size',
+        'purchased_on',
+        'notes',
+        'has_cracking',
+        'has_bulge',
+        'has_cupping',
+        'has_puncture_repair',
+        'status',
+    ];
 
     protected function casts(): array
     {

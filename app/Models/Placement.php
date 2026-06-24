@@ -11,7 +11,18 @@ class Placement extends Model
 {
     use HasFactory;
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'rotation_id',
+        'tire_id',
+        'from_position',
+        'to_position',
+        'tread_center',
+        'tread_inner',
+        'tread_outer',
+        'note',
+        'is_feathering',
+        'is_cupped',
+    ];
 
     protected function casts(): array
     {

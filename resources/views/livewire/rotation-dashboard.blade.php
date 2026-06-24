@@ -10,12 +10,14 @@ use Illuminate\Support\Carbon;
 use Illuminate\Support\Collection;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 new #[Layout('layouts.app')]
 class extends Component {
     use ResolvesActiveVehicle;
 
+    #[Locked]
     public string|int|null $vehicle_id = null;
 
     public function mount(SelectVehicle $selectVehicle): void

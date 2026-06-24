@@ -4,6 +4,7 @@ use App\Models\Rotation;
 use App\Models\Tire;
 use App\Models\User;
 use App\Models\Vehicle;
+use Illuminate\Database\Eloquent\MassAssignmentException;
 use Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyException;
 use Livewire\Livewire;
 
@@ -145,4 +146,16 @@ it('cannot tamper vehicle_id on tires.index via Livewire property update', funct
 
     expect(fn () => $component->set('vehicle_id', $otherVehicle->id))
         ->toThrow(CannotUpdateLockedPropertyException::class);
+});
+
+// ---------------------------------------------------------------------------
+// Mass assignment regression — only declared $fillable attributes may be set via fill()
+// ---------------------------------------------------------------------------
+
+it('cannot mass-assign the tire id', function () {
+    expect(fn () => Tire::create([
+        'id' => 99999,
+        'vehicle_id' => $this->vehicle->id,
+        'label' => 'Hijacked',
+    ]))->toThrow(MassAssignmentException::class);
 });

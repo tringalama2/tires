@@ -168,6 +168,24 @@ it('is atomic — rolls back everything on error', function () {
         ->and(Rotation::where('is_swap', true)->count())->toBe(0);
 });
 
+// ---------------------------------------------------------------------------
+// IDOR regression — saveSwap() must scope the retiring tire to the given vehicle
+// ---------------------------------------------------------------------------
+
+it('saveSwap refuses to retire a tire belonging to a different vehicle', function () {
+    [, $vehicleA] = swapTestVehicle();
+    [, , $tiresB] = swapTestVehicle();
+    $foreignTire = $tiresB['FL'];
+
+    expect(fn () => app(RotationService::class)->saveSwap([
+        'rotated_on' => '2026-07-01',
+        'odometer' => 60000,
+        'swaps' => [['retiring_tire_id' => $foreignTire->id, 'retiring_tread' => null, 'replacement_label' => 'T6', 'replacement_tread' => 15.0]],
+    ], $vehicleA))->toThrow(ModelNotFoundException::class);
+
+    expect($foreignTire->fresh()->status)->toBe(TireStatus::Active);
+});
+
 it('throws ValidationException when odometer is below the last rotation', function () {
     [, $vehicle, $tires] = swapTestVehicle(); // last rotation at 55000
 

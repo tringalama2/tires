@@ -101,7 +101,7 @@ class RotationService
 
         return DB::transaction(function () use ($data, $vehicle, $placements, $rotationId) {
             if ($rotationId) {
-                $rotation = Rotation::findOrFail($rotationId);
+                $rotation = $vehicle->rotations()->findOrFail($rotationId);
                 $rotation->update([
                     'rotated_on' => $data['rotated_on'],
                     'odometer' => $data['odometer'],
@@ -119,9 +119,11 @@ class RotationService
             }
 
             foreach ($placements as $p) {
+                $tire = $vehicle->tires()->findOrFail($p['tire_id']);
+
                 Placement::create([
                     'rotation_id' => $rotation->id,
-                    'tire_id' => $p['tire_id'],
+                    'tire_id' => $tire->id,
                     'from_position' => $p['from_position'],
                     'to_position' => $p['to_position'],
                     'tread_center' => $p['tread_center'],
@@ -133,7 +135,7 @@ class RotationService
                 ]);
 
                 if (! empty($p['tire_flags'])) {
-                    Tire::where('id', $p['tire_id'])->update($p['tire_flags']);
+                    $tire->update($p['tire_flags']);
                 }
             }
 
@@ -187,7 +189,7 @@ class RotationService
             ]);
 
             foreach ($data['swaps'] as $swap) {
-                $retiring = Tire::findOrFail($swap['retiring_tire_id']);
+                $retiring = $vehicle->tires()->findOrFail($swap['retiring_tire_id']);
                 $position = $retiring->currentPosition();
 
                 // Retiring tire placement — leaves the vehicle

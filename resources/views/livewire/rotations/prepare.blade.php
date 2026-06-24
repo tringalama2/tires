@@ -8,6 +8,7 @@ use App\Services\RotationService;
 use Illuminate\Support\Carbon;
 use Livewire\Attributes\Computed;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Locked;
 use Livewire\Attributes\Validate;
 use Livewire\Component;
 
@@ -15,6 +16,7 @@ new #[Layout('layouts.app')]
 class extends Component {
     use ResolvesActiveVehicle;
 
+    #[Locked]
     public string|int|null $vehicle_id = null;
     public ?string $edit_rotation_id = null;
 

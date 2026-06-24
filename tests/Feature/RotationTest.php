@@ -8,6 +8,7 @@ use App\Models\Tire;
 use App\Models\Vehicle;
 use App\Services\RotationService;
 use App\Services\WearReportService;
+use Illuminate\Database\Eloquent\ModelNotFoundException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 use Illuminate\Validation\ValidationException;
 
@@ -297,4 +298,46 @@ it('save edits an existing rotation and replaces its placements', function () {
     $updated = Rotation::find($originalId);
     expect($updated->note)->toBe('edited')
         ->and($updated->placements()->count())->toBe(5);
+});
+
+// ---------------------------------------------------------------------------
+// IDOR regression — save() must scope rotation/tire lookups to the given vehicle
+// ---------------------------------------------------------------------------
+
+it('save refuses to edit a rotation belonging to a different vehicle', function () {
+    [, $vehicleA] = vehicleWithHistory();
+    [, $vehicleB] = vehicleWithHistory();
+
+    $foreignRotation = $vehicleB->rotations()->where('is_setup', false)->orderByDesc('odometer')->first();
+    $placements = identityPlacements($vehicleA);
+
+    expect(fn () => app(RotationService::class)->save([
+        'rotated_on' => '2026-12-01',
+        'odometer' => 5000,
+        'note' => 'hijacked',
+        'rotation_id' => $foreignRotation->id,
+        'placements' => $placements,
+    ], $vehicleA))->toThrow(ModelNotFoundException::class);
+
+    expect($foreignRotation->fresh()->note)->not->toBe('hijacked');
+});
+
+it('save refuses to attach a placement or flags to a tire belonging to a different vehicle', function () {
+    [, $vehicleA] = vehicleWithHistory();
+    [, , $tiresB] = vehicleWithHistory();
+    $foreignTire = $tiresB['T1'];
+
+    $placements = identityPlacements($vehicleA);
+    $placements[0]['tire_id'] = $foreignTire->id;
+    $placements[0]['tire_flags'] = ['has_cracking' => true];
+
+    expect(fn () => app(RotationService::class)->save([
+        'rotated_on' => '2026-12-01',
+        'odometer' => 65000,
+        'note' => null,
+        'rotation_id' => null,
+        'placements' => $placements,
+    ], $vehicleA))->toThrow(ModelNotFoundException::class);
+
+    expect($foreignTire->fresh()->has_cracking)->toBeFalse();
 });

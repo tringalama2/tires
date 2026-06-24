@@ -7,11 +7,13 @@ use App\Models\Rotation;
 use App\Services\RotationService;
 use Illuminate\Validation\ValidationException;
 use Livewire\Attributes\Layout;
+use Livewire\Attributes\Locked;
 use Livewire\Component;
 
 new #[Layout('layouts.app')] class extends Component {
     use ResolvesActiveVehicle;
 
+    #[Locked]
     public string|int|null $vehicle_id = null;
 
     /** Placements from session, keyed by from_position value. */

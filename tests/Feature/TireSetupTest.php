@@ -7,6 +7,7 @@ use App\Models\Rotation;
 use App\Models\User;
 use App\Models\Vehicle;
 use Illuminate\Foundation\Testing\RefreshDatabase;
+use Livewire\Features\SupportLockedProperties\CannotUpdateLockedPropertyException;
 use Livewire\Livewire;
 
 uses(RefreshDatabase::class);
@@ -92,4 +93,32 @@ it('does redirect to setup when a position has no tire at all', function () {
     $this->actingAs($user)
         ->get(route('dashboard', $vehicle))
         ->assertRedirect(route('vehicles.setuptires.index', $vehicle));
+});
+
+// ---------------------------------------------------------------------------
+// IDOR regression — setuptire-create must reject another user's vehicle, and
+// vehicle_id must stay #[Locked] so it can't be retargeted after mount.
+// ---------------------------------------------------------------------------
+
+it('cannot mount setuptire-create for another user\'s vehicle', function () {
+    $owner = User::factory()->create();
+    $vehicle = Vehicle::factory()->for($owner)->create(['starting_odometer' => 50000]);
+
+    $attacker = User::factory()->create();
+
+    Livewire::actingAs($attacker)
+        ->test('vehicles.setuptire-create', ['vehicle' => $vehicle, 'tirePosition' => 'FL'])
+        ->assertNotFound();
+});
+
+it('refuses to let setuptire-create.vehicle_id be changed after mount', function () {
+    $user = User::factory()->create();
+    $vehicle = Vehicle::factory()->for($user)->create(['starting_odometer' => 50000]);
+    $otherVehicle = Vehicle::factory()->create(['starting_odometer' => 50000]);
+
+    $component = Livewire::actingAs($user)
+        ->test('vehicles.setuptire-create', ['vehicle' => $vehicle, 'tirePosition' => 'FL']);
+
+    expect(fn () => $component->set('vehicle_id', $otherVehicle->id))
+        ->toThrow(CannotUpdateLockedPropertyException::class);
 });

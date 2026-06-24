@@ -13,7 +13,14 @@ class Rotation extends Model
 {
     use HasFactory, HasHashid;
 
-    protected $guarded = ['id'];
+    protected $fillable = [
+        'vehicle_id',
+        'rotated_on',
+        'odometer',
+        'note',
+        'is_setup',
+        'is_swap',
+    ];
 
     protected function casts(): array
     {

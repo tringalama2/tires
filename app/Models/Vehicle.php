@@ -17,7 +17,6 @@ class Vehicle extends Model
     const int MAX_VEHICLES_PER_USER = 5;
 
     protected $fillable = [
-        'user_id',
         'year',
         'make',
         'model',

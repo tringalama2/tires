@@ -6,7 +6,6 @@ use App\Enums\TireStatus;
 use App\Models\Rotation;
 use App\Models\Tire;
 use App\Models\User;
-use App\Models\Vehicle;
 use Illuminate\Database\Seeder;
 
 class PersonalDataSeeder extends Seeder
@@ -19,8 +18,7 @@ class PersonalDataSeeder extends Seeder
             'email' => 'steve@tires.test',
         ]);
 
-        $vehicle = Vehicle::create([
-            'user_id' => $user->id,
+        $vehicle = $user->vehicles()->create([
             'year' => 2017,
             'make' => 'Toyota',
             'model' => '4Runner',

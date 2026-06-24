@@ -2,6 +2,7 @@
 
 use App\Models\User;
 use App\Models\Vehicle;
+use Illuminate\Database\Eloquent\MassAssignmentException;
 use Illuminate\Foundation\Testing\RefreshDatabase;
 
 uses(RefreshDatabase::class);
@@ -159,4 +160,19 @@ it('defaults to the most recently selected vehicle', function () {
         ->assertOk();
 
     expect(session('vehicle')?->id)->toBe($newer->id);
+});
+
+// ---------------------------------------------------------------------------
+// Mass assignment regression — user_id must never be settable via fill()
+// ---------------------------------------------------------------------------
+
+it('cannot reassign vehicle ownership via mass assignment', function () {
+    expect(fn () => Vehicle::create([
+        'user_id' => $this->otherUser->id,
+        'year' => 2020,
+        'make' => 'Toyota',
+        'model' => '4Runner',
+        'tire_count' => 5,
+        'starting_odometer' => 1000,
+    ]))->toThrow(MassAssignmentException::class);
 });
